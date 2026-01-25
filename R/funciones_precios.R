@@ -912,8 +912,7 @@ get_flujos_reales_duckplyr <- function(.datos_df,
       .export = .export,
       .import = .import,
       .get_rri = FALSE,
-      .remove_na = FALSE,
-      .use_duckplyr = .use_duckplyr
+      .remove_na = FALSE
     )
   }
 

@@ -1034,6 +1034,19 @@ mapa_estilo_victorgm <- function(
 
 # Función general para dar formato a tablas ----
 
+#' @export
+configurar_fuente_tabla <- function(.tabla, .fuente_letra, .font_size) {
+  .tabla |>
+    gt::opt_table_font(
+      font = list(
+        .fuente_letra,
+        "system-ui",
+        "sans-serif"
+      ),
+      size = paste0(.font_size, "px")
+    )
+}
+
 #' Función para aplicar estilo de tabla estándar para victorgm
 #'
 #' @param .data Data frame con los datos a mostrar en la tabla

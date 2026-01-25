@@ -34,7 +34,12 @@ Imports:
     rnaturalearth,
     ggfx,
     slider,
-    wtor
+    wtor,
+    httr,
+    knitr,
+    tibble,
+    tidyselect,
+    xml2
 Remotes:
     fabiansalazares/wtor
 LazyData: true
