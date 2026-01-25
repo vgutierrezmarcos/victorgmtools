@@ -1,94 +1,114 @@
 # victorgmtools
 
-`victorgmtools` is an R package designed to streamline common data analysis tasks, including economic calculations, data retrieval from FRED, exchange rate conversions, and standardized visualization styling.
+`victorgmtools` es un paquete de R diseñado para facilitar y estandarizar tareas comunes de análisis de datos económicos, incluyendo cálculos de tasas de variación, gestión de datos de comercio exterior, obtención de datos de fuentes oficiales (FRED) y la aplicación de estilos visuales corporativos o estandarizados para gráficos y tablas.
 
-## Installation
+## Instalación
 
-You can install the development version of `victorgmtools` from GitHub (assuming it is hosted there) or locally:
+Puedes instalar la versión de desarrollo de `victorgmtools` desde GitHub:
 
 ```r
 # install.packages("devtools")
-devtools::install_github("your_username/victorgmtools")
+devtools::install_github("tu_usuario/victorgmtools")
 ```
 
-### Dependencies
+### Dependencias Externas
 
-This package depends on `wtor`, which is available on GitHub. You must install it using:
+Este paquete depende del paquete `wtor` para la gestión de datos de la Organización Mundial del Comercio. Dado que no se encuentra en CRAN, debe instalarse previamente desde GitHub:
 
 ```r
 # install.packages("remotes")
 remotes::install_github("fabiansalazares/wtor")
 ```
 
-## Features
+## Funcionalidades Principales
 
-### 1. Calculations (`funciones_calculos.R`)
-Perform common economic calculations with ease:
-*   `get_saldo()`: Calculate trade balances (Exports - Imports).
-*   `get_cobertura()`: Calculate coverage ratios (Exports / Imports).
-*   `get_tasa_variacion()`: Compute growth rates (Year-over-Year, Month-over-Month, etc.).
-*   `get_variacion()`: Compute absolute variations.
-*   `get_acumulado()`: Calculate accumulated values over a rolling window (e.g., trailing 12 months).
+El paquete se estructura en varios módulos, siendo los de cálculo y visualización los pilares centrales.
 
-### 2. FRED Data Integration (`funciones_fred.R`)
-Directly access and visualize data from the Federal Reserve Economic Data (FRED):
-*   `get_fred_tbl()`: Retrieve time series data in a tidy format.
-*   `get_fred_plt()`: Generate standardized plots for FRED series.
+### 1. Cálculo y Análisis Económico (`funciones_calculos.R`)
+Este módulo contiene funciones esenciales para el tratamiento de series temporales y datos económicos. Simplifica operaciones que suelen requerir múltiples pasos en `dplyr`.
 
-### 3. Graphics and Styling (`funciones_graficos.R`)
-Apply a consistent and professional style to your `ggplot2` visualizations and `gt` tables:
-*   `graficos_estilo_victorgm()`: Apply the package's standardized theme to ggplots.
-*   `mapa_estilo_victorgm()`: Style choropleth maps. **Note:** Requires standard names (e.g., matching `rnaturalearth`) for regions/provinces as automatic code-to-name mapping has been simplified.
-*   `tablas_estilo_victorgm()`: Style `gt` tables.
-*   `colores_victorgm()`: Access the custom color palette.
-*   `to_giraph()`: Convert static plots to interactive ones using `ggiraph`.
+*   **`get_tasa_variacion()`**: Calcula tasas de crecimiento (interanual, intermensual, trimestral, etc.) sobre una serie temporal.
+*   **`get_variacion()`**: Calcula variaciones absolutas (diferencia numérica) entre periodos.
+*   **`get_saldo()`**: Obtiene el saldo comercial (Exportaciones - Importaciones) a partir de datos de flujo.
+*   **`get_cobertura()`**: Calcula la tasa de cobertura (Exportaciones / Importaciones * 100).
+*   **`get_acumulado()`**: Genera valores acumulados sobre una ventana móvil (por ejemplo, acumulado de los últimos 12 meses o "Year-to-Date").
 
-### 4. Price and Flow Analysis (`funciones_precios.R`)
-Tools for trade data analysis:
-*   `get_precios_ponderados()`: Calculate weighted price indices.
-*   `get_flujos_reales()`: Convert nominal trade flows to real terms.
-*   `get_descomposicion_tv()`: Decompose growth rates into price and volume contributions.
-*   **Optimized versions**: Includes `_duckplyr` versions for high-performance computing on large datasets.
+### 2. Visualización y Estilos (`funciones_graficos.R`)
+Proporciona una capa de abstracción sobre `ggplot2` y `gt` para generar visualizaciones listas para publicación con una identidad visual coherente.
 
-### 5. String Manipulation (`funciones_strings.R`)
-Helper functions for cleaning text data:
-*   `limpiar_nombres()`: Standardize column names (snake_case, no special characters).
-*   `quitar_tildes()`: Remove accents and diacritics from strings.
+*   **`graficos_estilo_victorgm()`**: Aplica el tema visual estandarizado a objetos `ggplot`. Gestiona automáticamente:
+    *   Fuentes tipográficas (por defecto "Segoe UI").
+    *   Posición inteligente de la leyenda (incluyendo detección automática de huecos libres en el gráfico).
+    *   Formato de ejes (miles, porcentajes, fechas, sufijos).
+    *   Títulos, subtítulos y pies de página con ajuste de texto automático.
+*   **`mapa_estilo_victorgm()`**: Genera mapas coropléticos estilizados.
+    *   Soporte para **España** (Provincias y Comunidades Autónomas) y **Mundo**.
+    *   Integra geometrías de `rnaturalearth`.
+    *   *Nota*: Requiere nombres estandarizados (o códigos ISO3 para países) para una correcta vinculación.
+*   **`tablas_estilo_victorgm()`**: Aplica estilos profesionales a tablas creadas con el paquete `gt`, manejando colores de fuente, bordes y formatos numéricos.
+*   **`colores_victorgm()`**: Acceso directo a la paleta de colores corporativa/estándar del paquete.
+*   **`to_giraph()`**: Convierte gráficos estáticos de `ggplot2` en gráficos interactivos HTML utilizando `ggiraph`.
 
-### 6. Exchange Rates (`funciones_tipocambio.R`)
-Utilities for currency conversion:
-*   `get_tipo_cambio()`: Get the exchange rate between two currencies for a specific date.
-*   `get_conversion()`: Add a converted value column to a dataframe.
-*   `get_tipo_cambio_df()`: Get a historical dataframe of exchange rates.
+---
 
-## Examples
+## Otras Funcionalidades
 
-### Styling a Plot
+### Integración con FRED (`funciones_fred.R`)
+Conexión directa con la base de datos de la Reserva Federal de San Luis (FRED).
+*   **`get_fred_tbl()`**: Descarga series temporales limpias y formateadas listas para análisis.
+*   **`get_fred_plt()`**: Genera automáticamente gráficos estandarizados de las series descargadas.
+
+### Análisis de Precios y Flujos Reales (`funciones_precios.R`)
+Herramientas avanzadas para el análisis de comercio exterior, permitiendo descontar el efecto de los precios.
+*   **`get_precios_ponderados()`**: Calcula índices de precios de exportación e importación (Índices de Valor Unitario).
+*   **`get_flujos_reales()`**: Deflacta los flujos nominales para obtener series en términos de volumen (flujos reales).
+*   **`get_descomposicion_tv()`**: Descompone la tasa de variación del valor nominal en la contribución de los precios y la contribución del volumen.
+*   **Optimización**: Incluye versiones `_duckplyr` de estas funciones para procesar grandes volúmenes de datos (Big Data) de manera eficiente.
+
+### Tipos de Cambio (`funciones_tipocambio.R`)
+Utilidades para la conversión monetaria.
+*   **`get_tipo_cambio()`**: Obtiene el tipo de cambio puntual entre dos divisas.
+*   **`get_conversion()`**: Añade una columna con el valor convertido a una divisa destino en un dataframe.
+*   **`get_tipo_cambio_df()`**: Descarga históricos de tipos de cambio.
+
+### Manipulación de Textos (`funciones_strings.R`)
+Funciones auxiliares para la limpieza de datos.
+*   **`limpiar_nombres()`**: Estandariza nombres de columnas (snake_case, sin caracteres especiales).
+*   **`quitar_tildes()`**: Elimina acentos y diacríticos de cadenas de texto.
+
+---
+
+## Ejemplos de Uso
+
+### Estilizar un Gráfico
 ```r
 library(ggplot2)
 library(victorgmtools)
 
+# Datos de ejemplo
 df <- data.frame(
   fecha = seq(as.Date("2020-01-01"), by = "month", length.out = 12),
   valores = cumsum(rnorm(12))
 )
 
+# Crear gráfico base + aplicar estilo
 p <- ggplot(df, aes(x = fecha, y = valores)) +
   geom_line() +
   graficos_estilo_victorgm(
-    .title = "Sample Plot",
-    .subtitle = "Cumulative Sum",
-    .caption = "Source: Random Data"
+    .title = "Gráfico de Ejemplo",
+    .subtitle = "Serie acumulada simulada",
+    .caption = "Fuente: Datos aleatorios. Elaboración propia.",
+    .tipo_grafico_y = "millones" # Formatea eje Y automáticamente
   )
 
 print(p)
 ```
 
-### Calculating Growth Rates
+### Calcular Tasas de Variación
 ```r
 library(dplyr)
 
-df_growth <- df |>
+df_crecimiento <- df |>
   get_tasa_variacion(
     .periodos_atras = 1, 
     .col_fecha = "fecha", 
@@ -96,6 +116,6 @@ df_growth <- df |>
   )
 ```
 
-## License
+## Licencia
 
 MIT

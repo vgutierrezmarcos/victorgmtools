@@ -9,7 +9,9 @@ quitar_tildes(.x, tolower = FALSE, toupper = FALSE, quitar_espacios = FALSE)
 \arguments{
 \item{.x}{Input.}
 
-\item{tolower}{Valor lógico. Si se establece en TRUE te convierte el input en mayúsculas. Por defecto \code{FALSE}.}
+\item{tolower}{Valor lógico. Si se establece en TRUE te convierte el input en minúsculas. Por defecto \code{FALSE}.}
+
+\item{toupper}{Valor lógico. Si se establece en TRUE te convierte el input en mayúsculas. Por defecto \code{FALSE}.}
 
 \item{quitar_espacios}{Valor lógico. Si se establece en TRUE te sustituye espacios y guiones por barras bajas. Por defecto \code{FALSE}.}
 }

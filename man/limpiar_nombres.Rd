@@ -35,9 +35,16 @@ limpiar_nombres(
 
 \item{transliterations}{A character vector (if not \code{NULL}). The entries of this argument need to be elements of \code{stringi::stri_trans_list()} (like "Latin-ASCII", which is often useful) or names of lookup tables (currently only \code{"german"} is supported). In the order of the entries the letters of the input string will be transliterated via \code{stringi::stri_trans_general()} or replaced via the matches of the lookup table. When named character elements are supplied as part of 'transliterations', anything that matches the names is replaced by the corresponding value. You should use this feature with care in case of \code{case = "parsed"}, \code{case = "internal_parsing"} and \code{case = "none"}, since for upper case letters, which have transliterations/replacements of length 2, the second letter will be transliterated to lowercase, for example Oe, Ae, Ss, which might not always be what is intended. In this case you can make usage of the option to supply named elements and specify the transliterations yourself.}
 
-\item{parsing_option}{An integer that will determine the parsing_option. "\n" 1: \code{"RRRStudio"} -> \code{"RRR_Studio"} "\n" 2: \code{"RRRStudio"} -> \code{"RRRS_tudio"} "\n" 3: \code{"RRRStudio"} -> \code{"RRRSStudio"}. This will become for example \code{"Rrrstudio"} when we convert to lower camel case. "\n"  -1, -2, -3: These \code{parsing_options}'s will suppress the conversion after non-alphanumeric values. "\n" 0: no parsing}
+\item{parsing_option}{An integer that will determine the parsing_option.
+1: \code{"RRRStudio"} -> \code{"RRR_Studio"}
+2: \code{"RRRStudio"} -> \code{"RRRS_tudio"}
+3: \code{"RRRStudio"} -> \code{"RRRSStudio"}. This will become for example \code{"Rrrstudio"} when we convert to lower camel case.
+-1, -2, -3: These \code{parsing_options}'s will suppress the conversion after non-alphanumeric values.
+0: no parsing}
 
 \item{numerals}{A character specifying the alignment of numerals (\code{"middle"}, \code{"left"}, \code{"right"}, \code{"asis"} or \code{"tight"}). I.e. \code{numerals = "left"} ensures that no output separator is in front of a digit.}
+
+\item{...}{Arguments passed on to \code{snakecase::to_any_case}.}
 }
 \description{
 Te devuelve el input inicial sin tildes y sin espacios (y, en su caso, en minúsculas o mayúsculas). Basada en janitor::make_clean_names.
