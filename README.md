@@ -20,11 +20,11 @@ Este paquete depende del paquete `wtor` para la gestión de datos de la Organiza
 remotes::install_github("fabiansalazares/wtor")
 ```
 
-## Funcionalidades Principales
+## Funcionalidades principales
 
 El paquete se estructura en varios módulos, siendo los de cálculo y visualización los pilares centrales.
 
-### 1. Cálculo y Análisis Económico (`funciones_calculos.R`)
+### 1. Cálculo y análisis económico (`funciones_calculos.R`)
 Este módulo contiene funciones esenciales para el tratamiento de series temporales y datos económicos. Simplifica operaciones que suelen requerir múltiples pasos en `dplyr`.
 
 *   **`get_tasa_variacion()`**: Calcula tasas de crecimiento (interanual, intermensual, trimestral, etc.) sobre una serie temporal.
@@ -33,7 +33,7 @@ Este módulo contiene funciones esenciales para el tratamiento de series tempora
 *   **`get_cobertura()`**: Calcula la tasa de cobertura (Exportaciones / Importaciones * 100).
 *   **`get_acumulado()`**: Genera valores acumulados sobre una ventana móvil (por ejemplo, acumulado de los últimos 12 meses o "Year-to-Date").
 
-### 2. Visualización y Estilos (`funciones_graficos.R`)
+### 2. Visualización y estilos (`funciones_graficos.R`)
 Proporciona una capa de abstracción sobre `ggplot2` y `gt` para generar visualizaciones listas para publicación con una identidad visual coherente.
 
 *   **`graficos_estilo_victorgm()`**: Aplica el tema visual estandarizado a objetos `ggplot`. Gestiona automáticamente:
@@ -51,36 +51,36 @@ Proporciona una capa de abstracción sobre `ggplot2` y `gt` para generar visuali
 
 ---
 
-## Otras Funcionalidades
+## Otras funcionalidades
 
 ### Integración con FRED (`funciones_fred.R`)
 Conexión directa con la base de datos de la Reserva Federal de San Luis (FRED).
 *   **`get_fred_tbl()`**: Descarga series temporales limpias y formateadas listas para análisis.
 *   **`get_fred_plt()`**: Genera automáticamente gráficos estandarizados de las series descargadas.
 
-### Análisis de Precios y Flujos Reales (`funciones_precios.R`)
+### Análisis de orecios y flujos reales (`funciones_precios.R`)
 Herramientas avanzadas para el análisis de comercio exterior, permitiendo descontar el efecto de los precios.
 *   **`get_precios_ponderados()`**: Calcula índices de precios de exportación e importación (Índices de Valor Unitario).
 *   **`get_flujos_reales()`**: Deflacta los flujos nominales para obtener series en términos de volumen (flujos reales).
 *   **`get_descomposicion_tv()`**: Descompone la tasa de variación del valor nominal en la contribución de los precios y la contribución del volumen.
 *   **Optimización**: Incluye versiones `_duckplyr` de estas funciones para procesar grandes volúmenes de datos (Big Data) de manera eficiente.
 
-### Tipos de Cambio (`funciones_tipocambio.R`)
+### Tipos de cambio (`funciones_tipocambio.R`)
 Utilidades para la conversión monetaria.
 *   **`get_tipo_cambio()`**: Obtiene el tipo de cambio puntual entre dos divisas.
 *   **`get_conversion()`**: Añade una columna con el valor convertido a una divisa destino en un dataframe.
 *   **`get_tipo_cambio_df()`**: Descarga históricos de tipos de cambio.
 
-### Manipulación de Textos (`funciones_strings.R`)
+### Manipulación de textos (`funciones_strings.R`)
 Funciones auxiliares para la limpieza de datos.
 *   **`limpiar_nombres()`**: Estandariza nombres de columnas (snake_case, sin caracteres especiales).
 *   **`quitar_tildes()`**: Elimina acentos y diacríticos de cadenas de texto.
 
 ---
 
-## Ejemplos de Uso
+## Ejemplos de uso
 
-### Estilizar un Gráfico
+### Estilizar un gráfico
 ```r
 library(ggplot2)
 library(victorgmtools)
@@ -104,7 +104,7 @@ p <- ggplot(df, aes(x = fecha, y = valores)) +
 print(p)
 ```
 
-### Calcular Tasas de Variación
+### Calcular tasas de variación
 ```r
 library(dplyr)
 
