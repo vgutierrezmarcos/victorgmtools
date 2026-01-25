@@ -8,10 +8,10 @@ Puedes instalar la versión de desarrollo de `victorgmtools` desde GitHub:
 
 ```r
 # install.packages("devtools")
-devtools::install_github("tu_usuario/victorgmtools")
+devtools::install_github("vgutierrezmarcos/victorgmtools")
 ```
 
-### Dependencias Externas
+### Dependencias externas
 
 Este paquete depende del paquete `wtor` para la gestión de datos de la Organización Mundial del Comercio. Dado que no se encuentra en CRAN, debe instalarse previamente desde GitHub:
 
