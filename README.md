@@ -7,8 +7,8 @@
 Puedes instalar la versión de desarrollo de `victorgmtools` desde GitHub:
 
 ```r
-# install.packages("devtools")
-devtools::install_github("vgutierrezmarcos/victorgmtools")
+# install.packages("remotes")
+remotes::install_github("vgutierrezmarcos/victorgmtools")
 ```
 
 ### Dependencias externas
