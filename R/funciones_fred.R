@@ -3,20 +3,18 @@
 #' @param .analysed_series_id Requerido. Cadena de caracteres. Indica el código de la serie de la que se desea obtener la tabla. Se pueden consultar todas las series disponibles en la página web: https://fred.stlouisfed.org/.
 #' @param .analysed_observation_start Cadena de caracteres. Primera observación de la serie temporal. Por defecto, NULL, devuelve desde la primera observación disponible.
 #' @param .analysed_observation_end Cadena de caracteres. Última observación de la serie temporal. Por defecto, NULL, devuelve desde la última observación disponible.
-#' @param .analysed_observation_end Fecha. Última observación de la serie temporal. Por defecto, NULL, devuelve desde la última observación disponible.
-#' @param .analysed_observation_end Fecha. Última observación de la serie temporal. Por defecto, NULL, devuelve desde la última observación disponible.
-#' @param .analysed_frequency A
-#' @param .analysed_aggregation_method a
-#' @param .analysed_limit a
-#' @param .analysed_offset a
-#' @param .analysed_sort_order a
-#' @param .analysed_units a
-#' @param .analysed_realtime_start a
-#' @param .analysed_realtime_end a
-#' @param .analysed_vintage_dates a
-#' @param .analysed_output_type a
+#' @param .analysed_frequency Cadena de caracteres. Frecuencia de la agregación de los datos. Puede ser: 'd' (diario), 'w' (semanal), 'bw' (bisemanal), 'm' (mensual), 'q' (trimestral), 'sa' (semestral), 'a' (anual), 'wef' (semanal, terminando el viernes), 'weth' (semanal, terminando el jueves), 'wew' (semanal, terminando el miércoles), 'wetu' (semanal, terminando el martes), 'wem' (semanal, terminando el lunes), 'wesu' (semanal, terminando el domingo), 'wesa' (semanal, terminando el sábado), 'bwew' (bisemanal, terminando el miércoles), 'bwem' (bisemanal, terminando el lunes). Por defecto, `NULL` (frecuencia nativa).
+#' @param .analysed_aggregation_method Cadena de caracteres. Método de agregación de los datos. Puede ser: 'avg' (promedio), 'sum' (suma), 'eop' (fin de periodo). Por defecto, `NULL`.
+#' @param .analysed_limit Número entero. El número máximo de resultados a devolver. Por defecto, `NULL` (devuelve todos).
+#' @param .analysed_offset Número entero. El número de resultados a saltar. Por defecto, `NULL`.
+#' @param .analysed_sort_order Cadena de caracteres. El orden de clasificación de los resultados. Puede ser 'asc' (ascendente) o 'desc' (descendente). Por defecto, `NULL`.
+#' @param .analysed_units Cadena de caracteres. Unidades de transformación de los datos. Puede ser: 'lin' (niveles), 'chg' (cambio), 'ch1' (cambio respecto a hace 1 año), 'pch' (porcentaje de cambio), 'pc1' (porcentaje de cambio respecto a hace 1 año), 'pca' (porcentaje de cambio anual compuesto), 'cch' (cambio continuo compuesto), 'cca' (cambio continuo compuesto anual), 'log' (logaritmo natural). Por defecto, `NULL` (niveles).
+#' @param .analysed_realtime_start Cadena de caracteres o Fecha. Fecha de inicio del periodo en tiempo real. Por defecto, `NULL`.
+#' @param .analysed_realtime_end Cadena de caracteres o Fecha. Fecha de fin del periodo en tiempo real. Por defecto, `NULL`.
+#' @param .analysed_vintage_dates Cadena de caracteres o vector de Fechas. Fechas vintage a descargar. Por defecto, `NULL`.
+#' @param .analysed_output_type Número entero. Tipo de salida. 1 = Observaciones por periodo en tiempo real, 2 = Observaciones por fecha vintage, 3 = Observaciones por fecha vintage y todas las observaciones, 4 = Observaciones iniciales por fecha vintage. Por defecto, `NULL`.
+#' @return Un objeto `gt_tbl` con los datos de la serie temporal formateados.
 #' @export
-
 get_fred_tbl <- function(.analysed_series_id,
                          .analysed_observation_start = NULL,
                          .analysed_observation_end = NULL,
@@ -96,21 +94,20 @@ get_fred_tbl <- function(.analysed_series_id,
 #' @param .analysed_series_id Requerido. Cadena de caracteres. Indica el código de la serie de la que se desea obtener el gráfico. Se pueden consultar todas las series disponibles en la página web: https://fred.stlouisfed.org/.
 #' @param .analysed_observation_start Cadena de caracteres. Primera observación de la serie temporal. Por defecto, NULL, devuelve desde la primera observación disponible.
 #' @param .analysed_observation_end Cadena de caracteres. Última observación de la serie temporal. Por defecto, NULL, devuelve desde la última observación disponible.
-#' @param .analysed_observation_end Fecha. Última observación de la serie temporal. Por defecto, NULL, devuelve desde la última observación disponible.
-#' @param .analysed_observation_end Fecha. Última observación de la serie temporal. Por defecto, NULL, devuelve desde la última observación disponible.
-#' @param .analysed_frequency a
-#' @param .analysed_aggregation_method a
-#' @param .analysed_limit a
-#' @param .analysed_offset a
-#' @param .analysed_sort_order a
-#' @param .analysed_units a
-#' @param .analysed_realtime_start a
-#' @param .analysed_realtime_end a
-#' @param .analysed_vintage_dates  a
-#' @param .analysed_output_type a
-#' @param .estatico_toggle Valor lógico. En caso de TRUE el gráfico devuelto no es interactivo (no usa el paquete ggiraph). Por defecto, FALSE.
+#' @param .analysed_frequency Cadena de caracteres. Frecuencia de la agregación de los datos. Puede ser: 'd' (diario), 'w' (semanal), 'bw' (bisemanal), 'm' (mensual), 'q' (trimestral), 'sa' (semestral), 'a' (anual), 'wef' (semanal, terminando el viernes), 'weth' (semanal, terminando el jueves), 'wew' (semanal, terminando el miércoles), 'wetu' (semanal, terminando el martes), 'wem' (semanal, terminando el lunes), 'wesu' (semanal, terminando el domingo), 'wesa' (semanal, terminando el sábado), 'bwew' (bisemanal, terminando el miércoles), 'bwem' (bisemanal, terminando el lunes). Por defecto, `NULL` (frecuencia nativa).
+#' @param .analysed_aggregation_method Cadena de caracteres. Método de agregación de los datos. Puede ser: 'avg' (promedio), 'sum' (suma), 'eop' (fin de periodo). Por defecto, `NULL`.
+#' @param .analysed_limit Número entero. El número máximo de resultados a devolver. Por defecto, `NULL` (devuelve todos).
+#' @param .analysed_offset Número entero. El número de resultados a saltar. Por defecto, `NULL`.
+#' @param .analysed_sort_order Cadena de caracteres. El orden de clasificación de los resultados. Puede ser 'asc' (ascendente) o 'desc' (descendente). Por defecto, `NULL`.
+#' @param .analysed_units Cadena de caracteres. Unidades de transformación de los datos. Puede ser: 'lin' (niveles), 'chg' (cambio), 'ch1' (cambio respecto a hace 1 año), 'pch' (porcentaje de cambio), 'pc1' (porcentaje de cambio respecto a hace 1 año), 'pca' (porcentaje de cambio anual compuesto), 'cch' (cambio continuo compuesto), 'cca' (cambio continuo compuesto anual), 'log' (logaritmo natural). Por defecto, `NULL` (niveles).
+#' @param .analysed_realtime_start Cadena de caracteres o Fecha. Fecha de inicio del periodo en tiempo real. Por defecto, `NULL`.
+#' @param .analysed_realtime_end Cadena de caracteres o Fecha. Fecha de fin del periodo en tiempo real. Por defecto, `NULL`.
+#' @param .analysed_vintage_dates Cadena de caracteres o vector de Fechas. Fechas vintage a descargar. Por defecto, `NULL`.
+#' @param .analysed_output_type Número entero. Tipo de salida. 1 = Observaciones por periodo en tiempo real, 2 = Observaciones por fecha vintage, 3 = Observaciones por fecha vintage y todas las observaciones, 4 = Observaciones iniciales por fecha vintage. Por defecto, `NULL`.
+#' @param .estatico_toggle Valor lógico. En caso de `TRUE` el gráfico devuelto no es interactivo (no usa el paquete ggiraph). Por defecto, `FALSE`.
+#' @param .representar_eje_horizontal Valor lógico. En caso de `TRUE` se dibuja una línea horizontal en y = 0. Por defecto, `TRUE`.
+#' @return Un objeto `ggplot` (estático) o `girafe` (interactivo) con la visualización de la serie temporal.
 #' @export
-
 get_fred_plt <- function(.analysed_series_id,
                          .analysed_observation_start = NULL,
                          .analysed_observation_end = NULL,

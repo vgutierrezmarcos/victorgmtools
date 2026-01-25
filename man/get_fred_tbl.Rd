@@ -25,27 +25,30 @@ get_fred_tbl(
 
 \item{.analysed_observation_start}{Cadena de caracteres. Primera observación de la serie temporal. Por defecto, NULL, devuelve desde la primera observación disponible.}
 
-\item{.analysed_observation_end}{Fecha. Última observación de la serie temporal. Por defecto, NULL, devuelve desde la última observación disponible.}
+\item{.analysed_observation_end}{Cadena de caracteres. Última observación de la serie temporal. Por defecto, NULL, devuelve desde la última observación disponible.}
 
-\item{.analysed_frequency}{A}
+\item{.analysed_frequency}{Cadena de caracteres. Frecuencia de la agregación de los datos. Puede ser: 'd' (diario), 'w' (semanal), 'bw' (bisemanal), 'm' (mensual), 'q' (trimestral), 'sa' (semestral), 'a' (anual), 'wef' (semanal, terminando el viernes), 'weth' (semanal, terminando el jueves), 'wew' (semanal, terminando el miércoles), 'wetu' (semanal, terminando el martes), 'wem' (semanal, terminando el lunes), 'wesu' (semanal, terminando el domingo), 'wesa' (semanal, terminando el sábado), 'bwew' (bisemanal, terminando el miércoles), 'bwem' (bisemanal, terminando el lunes). Por defecto, \code{NULL} (frecuencia nativa).}
 
-\item{.analysed_aggregation_method}{a}
+\item{.analysed_aggregation_method}{Cadena de caracteres. Método de agregación de los datos. Puede ser: 'avg' (promedio), 'sum' (suma), 'eop' (fin de periodo). Por defecto, \code{NULL}.}
 
-\item{.analysed_limit}{a}
+\item{.analysed_limit}{Número entero. El número máximo de resultados a devolver. Por defecto, \code{NULL} (devuelve todos).}
 
-\item{.analysed_offset}{a}
+\item{.analysed_offset}{Número entero. El número de resultados a saltar. Por defecto, \code{NULL}.}
 
-\item{.analysed_sort_order}{a}
+\item{.analysed_sort_order}{Cadena de caracteres. El orden de clasificación de los resultados. Puede ser 'asc' (ascendente) o 'desc' (descendente). Por defecto, \code{NULL}.}
 
-\item{.analysed_units}{a}
+\item{.analysed_units}{Cadena de caracteres. Unidades de transformación de los datos. Puede ser: 'lin' (niveles), 'chg' (cambio), 'ch1' (cambio respecto a hace 1 año), 'pch' (porcentaje de cambio), 'pc1' (porcentaje de cambio respecto a hace 1 año), 'pca' (porcentaje de cambio anual compuesto), 'cch' (cambio continuo compuesto), 'cca' (cambio continuo compuesto anual), 'log' (logaritmo natural). Por defecto, \code{NULL} (niveles).}
 
-\item{.analysed_realtime_start}{a}
+\item{.analysed_realtime_start}{Cadena de caracteres o Fecha. Fecha de inicio del periodo en tiempo real. Por defecto, \code{NULL}.}
 
-\item{.analysed_realtime_end}{a}
+\item{.analysed_realtime_end}{Cadena de caracteres o Fecha. Fecha de fin del periodo en tiempo real. Por defecto, \code{NULL}.}
 
-\item{.analysed_vintage_dates}{a}
+\item{.analysed_vintage_dates}{Cadena de caracteres o vector de Fechas. Fechas vintage a descargar. Por defecto, \code{NULL}.}
 
-\item{.analysed_output_type}{a}
+\item{.analysed_output_type}{Número entero. Tipo de salida. 1 = Observaciones por periodo en tiempo real, 2 = Observaciones por fecha vintage, 3 = Observaciones por fecha vintage y todas las observaciones, 4 = Observaciones iniciales por fecha vintage. Por defecto, \code{NULL}.}
+}
+\value{
+Un objeto \code{gt_tbl} con los datos de la serie temporal formateados.
 }
 \description{
 Obtiene una tabla con los datos de series temporales de FRED (St. Louis FED) adaptado en formato.

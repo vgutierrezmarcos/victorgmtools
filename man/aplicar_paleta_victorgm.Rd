@@ -6,6 +6,14 @@
 \usage{
 aplicar_paleta_victorgm(.x, .n_colors = NULL)
 }
+\arguments{
+\item{.x}{Un objeto ggplot al que se quiere aplicar la paleta.}
+
+\item{.n_colors}{Número entero opcional. Si se especifica, interpola la paleta para generar el número de colores indicado. Por defecto es \code{NULL}, usando la paleta estándar.}
+}
+\value{
+El objeto ggplot modificado con la escala de colores aplicada.
+}
 \description{
-Fijar estilo de gráfico estándar para VictorGM, con algunos parámetros opcionales
+Aplica la paleta de colores de victorgm a un gráfico ggplot.
 }

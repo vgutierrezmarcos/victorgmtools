@@ -1,4 +1,9 @@
 #Colores SG estudios ----
+#' Paleta de colores principal de victorgm
+#'
+#' Devuelve un vector de caracteres con los códigos hexadecimales de la paleta de colores principal.
+#'
+#' @return Un vector de caracteres con códigos de colores hexadecimales.
 #' @export
 colores_victorgm <- function() {
   c(
@@ -16,6 +21,11 @@ colores_victorgm <- function() {
 }
 
 #Colores SG estudios paired ----
+#' Paleta de colores "paired" de victorgm
+#'
+#' Devuelve un vector de caracteres con los códigos hexadecimales de la paleta de colores "paired" (pares de colores relacionados).
+#'
+#' @return Un vector de caracteres con códigos de colores hexadecimales.
 #' @export
 colores_victorgm_paired <- function() {
   c(
@@ -28,6 +38,12 @@ colores_victorgm_paired <- function() {
   )
 }
 
+#' Paleta de colores alternativos de victorgm
+#'
+#' Devuelve un vector de caracteres con los códigos hexadecimales de una paleta de colores alternativa.
+#'
+#' @return Un vector de caracteres con códigos de colores hexadecimales.
+#' @export
 colores_alternativos <- function() {
   c(
     "#9BE6FD", "#FFF5B3", "#F48383",
@@ -40,6 +56,13 @@ colores_alternativos <- function() {
 # Función para aplicar paleta ----
 
 #' Fijar estilo de gráfico estándar para VictorGM, con algunos parámetros opcionales
+#'
+#' Aplica la paleta de colores de victorgm a un gráfico ggplot.
+#'
+#' @param .x Un objeto ggplot al que se quiere aplicar la paleta.
+#' @param .n_colors Número entero opcional. Si se especifica, interpola la paleta para generar el número de colores indicado. Por defecto es `NULL`, usando la paleta estándar.
+#'
+#' @return El objeto ggplot modificado con la escala de colores aplicada.
 #' @export
 aplicar_paleta_victorgm <- function(.x, .n_colors = NULL) {
   colores_victorgm <- victorgmtools::colores_victorgm()
@@ -63,8 +86,13 @@ aplicar_paleta_victorgm <- function(.x, .n_colors = NULL) {
 }
 
 #Tema SG estudios ----
+#' Tema ggplot2 de victorgm
+#'
+#' Aplica el tema visual estándar de victorgm a un gráfico ggplot.
+#' Este tema se caracteriza por un fondo transparente, líneas de cuadrícula horizontales punteadas, y la ausencia de líneas verticales y bordes de ejes innecesarios.
+#'
+#' @return Un objeto theme de ggplot2.
 #' @export
-
 tema_victorgm <- function() {
     ggplot2::theme(
     axis.title.x = ggplot2::element_blank(),
@@ -663,21 +691,29 @@ mapa_estilo_victorgm <- function(
   if(.region_geografica == "España" && .unidades_territoriales == "provincia"){
     .x <-
       .x |>
-      dplyr::rename(provincia = !!rlang::sym(.col_nombres)) |>
-      dplyr::left_join(datacomexr::get_provincias_metadata(), by = "provincia") |>
-      dplyr::rename(nombres = nombre_provincia) |>
-      dplyr::mutate(
-        nombres = dplyr::case_when(
-          nombres == "Araba/Alava" ~ "Álava",
-          nombres == "Balears, Illes" ~ "Baleares",
-          nombres == "Coruña, A" ~ "La Coruña",
-          nombres == "Girona" ~ "Gerona",
-          nombres == "Lleida" ~ "Lérida",
-          nombres == "Rioja, La" ~ "La Rioja",
-          nombres == "Ourense" ~ "Orense",
-          nombres == "Palmas, Las" ~ "Las Palmas",
-          TRUE ~ nombres
-        ))
+      dplyr::rename(provincia = !!rlang::sym(.col_nombres)) # |>
+      # dplyr::left_join(victorgmtools::get_provincias_metadata(), by = "provincia") |>
+      # dplyr::rename(nombres = nombre_provincia) |>
+      # dplyr::mutate(
+      #   nombres = dplyr::case_when(
+      #     nombres == "Araba/Alava" ~ "Álava",
+      #     nombres == "Balears, Illes" ~ "Baleares",
+      #     nombres == "Coruña, A" ~ "La Coruña",
+      #     nombres == "Girona" ~ "Gerona",
+      #     nombres == "Lleida" ~ "Lérida",
+      #     nombres == "Rioja, La" ~ "La Rioja",
+      #     nombres == "Ourense" ~ "Orense",
+      #     nombres == "Palmas, Las" ~ "Las Palmas",
+      #     TRUE ~ nombres
+      #   ))
+
+    if (!"nombres" %in% names(.x)) {
+      if ("provincia" %in% names(.x)) {
+        .x <- .x |> dplyr::rename(nombres = provincia)
+      } else {
+        stop("Please provide a column named 'nombres' or ensure '.col_nombres' points to a column with valid province names matching 'rnaturalearth::ne_states(country = \"spain\")'.")
+      }
+    }
 
     espana_sf <-
       rnaturalearth::ne_states(country = "spain", returnclass = "sf")
@@ -726,7 +762,7 @@ mapa_estilo_victorgm <- function(
     .x <-
       .x |>
       dplyr::rename(comunidad = !!rlang::sym(.col_nombres)) |>
-      dplyr::left_join(datacomexr::get_provincias_metadata(), by = "comunidad") |>
+      dplyr::left_join(victorgmtools::get_provincias_metadata(), by = "comunidad") |>
       dplyr::rename(nombres = nombre_comunidad) |>
       dplyr::mutate(
         nombres = dplyr::case_when(
@@ -789,30 +825,33 @@ mapa_estilo_victorgm <- function(
 
     .x <- rbind(peninsula, canarias_shifted)
   } else if(.region_geografica == "Mundo"){
-    if(.codigo_pais == "iso3A"){
+    if (.codigo_pais == "iso3A") {
       .x <-
         .x |>
         dplyr::rename(iso3A = !!rlang::sym(.col_nombres)) |>
         dplyr::left_join(wtor::get_partner_economies(), by = "iso3A") |>
         dplyr::rename(nombres = iso3A)
+    } else {
+        warning("Only 'iso3A' is directly supported via wtor. For other codes, please ensure '.col_nombres' contains ISO 3-letter codes or matches rnaturalearth names directly.")
+        .x <- .x |> dplyr::rename(nombres = !!rlang::sym(.col_nombres))
     }
-    else if(.codigo_pais == "iso_code"){
-      .x <-
-        .x |>
-        dplyr::rename(iso_code = !!rlang::sym(.col_nombres)) |>
-        dplyr::left_join(datacomexr::get_iso_datacomex(), by = "iso_code") |>
-        dplyr::select(-nombre, -iso_code, -datacomex) |>
-        dplyr::left_join(wtor::get_partner_economies(), by = "iso3A") |>
-        dplyr::rename(nombres = iso3A)
-    } else if (.codigo_pais == "datacomex"){
-      .x <-
-        .x |>
-        dplyr::rename(datacomex = !!rlang::sym(.col_nombres)) |>
-        dplyr::left_join(datacomexr::get_iso_datacomex(), by = "datacomex") |>
-        dplyr::select(-nombre, -iso_code, -datacomex) |>
-        dplyr::left_join(wtor::get_partner_economies(), by = "iso3A") |>
-        dplyr::rename(nombres = iso3A)
-    }
+    # else if(.codigo_pais == "iso_code"){
+    #   .x <-
+    #     .x |>
+    #     dplyr::rename(iso_code = !!rlang::sym(.col_nombres)) |>
+    #     # dplyr::left_join(datacomexr::get_iso_datacomex(), by = "iso_code") |>
+    #     # dplyr::select(-nombre, -iso_code, -datacomex) |>
+    #     # dplyr::left_join(wtor::get_partner_economies(), by = "iso3A") |>
+    #     dplyr::rename(nombres = iso3A)
+    # } else if (.codigo_pais == "datacomex"){
+    #   .x <-
+    #     .x |>
+    #     dplyr::rename(datacomex = !!rlang::sym(.col_nombres)) |>
+    #     # dplyr::left_join(datacomexr::get_iso_datacomex(), by = "datacomex") |>
+    #     # dplyr::select(-nombre, -iso_code, -datacomex) |>
+    #     # dplyr::left_join(wtor::get_partner_economies(), by = "iso3A") |>
+    #     dplyr::rename(nombres = iso3A)
+    # }
 
     mundo_sf <-
       rnaturalearth::ne_countries(scale = "medium", returnclass = "sf") |>
@@ -839,71 +878,77 @@ mapa_estilo_victorgm <- function(
                                               tooltip = paste0(name, "\n",
                                                                scales::number_format(scale = .scale, accuracy = .accuracy, suffix = .suffix, big.mark = ".", decimal.mark = ",")(.data[[.col_valores]]))))
 
-  if(!is.null(.resaltar)){
-    if(.region_geografica == "Mundo"){
-      if(.codigo_pais == "iso_3A"){
-        .paises <-
-          datacomexr::get_iso_datacomex() |>
-          dplyr::select(
-            codigo = iso3A,
-            nombre = nombre
-          )
+  if (!is.null(.resaltar)) {
+    if (.region_geografica == "Mundo") {
+      if (.codigo_pais == "iso3A") {
+        # .paises <-
+        #   datacomexr::get_iso_datacomex() |>
+        #   dplyr::select(
+        #     codigo = iso3A,
+        #     nombre = nombre
+        #   )
 
-        .resaltar_name <-
-          .paises |>
-          dplyr::filter(codigo %in% .resaltar) |>
-          dplyr::pull(nombre)
-      } else if(.codigo_pais == "iso_code"){
-        .paises <-
-          datacomexr::get_iso_datacomex() |>
-          dplyr::select(
-            codigo = iso_code,
-            nombre = nombre
-          )
-
-        .resaltar_name <-
-          .paises |>
-          dplyr::filter(codigo %in% .resaltar) |>
-          dplyr::pull(nombre)
-      } else if(.codigo_pais == "datacomex"){
-        .paises <-
-          datacomexr::get_iso_datacomex() |>
-          dplyr::select(
-            codigo = datacomex,
-            nombre = nombre
-          )
-
-        .resaltar_name <-
-          .paises |>
-          dplyr::filter(codigo %in% .resaltar) |>
-          dplyr::pull(nombre)
-      } else{
-        .resaltar_name <- NULL
+        # .resaltar_name <-
+        #   .paises |>
+        #   dplyr::filter(codigo %in% .resaltar) |>
+        #   dplyr::pull(nombre)
+        .resaltar_name <- .resaltar # Assume standard codes/names
+      } else {
+         .resaltar_name <- .resaltar
       }
-    }else if(.region_geografica == "España" && .unidades_territoriales == "ccaa"){
-      .ccaa <-
-        datacomexr::get_provincias_metadata() |>
-        dplyr::select(
-          codigo = comunidad,
-          nombre = nombre_comunidad
-        )
-
-      .resaltar_name <-
-        .ccaa |>
-        dplyr::filter(codigo %in% .resaltar) |>
-        dplyr::pull(nombre)
-    }else if(.region_geografica == "España" && .unidades_territoriales == "provincia"){
-      .provincias <-
-        datacomexr::get_provincias_metadata() |>
-        dplyr::select(
-          codigo = provincia,
-          nombre = nombre_provincia
-        )
-
-      .resaltar_name <-
-        .provincias |>
-        dplyr::filter(codigo %in% .resaltar) |>
-        dplyr::pull(nombre)
+      # else if(.codigo_pais == "iso_code"){
+      #   .paises <-
+      #     datacomexr::get_iso_datacomex() |>
+      #     dplyr::select(
+      #       codigo = iso_code,
+      #       nombre = nombre
+      #     )
+      #
+      #   .resaltar_name <-
+      #     .paises |>
+      #     dplyr::filter(codigo %in% .resaltar) |>
+      #     dplyr::pull(nombre)
+      # } else if(.codigo_pais == "datacomex"){
+      #   .paises <-
+      #     datacomexr::get_iso_datacomex() |>
+      #     dplyr::select(
+      #       codigo = datacomex,
+      #       nombre = nombre
+      #     )
+      #
+      #   .resaltar_name <-
+      #     .paises |>
+      #     dplyr::filter(codigo %in% .resaltar) |>
+      #     dplyr::pull(nombre)
+      # } else{
+      #   .resaltar_name <- NULL
+      # }
+    } else if (.region_geografica == "España" && .unidades_territoriales == "ccaa") {
+      # .ccaa <-
+      #   victorgmtools::get_provincias_metadata() |>
+      #   dplyr::select(
+      #     codigo = comunidad,
+      #     nombre = nombre_comunidad
+      #   )
+      #
+      # .resaltar_name <-
+      #   .ccaa |>
+      #   dplyr::filter(codigo %in% .resaltar) |>
+      #   dplyr::pull(nombre)
+      .resaltar_name <- .resaltar
+    } else if (.region_geografica == "España" && .unidades_territoriales == "provincia") {
+      # .provincias <-
+      #   victorgmtools::get_provincias_metadata() |>
+      #   dplyr::select(
+      #     codigo = provincia,
+      #     nombre = nombre_provincia
+      #   )
+      #
+      # .resaltar_name <-
+      #   .provincias |>
+      #   dplyr::filter(codigo %in% .resaltar) |>
+      #   dplyr::pull(nombre)
+      .resaltar_name <- .resaltar
     }
 
     .map_to_return <-
