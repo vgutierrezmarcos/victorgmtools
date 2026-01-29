@@ -269,7 +269,7 @@ tema_victorgm <- function() {
 #' @param .subtitle_size Número. Tamaño de la fuente del subtítulo. Por defecto, `14`.
 #' @param .caption Cadena de caracteres. Nota al pie del gráfico. Por defecto, `NULL`.
 #' @param .caption_size Número. Tamaño de la fuente de la nota al pie. Por defecto, `10`.
-#' @param .fuente_letra Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: `"DM Sans"`. Otras opciones comunes: `"Segoe UI"`, `"Arial"`, `"Times"`, `"Courier"`, `"Helvetica"`, etc.
+#' @param .fuente_letra Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: `"Source Sans 3"`. Otras opciones comunes: `"Segoe UI"`, `"Arial"`, `"Times"`, `"Courier"`, `"Helvetica"`, etc.
 #' @param .logo_path Cadena de caracteres. Ruta a una imagen PNG para incluir como logo en el gráfico. Por defecto, `NULL` (sin logo).
 #' @param .logo_posicion Cadena de caracteres. Esquina en la que colocar el logo: `"topright"`, `"topleft"`, `"bottomright"` o `"bottomleft"`. Por defecto, `"bottomright"`.
 #' @param .logo_escala Número. Tamaño del logo relativo al panel del gráfico (fracción de 0 a 1). Por defecto, `0.12`.
@@ -318,7 +318,7 @@ graficos_estilo_victorgm <- function(
     .subtitle_size = 14,
     .caption = NULL,
     .caption_size = 10,
-    .fuente_letra = "DM Sans",
+    .fuente_letra = "Source Sans 3",
     .logo_path = NULL,
     .logo_posicion = "bottomright",
     .logo_escala = 0.12
@@ -925,7 +925,7 @@ mostrar <- function(.x,
 #' @param .title Título del mapa Por defecto, `NULL`.
 #' @param .subtitle Subtitulo del mapa. Habitualmente usado para definir las unidades de medida. Por defecto, `NULL`.
 #' @param .caption Nota al pie del mapa. Por defecto, `NULL`.
-#' @param .fuente_letra Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: `"DM Sans"`. Otras opciones comunes: `"Segoe UI"`, `"Arial"`, `"Times"`, `"Courier"`, `"Helvetica"`, etc.
+#' @param .fuente_letra Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: `"Source Sans 3"`. Otras opciones comunes: `"Segoe UI"`, `"Arial"`, `"Times"`, `"Courier"`, `"Helvetica"`, etc.
 #' @export
 mapa_estilo_victorgm <- function(
     .x,
@@ -955,7 +955,7 @@ mapa_estilo_victorgm <- function(
     .subtitle_size = 14,
     .caption = NULL,
     .caption_size = 10,
-    .fuente_letra = "DM Sans"
+    .fuente_letra = "Source Sans 3"
 ) {
   # Validar tipo de mapa
   if (!.tipo_mapa %in% c("coroplético", "burbujas")) {
@@ -1394,7 +1394,7 @@ mapa_estilo_victorgm <- function(
 #' @param .formato_miles Cadena de caracteres. Separador de miles. Por defecto, `"."`.
 #' @param .formato_decimal Cadena de caracteres. Separador decimal. Por defecto, `","`.
 #' @param .font_size Cadena de caracteres. Tamaño de fuente para toda la tabla. Por defecto, `14`.
-#' @param .fuente_letra Cadena de caracteres. Fuente tipográfica. Por defecto, `"DM Sans"`.
+#' @param .fuente_letra Cadena de caracteres. Fuente tipográfica. Por defecto, `"Source Sans 3"`.
 #' @param .padding_celdas Número. Espaciado interno de las celdas en píxeles. Por defecto, `10`.
 #' @param .agrupaciones Lista con agrupaciones de columnas. Por defecto, `NULL`.
 #' @param .ancho_tabla Cadena de caracteres. Ancho de la tabla. Por defecto, `"100%"`.
@@ -1451,7 +1451,7 @@ tablas_estilo_victorgm <- function(
     .formato_miles = ".",
     .formato_decimal = ",",
     .font_size = 14,
-    .fuente_letra = "DM Sans",
+    .fuente_letra = "Source Sans 3",
     .padding_celdas = 10,
     .agrupaciones = NULL,
     .ancho_tabla = "100%",
@@ -1857,14 +1857,14 @@ tabla_estilo_victorgm <- tablas_estilo_victorgm
 #' según la fuente especificada.
 #'
 #' @param .tabla Objeto gt al que aplicar la configuración de fuente.
-#' @param .fuente_letra Cadena de caracteres. Nombre de la fuente principal. Por defecto, "DM Sans".
+#' @param .fuente_letra Cadena de caracteres. Nombre de la fuente principal. Por defecto, "Source Sans 3".
 #' @param .font_size Número. Tamaño de la fuente en píxeles.
 #' @return Objeto gt con la fuente configurada.
 #' @export
 configurar_fuente_tabla <- function(.tabla, .fuente_letra, .font_size) {
   # Stack de fuentes fallback según el sistema
   fuentes_sistema <- list(
-    "DM Sans" = list("DM Sans", "Segoe UI", "Helvetica", "Arial", "sans-serif"),
+    "Source Sans 3" = list("Source Sans 3", "Segoe UI", "Helvetica", "Arial", "sans-serif"),
     "Segoe UI" = list("Segoe UI", "Tahoma", "Geneva", "Verdana", "sans-serif"),
     "Arial" = list("Arial", "Helvetica", "sans-serif"),
     "Times" = list("Times New Roman", "Times", "serif"),

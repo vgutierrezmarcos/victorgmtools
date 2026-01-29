@@ -38,7 +38,7 @@ graficos_estilo_victorgm(
   .subtitle_size = 14,
   .caption = NULL,
   .caption_size = 10,
-  .fuente_letra = "DM Sans",
+  .fuente_letra = "Source Sans 3",
   .logo_path = NULL,
   .logo_posicion = "bottomright",
   .logo_escala = 0.12
@@ -111,7 +111,7 @@ graficos_estilo_victorgm(
 
 \item{.caption_size}{Número. Tamaño de la fuente de la nota al pie. Por defecto, \code{10}.}
 
-\item{.fuente_letra}{Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: \code{"DM Sans"}. Otras opciones comunes: \code{"Segoe UI"}, \code{"Arial"}, \code{"Times"}, \code{"Courier"}, \code{"Helvetica"}, etc.}
+\item{.fuente_letra}{Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: \code{"Source Sans 3"}. Otras opciones comunes: \code{"Segoe UI"}, \code{"Arial"}, \code{"Times"}, \code{"Courier"}, \code{"Helvetica"}, etc.}
 
 \item{.logo_path}{Cadena de caracteres. Ruta a una imagen PNG para incluir como logo en el gráfico. Por defecto, \code{NULL} (sin logo).}
 
