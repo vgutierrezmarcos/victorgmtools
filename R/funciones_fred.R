@@ -229,8 +229,21 @@ get_fred_plt <- function(.analysed_series_id,
   }
 
   if (estatico_toggle == FALSE){
-    analysed_plt <- ggiraph::girafe_options(victorgmtools::to_giraph(analysed_plt),
-                                            ggiraph::opts_sizing(rescale = TRUE, width = 1))
+    analysed_plt <- ggiraph::girafe_options(
+      ggiraph::girafe(
+        ggobj = analysed_plt,
+        width_svg = 6,
+        height_svg = 5,
+        options = list(
+          ggiraph::opts_hover(css = ''),
+          ggiraph::opts_hover_inv(css = "opacity:0.4;"),
+          ggiraph::opts_sizing(rescale = FALSE),
+          position = "topright",
+          saveaspng = TRUE
+        )
+      ),
+      ggiraph::opts_sizing(rescale = TRUE, width = 1)
+    )
   }
 
   analysed_plt

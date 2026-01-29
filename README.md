@@ -37,17 +37,18 @@ Este módulo contiene funciones esenciales para el tratamiento de series tempora
 Proporciona una capa de abstracción sobre `ggplot2` y `gt` para generar visualizaciones listas para publicación con una identidad visual coherente.
 
 *   **`graficos_estilo_victorgm()`**: Aplica el tema visual estandarizado a objetos `ggplot`. Gestiona automáticamente:
-    *   Fuentes tipográficas (por defecto "Segoe UI").
+    *   Fuentes tipográficas (por defecto "Nunito Sans").
     *   Posición inteligente de la leyenda (incluyendo detección automática de huecos libres en el gráfico).
     *   Formato de ejes (miles, porcentajes, fechas, sufijos).
     *   Títulos, subtítulos y pies de página con ajuste de texto automático.
-*   **`graficos_estilo_victorgm()`**: Genera mapas coropléticos estilizados.
+    *   **Interactividad**: Por defecto devuelve un gráfico interactivo (`ggiraph`). Se puede obtener estático con `.estatico = TRUE`.
+*   **`mapa_estilo_victorgm()`**: Genera mapas coropléticos estilizados.
     *   Soporte para **España** (Provincias y Comunidades Autónomas) y **Mundo**.
     *   Integra geometrías de `rnaturalearth`.
     *   *Nota*: Requiere nombres estandarizados (o códigos ISO3 para países) para una correcta vinculación.
+    *   **Interactividad**: Por defecto devuelve un mapa interactivo.
 *   **`tablas_estilo_victorgm()`**: Aplica estilos profesionales a tablas creadas con el paquete `gt`, manejando colores de fuente, bordes y formatos numéricos.
 *   **`colores_victorgm()`**: Acceso directo a la paleta de colores corporativa/estándar del paquete.
-*   **`to_giraph()`**: Convierte gráficos estáticos de `ggplot2` en gráficos interactivos HTML utilizando `ggiraph`.
 
 ---
 

@@ -76,24 +76,17 @@ viviendas_plt <-
       data_id = nombres_muy_cortos
     )
   ) +
-  # 1. Visual Layer: Purely visual, no tooltip to avoid "one tooltip per series" issue
-  ggplot2::geom_area(
-    alpha = 0.8,
-    color = "white",
-    linewidth = 0.2
-  ) +
-  # 2. Interaction Layer: Invisible columns that stack exactly like the area
-  # This provides x-axis discrete hitboxes for "nearest period" interaction
-  ggiraph::geom_col_interactive(
+  # Visual + Interaction Layer
+  ggiraph::geom_area_interactive(
     mapping = ggplot2::aes(
       tooltip = paste0(
         "Año: ", fecha |> format("%Y"), "\n",
         nombres_cortos, ": ", scales::number_format(big.mark = ".", decimal.mark = ",", accuracy = 0.01, scale = 1e2, suffix = "%")(valores)
       )
     ),
-    position = "stack",
-    width = 365, # Approx 1 year width to cover the gaps
-    alpha = 0.01 # Invisible
+    alpha = 0.8,
+    color = "white",
+    linewidth = 0.2
   ) +
   # 3. Label Layer
   ggplot2::geom_text(
@@ -109,8 +102,6 @@ viviendas_plt <-
   )
 
 
-
-
 viviendas_plt <-
   viviendas_plt |> 
   victorgmtools::graficos_estilo_victorgm(
@@ -119,7 +110,7 @@ viviendas_plt <-
     .title = "Régimen de tenencia de viviendas en España.",
     .subtitle = "Porcentaje.",
     .caption = "Fuente: Censos de viviendas (Instituto Nacional de Estadística).",
-    .fuente_letra = "Source Sans 3",
+    .fuente_letra = "Lato",
     .logo_path = "pruebas/favicon-512x512.png",
     .legend_position = "none",
     .fecha_inicial_grafico = fecha_min,

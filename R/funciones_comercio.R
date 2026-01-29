@@ -544,7 +544,18 @@ get_tariffs_plt <- function(.datos_df = NULL,
   }
 
   ggiraph::girafe_options(
-    victorgmtools::to_giraph(plt),
+    ggiraph::girafe(
+      ggobj = plt,
+      width_svg = 6,
+      height_svg = 5,
+      options = list(
+        ggiraph::opts_hover(css = ''),
+        ggiraph::opts_hover_inv(css = "opacity:0.4;"),
+        ggiraph::opts_sizing(rescale = FALSE),
+        position = "topright",
+        saveaspng = TRUE
+      )
+    ),
     ggiraph::opts_sizing(rescale = TRUE, width = 1)
   )
 }

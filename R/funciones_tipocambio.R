@@ -186,8 +186,21 @@ get_tipo_cambio_plt <- function(.from_currency = "EUR",
   }
 
   if (.estatico == FALSE){
-    tipo_cambio_plt <- ggiraph::girafe_options(victorgmtools:::to_giraph(tipo_cambio_plt),
-                                               ggiraph::opts_sizing(rescale = TRUE, width = 1))
+    tipo_cambio_plt <- ggiraph::girafe_options(
+      ggiraph::girafe(
+        ggobj = tipo_cambio_plt,
+        width_svg = 6,
+        height_svg = 5,
+        options = list(
+          ggiraph::opts_hover(css = ''),
+          ggiraph::opts_hover_inv(css = "opacity:0.4;"),
+          ggiraph::opts_sizing(rescale = FALSE),
+          position = "topright",
+          saveaspng = TRUE
+        )
+      ),
+      ggiraph::opts_sizing(rescale = TRUE, width = 1)
+    )
   }
 
     tipo_cambio_plt

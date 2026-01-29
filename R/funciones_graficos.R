@@ -6,8 +6,10 @@
   "Source Sans Pro" = "Source Sans Pro",
   "Open Sans"      = "Open Sans",
   "Lato"           = "Lato",
-  "Roboto"         = "Roboto"
+  "Roboto"         = "Roboto",
+  "Nunito Sans"    = "Nunito Sans"
 )
+
 
 #' Registrar fuente de Google Fonts para su uso en gráficos
 #'
@@ -315,7 +317,7 @@ tema_victorgm <- function() {
 #' @param .color_titulo Cadena de caracteres. Color del título y subtítulo. Por defecto, `"#5F2987"` (morado).
 #' @param .caption Cadena de caracteres. Nota al pie del gráfico. Por defecto, `" "` (espacio en blanco; se muestra el enlace URL si está definido).
 #' @param .caption_size Número. Tamaño de la fuente de la nota al pie. Por defecto, `10`.
-#' @param .fuente_letra Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: `"Source Sans 3"`. Otras opciones comunes: `"Segoe UI"`, `"Arial"`, `"Times"`, `"Courier"`, `"Helvetica"`, etc.
+#' @param .fuente_letra Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: `"Nunito Sans"`. Otras opciones comunes: `"Segoe UI"`, `"Arial"`, `"Times"`, `"Courier"`, `"Helvetica"`, etc.
 #' @param .logo_path Cadena de caracteres. Ruta a una imagen PNG para incluir como logo en el gráfico. Por defecto, `NULL` (sin logo).
 #' @param .logo_posicion Cadena de caracteres. Esquina en la que colocar el logo: `"topright"`, `"topleft"`, `"bottomright"` o `"bottomleft"`. Por defecto, `"bottomright"`.
 #' @param .logo_escala Número. Tamaño del logo relativo al panel del gráfico (fracción de 0 a 1). Por defecto, `0.12`.
@@ -365,22 +367,25 @@ graficos_estilo_victorgm <- function(
     .color_titulo = "#5F2987",
     .caption = " ",
     .caption_size = 10,
-    .fuente_letra = "Source Sans 3",
+    .fuente_letra = "Nunito Sans",
     .logo_path = NULL,
     .logo_posicion = "bottomright",
     .logo_escala = 0.12,
     .url_enlace = "www.victorgutierrezmarcos.es",
     .linea_separadora = TRUE,
-    .colores_linea = c("#5F2987", "#E2EFD9", "#B8860B")
+    .colores_linea = c("#5F2987", "#E2EFD9", "#B8860B"),
+    .estatico = FALSE,
+    .width = 6,
+    .height = 5
 ) {
 
   # Registrar fuente de Google Fonts si es necesario
   fuente_ok <- victorgmtools:::registrar_fuente(.fuente_letra)
 
-  # Si falla la descarga de la fuente por defecto (Source Sans 3), usar sans como fallback
+  # Si falla la descarga de la fuente por defecto (Nunito Sans), usar sans como fallback
   # Solo intentamos el fallback si el usuario NO especificó una fuente personalizada distinta
-  if (!fuente_ok && .fuente_letra == "Source Sans 3") {
-    message("Usando 'sans' como fallback para 'Source Sans 3'.")
+  if (!fuente_ok && .fuente_letra == "Nunito Sans") {
+    message("Usando 'sans' como fallback para 'Nunito Sans'.")
     .fuente_letra <- "sans"
   } else if (!fuente_ok) {
     # Si el usuario especificó otra fuente (ej: Segoe UI) y falló la descarga de Google,
@@ -603,8 +608,28 @@ graficos_estilo_victorgm <- function(
       lim_min_val <- if(is.null(lim_min)) NA else lim_min
       lim_max_val <- if(is.null(lim_max)) NA else lim_max
       
+      # Convertir explícitamente a Date si es numérico para evitar warnings de escala
+      if (is.numeric(lim_min_val)) {
+        # Si es un año (e.g. 2020), convertir a 1 de enero de ese año
+        if (lim_min_val > 1000 && lim_min_val < 3000) {
+           lim_min_val <- as.Date(paste0(lim_min_val, "-01-01"))
+        } else {
+           # Si es otro número, asumir origen 1970-01-01 (comportamiento por defecto)
+           lim_min_val <- as.Date(lim_min_val, origin = "1970-01-01")
+        }
+      }
+      
+      if (is.numeric(lim_max_val)) {
+         if (lim_max_val > 1000 && lim_max_val < 3000) {
+           lim_max_val <- as.Date(paste0(lim_max_val, "-01-01"))
+        } else {
+           lim_max_val <- as.Date(lim_max_val, origin = "1970-01-01")
+        }
+      }
+      
       limits_x <- c(lim_min_val, lim_max_val)
     }
+
     
     # Aplicar escala del eje X
     .plot_to_return_plt <-
@@ -613,7 +638,8 @@ graficos_estilo_victorgm <- function(
         limits = limits_x,
         date_labels = .date_labels,
         date_breaks = .date_breaks,
-        guide = ggplot2::guide_axis(angle = .angle_x_axis_labels)
+        guide = ggplot2::guide_axis(angle = .angle_x_axis_labels),
+        expand = c(0, 0)
       )
     
     # Aplicar escala del eje Y solo si NO es discreto
@@ -932,142 +958,26 @@ graficos_estilo_victorgm <- function(
       b = bottom_margin_pt, l = left_margin_pt
     ))
 
+  # Conversion to interactive or return static
+  if (!.estatico) {
+    .plot_to_return_plt <- ggiraph::girafe(
+      ggobj = .plot_to_return_plt,
+      width_svg = .width,
+      height_svg = .height,
+      options = list(
+        ggiraph::opts_hover(css = ''), 
+        ggiraph::opts_hover_inv(css = "opacity:0.4;"),
+        ggiraph::opts_sizing(rescale = TRUE, width = 1),
+        position = "topright",
+        saveaspng = TRUE
+      )
+    )
+  }
+
   return(.plot_to_return_plt)
 }
 
-# Funciones necesarias para mostrar gráficos interactivos y tablas con gt ----
 
-#' Convertir gráfico ggplot2 a ggiraph interactivo
-#'
-#' Convierte un objeto ggplot2 en un gráfico interactivo usando ggiraph.
-#' Incluye efectos de hover con reducción de opacidad de elementos no seleccionados.
-#'
-#' @param .plot Objeto ggplot2 a convertir en interactivo.
-#' @param .width Número. Ancho del gráfico SVG en pulgadas. Por defecto, `6`.
-#' @param .height Número. Alto del gráfico SVG en pulgadas. Por defecto, `5`.
-#' @return Objeto ggiraph interactivo.
-#' @examples
-#' \dontrun{
-#' library(ggplot2)
-#' p <- ggplot(mtcars, aes(x = wt, y = mpg)) + ggiraph::geom_point_interactive(aes(tooltip = row.names(mtcars)))
-#' to_giraph(p)
-#' }
-#' @export
-to_giraph <- function(.plot,
-                      .width = 6,
-                      .height = 5) {
-  ggiraph::girafe(
-    ggobj = .plot,
-    width_svg = .width,
-    height_svg = .height,
-    options = list(
-      # ggiraph::opts_tooltip(css = ''),
-      ggiraph::opts_hover(css = ''), ## CSS code of line we're hovering over
-      ggiraph::opts_hover_inv(
-        css = "opacity:0.4;"
-      ), ## CSS code of all other lines
-      ggiraph::opts_sizing(rescale = FALSE), ## Fixes sizes to dimensions below
-      position = "topright",
-      saveaspng = TRUE
-    )
-  )
-  
-}
-
-
-# estatico ---
-
-#' Convertir gráfico a estático o interactivo
-#'
-#' Convierte un gráfico ggplot2 a formato interactivo (ggiraph) o lo mantiene estático
-#' según el valor del parámetro .estatico.
-#'
-#' @param .plot Objeto ggplot2 a procesar.
-#' @param .estatico Lógico. Si TRUE, devuelve el gráfico estático. Si FALSE, lo convierte a interactivo. Por defecto, `FALSE`.
-#' @param .width Número. Ancho del gráfico en pulgadas. Por defecto, `6`.
-#' @param .height Número. Alto del gráfico en pulgadas. Por defecto, `5`.
-#' @return Objeto ggplot2 (si estático) o ggiraph (si interactivo).
-#' @seealso \code{\link{to_giraph}}, \code{\link{mostrar}}
-#' @export
-estatico <- function(.plot,
-                     .estatico,
-                     .width = 6,
-                     .height = 5) {
-  
-  .plot_return <- .plot
-  
-  if(!.estatico) {
-    .plot_return <-
-      .plot_return |>
-      comerciotools::to_giraph(.width = .width, .height = .height) |>
-      ggiraph::girafe_options(
-        ggiraph::opts_sizing(
-          rescale = TRUE,
-          width = 1
-        )
-      )
-    
-    return(.plot_return)
-  }
-  return(.plot_return)
-}
-
-#' Mostrar gráfico o tabla de forma inteligente
-#'
-#' Muestra un objeto ggplot o gt adaptándose al contexto de renderizado.
-#' Para ggplot: puede mostrar versión interactiva (ggiraph) o estática.
-#' Para tablas gt: en HTML las muestra directamente, en LaTeX/PDF usa webshot2 para capturar.
-#'
-#' @param .x Objeto ggplot2 o gt_tbl a mostrar.
-#' @param .estatico Lógico. Si TRUE y el objeto es ggplot, lo muestra estático. Si FALSE, lo convierte a interactivo. Por defecto, `FALSE`.
-#' @param .width Número. Ancho del gráfico en pulgadas. Por defecto, `6`.
-#' @param .height Número. Alto del gráfico en pulgadas. Por defecto, `5`.
-#' @return El objeto procesado para visualización según el contexto.
-#' @examples
-#' \dontrun{
-#' library(ggplot2)
-#' p <- ggplot(mtcars, aes(x = wt, y = mpg)) + geom_point()
-#' mostrar(p) # Interactivo en HTML
-#' mostrar(p, .estatico = TRUE) # Siempre estático
-#' }
-#' @seealso \code{\link{estatico}}, \code{\link{to_giraph}}
-#' @export
-mostrar <- function(.x,
-                    .estatico = FALSE,
-                    .width = 6,
-                    .height = 5) {
-  object_name <- deparse(substitute(.x))
-  x <- tryCatch({
-    objeto <- eval(substitute(.x))
-    if(inherits(objeto, "ggplot")) {
-      return(objeto |>
-               estatico(
-                 .estatico = .estatico,
-                 .width = .width,
-                 .height = .height
-               )
-      )
-    } else if(inherits(objeto, "gt_tbl")) {
-      if (knitr::is_html_output()){
-        return(objeto)
-      } else if (knitr::is_latex_output()) {
-        objeto <-
-          objeto |>
-          gt::as_latex()
-        
-        return(objeto)
-      } else {
-        return(objeto)
-      }
-    }
-  },
-  error = function(e) {
-    message(sprintf("Cannot find object passed as argument"))
-    return(NULL)
-  })
-  
-  return(x)
-}
 
 # Función general para dar formato a mapas coropléticos ----
 #' Fijar estilo de mapas coropléticos (por defecto) o de burbujas para VictorGM, con algunos parámetros opcionales. Habría que añadir el título al gráfico generado.
@@ -1096,7 +1006,7 @@ mostrar <- function(.x,
 #' @param .subtitle Subtitulo del mapa. Habitualmente usado para definir las unidades de medida. Por defecto, `NULL`.
 #' @param .color_titulo Cadena de caracteres. Color del título y subtítulo. Por defecto, `"#5F2987"` (morado).
 #' @param .caption Nota al pie del mapa. Por defecto, `" "` (espacio en blanco; se muestra el enlace URL si está definido).
-#' @param .fuente_letra Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: `"Source Sans 3"`. Otras opciones comunes: `"Segoe UI"`, `"Arial"`, `"Times"`, `"Courier"`, `"Helvetica"`, etc.
+#' @param .fuente_letra Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: `"Nunito Sans"`. Otras opciones comunes: `"Segoe UI"`, `"Arial"`, `"Times"`, `"Courier"`, `"Helvetica"`, etc.
 #' @param .logo_path Cadena de caracteres. Ruta a una imagen PNG para incluir como logo en el gráfico. Por defecto, `NULL` (sin logo).
 #' @param .logo_posicion Cadena de caracteres. Esquina en la que colocar el logo: `"topright"`, `"topleft"`, `"bottomright"` o `"bottomleft"`. Por defecto, `"bottomright"`.
 #' @param .logo_escala Número. Tamaño del logo relativo. Por defecto, `0.12`.
@@ -1130,21 +1040,24 @@ mapa_estilo_victorgm <- function(
     .color_titulo = "#5F2987",
     .caption = " ",
     .caption_size = 10,
-    .fuente_letra = "Source Sans 3",
+    .fuente_letra = "Nunito Sans",
     .logo_path = NULL,
     .logo_posicion = "bottomright",
     .logo_escala = 0.12,
     .url_enlace = "www.victorgutierrezmarcos.es",
     .linea_separadora = TRUE,
-    .colores_linea = c("#5F2987", "#E2EFD9", "#B8860B")
+    .colores_linea = c("#5F2987", "#E2EFD9", "#B8860B"),
+    .estatico = FALSE,
+    .width = 6,
+    .height = 5
 ) {
 
   # Registrar fuente de Google Fonts si es necesario
   fuente_ok <- victorgmtools:::registrar_fuente(.fuente_letra)
 
-  # Si falla la descarga de la fuente por defecto (Source Sans 3), usar sans como fallback
-  if (!fuente_ok && .fuente_letra == "Source Sans 3") {
-    message("Usando 'sans' como fallback para 'Source Sans 3'.")
+  # Si falla la descarga de la fuente por defecto (Nunito Sans), usar sans como fallback
+  if (!fuente_ok && .fuente_letra == "Nunito Sans") {
+    message("Usando 'sans' como fallback para 'Nunito Sans'.")
     .fuente_letra <- "sans"
   } else if (!fuente_ok) {
     # Misma logica para mapas: si es custom y falla Google, asumir sistema
@@ -1703,6 +1616,22 @@ mapa_estilo_victorgm <- function(
       b = bottom_margin_pt, l = left_margin_pt
     ))
 
+  # Conversion to interactive or return static
+  if (!.estatico) {
+    .map_to_return <- ggiraph::girafe(
+      ggobj = .map_to_return,
+      width_svg = .width,
+      height_svg = .height,
+      options = list(
+        ggiraph::opts_hover(css = ''), 
+        ggiraph::opts_hover_inv(css = "opacity:0.4;"),
+        ggiraph::opts_sizing(rescale = TRUE, width = 1),
+        position = "topright",
+        saveaspng = TRUE
+      )
+    )
+  }
+
   return(.map_to_return)
 }
 
@@ -1730,7 +1659,7 @@ mapa_estilo_victorgm <- function(
 #' @param .formato_miles Cadena de caracteres. Separador de miles. Por defecto, `"."`.
 #' @param .formato_decimal Cadena de caracteres. Separador decimal. Por defecto, `","`.
 #' @param .font_size Cadena de caracteres. Tamaño de fuente para toda la tabla. Por defecto, `14`.
-#' @param .fuente_letra Cadena de caracteres. Fuente tipográfica. Por defecto, `"Source Sans 3"`.
+#' @param .fuente_letra Cadena de caracteres. Fuente tipográfica. Por defecto, `"Nunito Sans"`.
 #' @param .padding_celdas Número. Espaciado interno de las celdas en píxeles. Por defecto, `10`.
 #' @param .agrupaciones Lista con agrupaciones de columnas. Por defecto, `NULL`.
 #' @param .ancho_tabla Cadena de caracteres. Ancho de la tabla. Por defecto, `"100%"`.
@@ -1787,7 +1716,7 @@ tablas_estilo_victorgm <- function(
     .formato_miles = ".",
     .formato_decimal = ",",
     .font_size = 14,
-    .fuente_letra = "Source Sans 3",
+    .fuente_letra = "Nunito Sans",
     .padding_celdas = 10,
     .agrupaciones = NULL,
     .ancho_tabla = "100%",
@@ -2196,15 +2125,17 @@ tabla_estilo_victorgm <- tablas_estilo_victorgm
 #' según la fuente especificada.
 #'
 #' @param .tabla Objeto gt al que aplicar la configuración de fuente.
-#' @param .fuente_letra Cadena de caracteres. Nombre de la fuente principal. Por defecto, "Source Sans 3".
+#' @param .fuente_letra Cadena de caracteres. Nombre de la fuente principal. Por defecto, "Nunito Sans".
 #' @param .font_size Número. Tamaño de la fuente en píxeles.
 #' @return Objeto gt con la fuente configurada.
 #' @export
 configurar_fuente_tabla <- function(.tabla, .fuente_letra, .font_size) {
   # Stack de fuentes fallback según el sistema
   fuentes_sistema <- list(
+    "Nunito Sans" = list("Nunito Sans", "Source Sans 3", "Segoe UI", "Arial", "sans-serif"),
     "Source Sans 3" = list("Source Sans 3", "Source Sans Pro", "Segoe UI", "Arial", "sans-serif"),
     "Source Sans Pro" = list("Source Sans Pro", "Source Sans 3", "Segoe UI", "Arial", "sans-serif"),
+
     "Open Sans" = list("Open Sans", "Segoe UI", "Helvetica", "Arial", "sans-serif"),
     "Lato" = list("Lato", "Segoe UI", "Helvetica", "Arial", "sans-serif"),
     "Roboto" = list("Roboto", "Segoe UI", "Helvetica", "Arial", "sans-serif"),
