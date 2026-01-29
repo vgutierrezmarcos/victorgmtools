@@ -36,7 +36,8 @@ graficos_estilo_victorgm(
   .title_size = 18,
   .subtitle = NULL,
   .subtitle_size = 14,
-  .caption = NULL,
+  .color_titulo = "#5F2987",
+  .caption = " ",
   .caption_size = 10,
   .fuente_letra = "Source Sans 3",
   .logo_path = NULL,
@@ -110,7 +111,9 @@ graficos_estilo_victorgm(
 
 \item{.subtitle_size}{Número. Tamaño de la fuente del subtítulo. Por defecto, \code{14}.}
 
-\item{.caption}{Cadena de caracteres. Nota al pie del gráfico. Por defecto, \code{NULL}.}
+\item{.color_titulo}{Cadena de caracteres. Color del título y subtítulo. Por defecto, \code{"#5F2987"} (morado).}
+
+\item{.caption}{Cadena de caracteres. Nota al pie del gráfico. Por defecto, \code{" "} (espacio en blanco; se muestra el enlace URL si está definido).}
 
 \item{.caption_size}{Número. Tamaño de la fuente de la nota al pie. Por defecto, \code{10}.}
 

@@ -312,7 +312,8 @@ tema_victorgm <- function() {
 #' @param .title_size Número. Tamaño de la fuente del título. Por defecto, `18`.
 #' @param .subtitle Cadena de caracteres. Subtítulo del gráfico. Habitualmente usado para definir las unidades de medida. Por defecto, `NULL`.
 #' @param .subtitle_size Número. Tamaño de la fuente del subtítulo. Por defecto, `14`.
-#' @param .caption Cadena de caracteres. Nota al pie del gráfico. Por defecto, `NULL`.
+#' @param .color_titulo Cadena de caracteres. Color del título y subtítulo. Por defecto, `"#5F2987"` (morado).
+#' @param .caption Cadena de caracteres. Nota al pie del gráfico. Por defecto, `" "` (espacio en blanco; se muestra el enlace URL si está definido).
 #' @param .caption_size Número. Tamaño de la fuente de la nota al pie. Por defecto, `10`.
 #' @param .fuente_letra Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: `"Source Sans 3"`. Otras opciones comunes: `"Segoe UI"`, `"Arial"`, `"Times"`, `"Courier"`, `"Helvetica"`, etc.
 #' @param .logo_path Cadena de caracteres. Ruta a una imagen PNG para incluir como logo en el gráfico. Por defecto, `NULL` (sin logo).
@@ -361,7 +362,8 @@ graficos_estilo_victorgm <- function(
     .title_size = 18,
     .subtitle = NULL,
     .subtitle_size = 14,
-    .caption = NULL,
+    .color_titulo = "#5F2987",
+    .caption = " ",
     .caption_size = 10,
     .fuente_letra = "Source Sans 3",
     .logo_path = NULL,
@@ -725,31 +727,39 @@ graficos_estilo_victorgm <- function(
   
   if(!is.null(.title)){
     titulo_formateado <- stringr::str_wrap(.title, width = 40)
-    
+
     .plot_to_return_plt <-
       .plot_to_return_plt +
       ggplot2::labs(title = titulo_formateado) +
-      ggplot2::theme(plot.title = ggplot2::element_text(size = .title_size, face = "bold", margin = ggplot2::margin(b = 5), family = .fuente_letra))
+      ggplot2::theme(plot.title = ggplot2::element_text(size = .title_size, face = "bold", color = .color_titulo, margin = ggplot2::margin(b = 5), family = .fuente_letra))
   }
-  
+
   if(!is.null(.subtitle)){
     subtitulo_formateado <- stringr::str_wrap(.subtitle, width = 50)
-    
+
     .plot_to_return_plt <-
       .plot_to_return_plt +
       ggplot2::labs(subtitle = subtitulo_formateado) +
-      ggplot2::theme(plot.subtitle = ggplot2::element_text(size = .subtitle_size, family = .fuente_letra, face = "italic", margin = ggplot2::margin(b = 10)))
+      ggplot2::theme(plot.subtitle = ggplot2::element_text(size = .subtitle_size, family = .fuente_letra, face = "italic", color = .color_titulo, margin = ggplot2::margin(b = 10)))
   }
-  
+
   # Acumuladores de margen - se aplican una sola vez al final
   bottom_margin_pt <- 5
   top_margin_pt <- 5
   right_margin_pt <- 10
   left_margin_pt <- 10
-  has_caption <- !is.null(.caption) || (!is.null(.url_enlace) && .url_enlace != "")
+  has_caption <- (!is.null(.caption) && trimws(.caption) != "") ||
+                 (!is.null(.url_enlace) && .url_enlace != "")
+
+  # Estimar distancia desde el panel inferior hasta el área del caption
+  # Se usa para posicionar la línea separadora y el logo
+  tick_cm <- 0.3
+  label_cm <- .text_axis_size * 4 / 72 * 2.54 * abs(sin(.angle_x_axis_labels * pi / 180)) +
+              .text_axis_size / 72 * 2.54 * abs(cos(.angle_x_axis_labels * pi / 180))
+  caption_area_offset_cm <- tick_cm + label_cm
 
   # Margen superior del caption para separarlo de la línea separadora
-  caption_top_margin <- if (.linea_separadora) 12 else 2
+  caption_top_margin <- if (.linea_separadora) 5 else 2
 
   if(!is.null(.caption)){
     # Añadir enlace si existe
@@ -820,9 +830,8 @@ graficos_estilo_victorgm <- function(
       vp = grid::viewport(y = 0, just = "bottom")
     )
 
-    # Posición adaptativa: estimar altura de las etiquetas del eje X
-    axis_label_height_cm <- .text_axis_size / 72 * 2.54 * abs(sin(.angle_x_axis_labels * pi / 180))
-    y_linea <- grid::unit(0, "npc") - grid::unit(0.3 + axis_label_height_cm, "cm")
+    # Posición adaptativa: justo debajo de las etiquetas del eje X, encima del caption
+    y_linea <- grid::unit(0, "npc") - grid::unit(caption_area_offset_cm, "cm")
 
     linea_grob$y <- y_linea
 
@@ -860,24 +869,22 @@ graficos_estilo_victorgm <- function(
     hjust_val <- NULL
     vjust_val <- NULL
 
-    # Posición ajustada para tener en cuenta la línea separadora y el caption
-    y_base_offset <- 0
-    if (.linea_separadora) y_base_offset <- y_base_offset + 1.0
-    if (has_caption) y_base_offset <- y_base_offset + 1.2
+    # Para posiciones inferiores, alinear el logo verticalmente con el caption
+    logo_y_bottom <- grid::unit(0, "npc") - grid::unit(caption_area_offset_cm + 0.5, "cm")
 
     # Configurar posición según .logo_posicion
     if (.logo_posicion == "bottomright") {
       x_pos <- grid::unit(1, "npc")
-      y_pos <- grid::unit(0, "npc") - grid::unit(margin_pad_cm + y_base_offset, "cm")
+      y_pos <- logo_y_bottom
       hjust_val <- 1
-      vjust_val <- 1
+      vjust_val <- 0.5
       bottom_margin_pt <- bottom_margin_pt + 40
 
     } else if (.logo_posicion == "bottomleft") {
       x_pos <- grid::unit(0, "npc")
-      y_pos <- grid::unit(0, "npc") - grid::unit(margin_pad_cm + y_base_offset, "cm")
+      y_pos <- logo_y_bottom
       hjust_val <- 0
-      vjust_val <- 1
+      vjust_val <- 0.5
       bottom_margin_pt <- bottom_margin_pt + 40
 
     } else if (.logo_posicion == "topright") {
@@ -1087,7 +1094,8 @@ mostrar <- function(.x,
 #' @param .suffix Cadena de caracteres. Por ejemplo, en caso de porcentaje, establecer `" %"` para que aparezca es sufijo tanto en la leyenda como en el interactivo (en su caso). Por defecto, cadena vacía.
 #' @param .title Título del mapa Por defecto, `NULL`.
 #' @param .subtitle Subtitulo del mapa. Habitualmente usado para definir las unidades de medida. Por defecto, `NULL`.
-#' @param .caption Nota al pie del mapa. Por defecto, `NULL`.
+#' @param .color_titulo Cadena de caracteres. Color del título y subtítulo. Por defecto, `"#5F2987"` (morado).
+#' @param .caption Nota al pie del mapa. Por defecto, `" "` (espacio en blanco; se muestra el enlace URL si está definido).
 #' @param .fuente_letra Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: `"Source Sans 3"`. Otras opciones comunes: `"Segoe UI"`, `"Arial"`, `"Times"`, `"Courier"`, `"Helvetica"`, etc.
 #' @param .logo_path Cadena de caracteres. Ruta a una imagen PNG para incluir como logo en el gráfico. Por defecto, `NULL` (sin logo).
 #' @param .logo_posicion Cadena de caracteres. Esquina en la que colocar el logo: `"topright"`, `"topleft"`, `"bottomright"` o `"bottomleft"`. Por defecto, `"bottomright"`.
@@ -1119,7 +1127,8 @@ mapa_estilo_victorgm <- function(
     .title_size = 18,
     .subtitle = NULL,
     .subtitle_size = 14,
-    .caption = NULL,
+    .color_titulo = "#5F2987",
+    .caption = " ",
     .caption_size = 10,
     .fuente_letra = "Source Sans 3",
     .logo_path = NULL,
@@ -1522,31 +1531,35 @@ mapa_estilo_victorgm <- function(
   
   if(!is.null(.title)){
     titulo_formateado <- stringr::str_wrap(.title, width = 40)
-    
+
     .map_to_return <-
       .map_to_return +
       ggplot2::labs(title = titulo_formateado) +
-      ggplot2::theme(plot.title = ggplot2::element_text(size = .title_size, face = "bold", margin = ggplot2::margin(b = 5), family = .fuente_letra))
+      ggplot2::theme(plot.title = ggplot2::element_text(size = .title_size, face = "bold", color = .color_titulo, margin = ggplot2::margin(b = 5), family = .fuente_letra))
   }
-  
+
   if(!is.null(.subtitle)){
     subtitulo_formateado <- stringr::str_wrap(.subtitle, width = 50)
-    
+
     .map_to_return <-
       .map_to_return +
       ggplot2::labs(subtitle = subtitulo_formateado) +
-      ggplot2::theme(plot.subtitle = ggplot2::element_text(size = .subtitle_size, family = .fuente_letra, face = "italic", margin = ggplot2::margin(b = 10)))
+      ggplot2::theme(plot.subtitle = ggplot2::element_text(size = .subtitle_size, family = .fuente_letra, face = "italic", color = .color_titulo, margin = ggplot2::margin(b = 10)))
   }
-  
+
   # Acumuladores de margen - se aplican una sola vez al final
   bottom_margin_pt <- 5
   top_margin_pt <- 5
   right_margin_pt <- 10
   left_margin_pt <- 10
-  has_caption <- !is.null(.caption) || (!is.null(.url_enlace) && .url_enlace != "")
+  has_caption <- (!is.null(.caption) && trimws(.caption) != "") ||
+                 (!is.null(.url_enlace) && .url_enlace != "")
+
+  # Mapas no tienen etiquetas de eje, distancia fija desde el panel al caption
+  caption_area_offset_cm <- 0.3
 
   # Margen superior del caption para separarlo de la línea separadora
-  caption_top_margin <- if (.linea_separadora) 12 else 2
+  caption_top_margin <- if (.linea_separadora) 5 else 2
 
   if(!is.null(.caption)){
     # Añadir enlace si existe
@@ -1591,8 +1604,8 @@ mapa_estilo_victorgm <- function(
       vp = grid::viewport(y = 0, just = "bottom")
     )
 
-    # Posición fija para mapas (no tienen etiquetas de eje X rotadas)
-    y_linea <- grid::unit(0, "npc") - grid::unit(0.5, "cm")
+    # Posición fija para mapas (no tienen etiquetas de eje X)
+    y_linea <- grid::unit(0, "npc") - grid::unit(caption_area_offset_cm, "cm")
     linea_grob$y <- y_linea
 
     .map_to_return <- .map_to_return +
@@ -1627,24 +1640,22 @@ mapa_estilo_victorgm <- function(
     hjust_val <- NULL
     vjust_val <- NULL
 
-    # Posición ajustada para tener en cuenta la línea separadora y el caption
-    y_base_offset <- 0
-    if (.linea_separadora) y_base_offset <- y_base_offset + 1.0
-    if (has_caption) y_base_offset <- y_base_offset + 1.2
+    # Para posiciones inferiores, alinear el logo verticalmente con el caption
+    logo_y_bottom <- grid::unit(0, "npc") - grid::unit(caption_area_offset_cm + 0.5, "cm")
 
     # Configurar posición según .logo_posicion
     if (.logo_posicion == "bottomright") {
       x_pos <- grid::unit(1, "npc")
-      y_pos <- grid::unit(0, "npc") - grid::unit(margin_pad_cm + y_base_offset, "cm")
+      y_pos <- logo_y_bottom
       hjust_val <- 1
-      vjust_val <- 1
+      vjust_val <- 0.5
       bottom_margin_pt <- bottom_margin_pt + 40
 
     } else if (.logo_posicion == "bottomleft") {
       x_pos <- grid::unit(0, "npc")
-      y_pos <- grid::unit(0, "npc") - grid::unit(margin_pad_cm + y_base_offset, "cm")
+      y_pos <- logo_y_bottom
       hjust_val <- 0
-      vjust_val <- 1
+      vjust_val <- 0.5
       bottom_margin_pt <- bottom_margin_pt + 40
 
     } else if (.logo_posicion == "topright") {
