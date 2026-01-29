@@ -41,7 +41,7 @@ Proporciona una capa de abstracción sobre `ggplot2` y `gt` para generar visuali
     *   Posición inteligente de la leyenda (incluyendo detección automática de huecos libres en el gráfico).
     *   Formato de ejes (miles, porcentajes, fechas, sufijos).
     *   Títulos, subtítulos y pies de página con ajuste de texto automático.
-*   **`mapa_estilo_victorgm()`**: Genera mapas coropléticos estilizados.
+*   **`graficos_estilo_victorgm()`**: Genera mapas coropléticos estilizados.
     *   Soporte para **España** (Provincias y Comunidades Autónomas) y **Mundo**.
     *   Integra geometrías de `rnaturalearth`.
     *   *Nota*: Requiere nombres estandarizados (o códigos ISO3 para países) para una correcta vinculación.
@@ -57,13 +57,6 @@ Proporciona una capa de abstracción sobre `ggplot2` y `gt` para generar visuali
 Conexión directa con la base de datos de la Reserva Federal de San Luis (FRED).
 *   **`get_fred_tbl()`**: Descarga series temporales limpias y formateadas listas para análisis.
 *   **`get_fred_plt()`**: Genera automáticamente gráficos estandarizados de las series descargadas.
-
-### Análisis de orecios y flujos reales (`funciones_precios.R`)
-Herramientas avanzadas para el análisis de comercio exterior, permitiendo descontar el efecto de los precios.
-*   **`get_precios_ponderados()`**: Calcula índices de precios de exportación e importación (Índices de Valor Unitario).
-*   **`get_flujos_reales()`**: Deflacta los flujos nominales para obtener series en términos de volumen (flujos reales).
-*   **`get_descomposicion_tv()`**: Descompone la tasa de variación del valor nominal en la contribución de los precios y la contribución del volumen.
-*   **Optimización**: Incluye versiones `_duckplyr` de estas funciones para procesar grandes volúmenes de datos (Big Data) de manera eficiente.
 
 ### Tipos de cambio (`funciones_tipocambio.R`)
 Utilidades para la conversión monetaria.
@@ -116,6 +109,3 @@ df_crecimiento <- df |>
   )
 ```
 
-## Licencia
-
-MIT

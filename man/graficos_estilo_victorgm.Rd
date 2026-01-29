@@ -2,7 +2,7 @@
 % Please edit documentation in R/funciones_graficos.R
 \name{graficos_estilo_victorgm}
 \alias{graficos_estilo_victorgm}
-\title{Fijar estilo de gráfico estándar para victorgm, con algunos parámetros opcionales}
+\title{Aplicar estilo completo VictorGM a un gráfico}
 \usage{
 graficos_estilo_victorgm(
   .x,
@@ -11,10 +11,12 @@ graficos_estilo_victorgm(
   .scale = 1,
   .accuracy = 1,
   .suffix = "",
+  .minimo_eje_x = NULL,
+  .maximo_eje_x = NULL,
   .minimo_eje_y = NULL,
   .maximo_eje_y = NULL,
   .date_labels = "\%Y",
-  .angle_x_axis_labels = 45,
+  .angle_x_axis_labels = 90,
   .date_breaks = "1 year",
   .fecha_inicial_grafico = NULL,
   .fecha_final_grafico = NULL,
@@ -36,13 +38,18 @@ graficos_estilo_victorgm(
   .subtitle_size = 14,
   .caption = NULL,
   .caption_size = 10,
-  .fuente_letra = "Segoe UI"
+  .fuente_letra = "DM Sans",
+  .logo_path = NULL,
+  .logo_posicion = "bottomright",
+  .logo_escala = 0.12
 )
 }
 \arguments{
+\item{.x}{Objeto ggplot2 al que aplicar el estilo.}
+
 \item{.tipo_grafico_x}{Cadena de caracteres. Indica si se trata de una serie temporal o no. Puede tomar valores \code{"fecha"} o \code{"nofecha"}. Por defecto, \code{"fecha"}.}
 
-\item{.tipo_grafico_y}{Cadena de caracteres. Sirve para indicar en ciertos casos la escala del eje y. Puede tomar valores \code{"millones"}, \code{"suffixing"}, \code{"porcentaje"} o \code{NULL}. Si es distinto a \code{NULL}, el resto de argumentos no se tienen en cuenta en la medida en que colisionen con los definidos para el tipo de gráfico. Por defecto, \code{NULL}.}
+\item{.tipo_grafico_y}{Cadena de caracteres. Sirve para indicar en ciertos casos la escala del eje y. Puede tomar valores \code{"millones"}, \code{"suffixing"}, \code{"porcentaje"} o \code{NULL}. Si es distinto a \code{NULL}, el resto de argumentos no se tienen en cuenta en la medida en que colisionen con los definidos para el tipo de gráfico. También permite la opción \code{"discreto"}, por si el eje Y no es numérico. Por defecto, \code{NULL}.}
 
 \item{.scale}{Número. Factor por el que dividir los números del eje. Por defecto, \code{1}. Para millones, p.ej., habría que fijar a 1e+6 o 1000000.}
 
@@ -50,7 +57,11 @@ graficos_estilo_victorgm(
 
 \item{.suffix}{Cadena de caracteres. Por defecto, cadena vacía.}
 
-\item{.minimo_eje_y}{Número. Valor mínimo en el eje. Por defecto, `NULL`` y el mínimo se adapta al gráfico}
+\item{.minimo_eje_x}{Número o fecha. Valor mínimo en el eje x. Para \code{.tipo_grafico_x = "fecha"}, debe ser una fecha. Para \code{.tipo_grafico_x = "nofecha"} con variable numérica, debe ser un número. Por defecto, \code{NULL} y el mínimo se adapta al gráfico.}
+
+\item{.maximo_eje_x}{Número o fecha. Valor máximo en el eje x. Para \code{.tipo_grafico_x = "fecha"}, debe ser una fecha. Para \code{.tipo_grafico_x = "nofecha"} con variable numérica, debe ser un número. Por defecto, \code{NULL} y el máximo se adapta al gráfico.}
+
+\item{.minimo_eje_y}{Número. Valor mínimo en el eje. Por defecto, \code{NULL} y el mínimo se adapta al gráfico}
 
 \item{.maximo_eje_y}{Número. Valor máximo en el eje. Por defecto, \code{NULL} y el mínimo se adapta al gráfico}
 
@@ -80,18 +91,50 @@ graficos_estilo_victorgm(
 
 \item{.n_breaks_y}{Número. Número de breaks en el eje vertical. Por defecto, \code{NULL}.}
 
-\item{.title_x_axis}{Título del eje x. Por defecto, \code{NULL}.}
+\item{.paleta_utilizada}{Vector de caracteres. Colores personalizados para la paleta. Si es NULL, usa la paleta VictorGM. Por defecto, \code{NULL}.}
 
-\item{.title_y_axis}{Título del eje y. Por defecto, \code{NULL}.}
+\item{.n_colors}{Número. Cantidad de colores a interpolar de la paleta. Por defecto, \code{NULL}.}
 
-\item{.title}{Título del gráfico. Por defecto, \code{NULL}.}
+\item{.title_x_axis}{Cadena de caracteres. Título del eje X. Por defecto, \code{NULL}.}
 
-\item{.subtitle}{Subtitulo del gráfico. Habitualmente usado para definir las unidades de medida. Por defecto, \code{NULL}.}
+\item{.title_y_axis}{Cadena de caracteres. Título del eje Y. Por defecto, \code{NULL}.}
 
-\item{.caption}{Nota al pie del gráfico. Por defecto, \code{NULL}.}
+\item{.title}{Cadena de caracteres. Título del gráfico. Por defecto, \code{NULL}.}
 
-\item{.fuente_letra}{Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: \code{"Segoe UI"}. Otras opciones comunes: \code{"Arial"}, \code{"Times"}, \code{"Courier"}, \code{"Helvetica"}, etc.}
+\item{.title_size}{Número. Tamaño de la fuente del título. Por defecto, \code{18}.}
+
+\item{.subtitle}{Cadena de caracteres. Subtítulo del gráfico. Habitualmente usado para definir las unidades de medida. Por defecto, \code{NULL}.}
+
+\item{.subtitle_size}{Número. Tamaño de la fuente del subtítulo. Por defecto, \code{14}.}
+
+\item{.caption}{Cadena de caracteres. Nota al pie del gráfico. Por defecto, \code{NULL}.}
+
+\item{.caption_size}{Número. Tamaño de la fuente de la nota al pie. Por defecto, \code{10}.}
+
+\item{.fuente_letra}{Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: \code{"DM Sans"}. Otras opciones comunes: \code{"Segoe UI"}, \code{"Arial"}, \code{"Times"}, \code{"Courier"}, \code{"Helvetica"}, etc.}
+
+\item{.logo_path}{Cadena de caracteres. Ruta a una imagen PNG para incluir como logo en el gráfico. Por defecto, \code{NULL} (sin logo).}
+
+\item{.logo_posicion}{Cadena de caracteres. Esquina en la que colocar el logo: \code{"topright"}, \code{"topleft"}, \code{"bottomright"} o \code{"bottomleft"}. Por defecto, \code{"bottomright"}.}
+
+\item{.logo_escala}{Número. Tamaño del logo relativo al panel del gráfico (fracción de 0 a 1). Por defecto, \code{0.12}.}
+}
+\value{
+Objeto ggplot2 con el estilo corporativo VictorGM aplicado.
 }
 \description{
-Fijar estilo de gráfico estándar para victorgm, con algunos parámetros opcionales
+Función principal para aplicar el estilo corporativo completo de VictorGM a gráficos ggplot2.
+Incluye configuración de escalas, ejes, leyendas, títulos, paletas de colores y fuentes tipográficas.
+}
+\examples{
+\dontrun{
+library(ggplot2)
+p <- ggplot(economics, aes(x = date, y = unemploy)) + geom_line()
+graficos_estilo_victorgm(p, .tipo_grafico_y = "millones")
+# Con logo
+graficos_estilo_victorgm(p, .logo_path = "mi_logo.png", .logo_posicion = "bottomright")
+}
+}
+\seealso{
+\code{\link{tema_victorgm}}, \code{\link{aplicar_paleta_victorgm}}
 }

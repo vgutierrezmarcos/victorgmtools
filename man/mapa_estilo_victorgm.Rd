@@ -2,20 +2,26 @@
 % Please edit documentation in R/funciones_graficos.R
 \name{mapa_estilo_victorgm}
 \alias{mapa_estilo_victorgm}
-\title{Fijar estilo de mapas coropléticos para victorgm, con algunos parámetros opcionales. Habría que añadir el título al gráfico generado.}
+\title{Fijar estilo de mapas coropléticos (por defecto) o de burbujas para VictorGM, con algunos parámetros opcionales. Habría que añadir el título al gráfico generado.}
 \usage{
 mapa_estilo_victorgm(
   .x,
+  .tipo_mapa = "coroplético",
   .region_geografica = "España",
   .unidades_territoriales = "provincia",
   .col_nombres = "nombres",
   .col_valores = "valores",
   .codigo_pais = "iso3A",
-  .color_negativo = "#E31A1C",
-  .color_positivo = "#18BC9C",
+  .color_negativo = "#A63A50",
+  .color_positivo = "#4A9079",
   .color_neutro = "white",
   .nivel_neutro = 0,
   .color_na = "grey50",
+  .color_burbujas = "#4A9079",
+  .color_fondo_mapa = "grey95",
+  .tamano_min_burbuja = 1,
+  .tamano_max_burbuja = 20,
+  .alpha_burbujas = 0.7,
   .resaltar = NULL,
   .scale = 1,
   .accuracy = 0.01,
@@ -26,11 +32,13 @@ mapa_estilo_victorgm(
   .subtitle_size = 14,
   .caption = NULL,
   .caption_size = 10,
-  .fuente_letra = "Segoe UI"
+  .fuente_letra = "DM Sans"
 )
 }
 \arguments{
 \item{.x}{Data frame que contenga 2 columnas: \code{.col_nombres} y \code{.col_valores} con los valores a representar.}
+
+\item{.tipo_mapa}{Cadena de caracteres. Puede tomar valores \code{"coroplético"} (por defecto) o \code{"burbujas"}.}
 
 \item{.region_geografica}{Cadena de caracteres. Puede tomar valores \code{"España"} o \code{"Mundo"}. Por defecto, \code{"España"}.}
 
@@ -42,15 +50,25 @@ mapa_estilo_victorgm(
 
 \item{.codigo_pais}{Cadena de caracteres. Solo funciona en caso de que las unidades geográficas sean países. Puede tomar valores \code{"iso3A"} (si se usa el código iso a 3 letras), \code{"iso_code"} (si se usa el código iso a 3 dígitos) o \code{"datacomex"} (si se usa el código de datacomex). Por defecto, \code{"iso3A"}.}
 
-\item{.color_negativo}{Cadena de caracteres. Color que representará los valores negativos. Por defecto, \code{"#E31A1CFF"}, rojo de la paleta de victorgm.}
+\item{.color_negativo}{Cadena de caracteres. Color que representará los valores negativos. Por defecto, \code{"#E31A1CFF"}, rojo de la paleta de VictorGM}
 
-\item{.color_positivo}{Cadena de caracteres. Color que representará los valores positivos. Por defecto, \code{"#18BC9CFF"}, verde de la paleta de victorgm.}
+\item{.color_positivo}{Cadena de caracteres. Color que representará los valores positivos. Por defecto, \code{"#18BC9CFF"}, verde de la paleta de VictorGM}
 
 \item{.color_neutro}{Cadena de caracteres. Color que representará el nivel neutro. Por defecto, \code{"white"}.}
 
 \item{.nivel_neutro}{Número. Cuantía que se representará con el color neutro en la escala de 3 colores. Por defecto, \code{0}.}
 
 \item{.color_na}{Cadena de caracteres. Color que representará a las unidades territoriales con \code{NA}. Por defecto, \code{"grey50"}.}
+
+\item{.color_burbujas}{Cadena de caracteres. Color de las burbujas (solo para mapas de burbujas). Por defecto, \code{"#18BC9C"}.}
+
+\item{.color_fondo_mapa}{Cadena de caracteres. Color de fondo del mapa (solo para mapas de burbujas). Por defecto, \code{"grey95"}.}
+
+\item{.tamano_min_burbuja}{Número. Tamaño mínimo de las burbujas. Por defecto, \code{1}.}
+
+\item{.tamano_max_burbuja}{Número. Tamaño máximo de las burbujas. Por defecto, \code{20}.}
+
+\item{.alpha_burbujas}{Número entre 0 y 1. Transparencia de las burbujas. Por defecto, \code{0.7}.}
 
 \item{.resaltar}{Cadena de caracteres o vector. Permite establecer una o varias unidades territoriales a destacar en el mapa mediante sombras. Se establecerán con el código que aparezca en el dataframe \code{.x}. Por defecto, \code{NULL}.}
 
@@ -66,8 +84,8 @@ mapa_estilo_victorgm(
 
 \item{.caption}{Nota al pie del mapa. Por defecto, \code{NULL}.}
 
-\item{.fuente_letra}{Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: \code{"Segoe UI"}. Otras opciones comunes: \code{"Arial"}, \code{"Times"}, \code{"Courier"}, \code{"Helvetica"}, etc.}
+\item{.fuente_letra}{Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: \code{"DM Sans"}. Otras opciones comunes: \code{"Segoe UI"}, \code{"Arial"}, \code{"Times"}, \code{"Courier"}, \code{"Helvetica"}, etc.}
 }
 \description{
-Fijar estilo de mapas coropléticos para victorgm, con algunos parámetros opcionales. Habría que añadir el título al gráfico generado.
+Fijar estilo de mapas coropléticos (por defecto) o de burbujas para VictorGM, con algunos parámetros opcionales. Habría que añadir el título al gráfico generado.
 }

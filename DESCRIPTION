@@ -37,6 +37,8 @@ Imports:
     wtor,
     httr,
     knitr,
+    png,
+    purrr,
     tibble,
     tidyselect,
     xml2

@@ -2,19 +2,35 @@
 % Please edit documentation in R/funciones_graficos.R
 \name{mostrar}
 \alias{mostrar}
-\title{Muestra un objeto ggplot o gt, si existe en memoria, y con contenido dinámico si disponible. Además, si se está renderizando un pdf, hace una captura de la tabla gt con webshot2 y la muestra.}
+\title{Mostrar gráfico o tabla de forma inteligente}
 \usage{
 mostrar(.x, .estatico = FALSE, .width = 6, .height = 5)
 }
 \arguments{
-\item{.x}{Objeto ggplot o gt a mostrar}
+\item{.x}{Objeto ggplot2 o gt_tbl a mostrar.}
 
-\item{.estatico}{Lógico. Si el objeto es un objeto ggplot, permite que se muestre como un gráfico interactivo en caso de establecerse en \code{FALSE}. Por defecto, \code{FALSE}.}
+\item{.estatico}{Lógico. Si TRUE y el objeto es ggplot, lo muestra estático. Si FALSE, lo convierte a interactivo. Por defecto, \code{FALSE}.}
 
-\item{.width}{Número. Ancho del gráfico a mostrar en pulgadas. Por defecto, \code{6}.}
+\item{.width}{Número. Ancho del gráfico en pulgadas. Por defecto, \code{6}.}
 
-\item{.height}{Número. Alto del gráfico a mostrar en pulgadas. Por defecto, \code{5}.}
+\item{.height}{Número. Alto del gráfico en pulgadas. Por defecto, \code{5}.}
+}
+\value{
+El objeto procesado para visualización según el contexto.
 }
 \description{
-Muestra un objeto ggplot o gt, si existe en memoria, y con contenido dinámico si disponible. Además, si se está renderizando un pdf, hace una captura de la tabla gt con webshot2 y la muestra.
+Muestra un objeto ggplot o gt adaptándose al contexto de renderizado.
+Para ggplot: puede mostrar versión interactiva (ggiraph) o estática.
+Para tablas gt: en HTML las muestra directamente, en LaTeX/PDF usa webshot2 para capturar.
+}
+\examples{
+\dontrun{
+library(ggplot2)
+p <- ggplot(mtcars, aes(x = wt, y = mpg)) + geom_point()
+mostrar(p) # Interactivo en HTML
+mostrar(p, .estatico = TRUE) # Siempre estático
+}
+}
+\seealso{
+\code{\link{estatico}}, \code{\link{to_giraph}}
 }

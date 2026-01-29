@@ -359,6 +359,343 @@ get_tariffs <- function(reporter,
   return(tibble::tibble(final_result))
 }
 
+# Visualización de aranceles ----
+
+#' Gráfico de barras de aranceles WITS/TRAINS
+#'
+#' Genera un gráfico de barras (horizontal) con datos de aranceles. Acepta un dataframe
+#' previamente obtenido con [get_tariffs()] o descarga los datos al vuelo.
+#'
+#' @param .datos_df Tibble. Dataframe con datos de aranceles (resultado de [get_tariffs()]). Si se proporciona, se ignoran `.reporter`, `.partner`, `.product` y `.year`. Por defecto, `NULL`.
+#' @param .reporter Cadena de caracteres. Código ISO3 del país declarante. Se usa cuando `.datos_df` es `NULL`. Por defecto, `NULL`.
+#' @param .partner Cadena de caracteres. Código ISO3 del país socio, o `"000"` (mundo). Por defecto, `"000"`.
+#' @param .product Cadena de caracteres. Código de producto HS6 o `"all"`. Por defecto, `"all"`.
+#' @param .year Cadena de caracteres o numérico. Año(s) de consulta. Por defecto, `"all"`.
+#' @param .vista Cadena de caracteres. Tipo de agrupación: `"producto"` (capítulos HS2), `"socio"` (países socios), `"anual"` (por año). Por defecto, `"producto"`.
+#' @param .tipo_arancel Cadena de caracteres. Filtrar por tipo de arancel (p.ej. `"MFN"`, `"Pref"`). Si `NULL`, se muestran todos. Por defecto, `NULL`.
+#' @param .top_n Número entero. Número máximo de barras a mostrar. Por defecto, `15`.
+#' @param .ordenar Lógico. Si `TRUE`, ordena las barras de mayor a menor. Por defecto, `TRUE`.
+#' @param .estatico Lógico. Si `TRUE`, devuelve un gráfico estático. Si `FALSE`, interactivo (`ggiraph`). Por defecto, `FALSE`.
+#' @param .title Cadena de caracteres. Título del gráfico. Por defecto, `NULL` (se genera automáticamente).
+#' @param .subtitle Cadena de caracteres. Subtítulo. Por defecto, `NULL`.
+#' @param .caption Cadena de caracteres. Nota al pie. Por defecto, `"Fuente: WITS (Banco Mundial)"`.
+#' @return Un objeto `ggplot` (estático) o `girafe` (interactivo).
+#' @examples
+#' \dontrun{
+#' get_tariffs_plt(.reporter = "ESP", .year = "2022", .vista = "producto")
+#' datos <- get_tariffs(reporter = "USA", partner = "000", year = 2022)
+#' get_tariffs_plt(.datos_df = datos, .vista = "producto", .top_n = 10)
+#' }
+#' @export
+get_tariffs_plt <- function(.datos_df = NULL,
+                            .reporter = NULL,
+                            .partner = "000",
+                            .product = "all",
+                            .year = "all",
+                            .vista = "producto",
+                            .tipo_arancel = NULL,
+                            .top_n = 15,
+                            .ordenar = TRUE,
+                            .estatico = FALSE,
+                            .title = NULL,
+                            .subtitle = NULL,
+                            .caption = "Fuente: WITS (Banco Mundial)") {
+
+  # Obtener datos
+
+  if (is.null(.datos_df)) {
+    if (is.null(.reporter)) stop("Debe proporcionar '.reporter' o '.datos_df'.")
+    .datos_df <- victorgmtools::get_tariffs(
+      reporter = .reporter, partner = .partner,
+      product = .product, year = as.character(.year)
+    )
+  }
+
+  if (nrow(.datos_df) == 0) {
+    stop("No hay datos de aranceles para los par\u00e1metros indicados.")
+  }
+
+  # Filtrar tipo de arancel si se indica
+  if (!is.null(.tipo_arancel)) {
+    .datos_df <- .datos_df |>
+      dplyr::filter(.data$tariff_type %in% .tipo_arancel)
+  }
+
+  # Resolver nombres de paises
+  countries_df <- tryCatch(
+    victorgmtools::get_countries(),
+    error = function(e) NULL
+  )
+
+  resolver_nombre <- function(code) {
+    if (is.null(countries_df)) return(code)
+    nombre <- countries_df$name[countries_df$country_code == code]
+    if (length(nombre) == 0) {
+      nombre <- countries_df$name[countries_df$iso3_code == code]
+    }
+    if (length(nombre) == 0) return(code)
+    nombre[1]
+  }
+
+  # Agregar segun vista
+  if (.vista == "producto") {
+    datos_agg <- .datos_df |>
+      dplyr::mutate(hs2 = substr(.data$product_code, 1, 2)) |>
+      dplyr::group_by(.data$hs2) |>
+      dplyr::summarise(
+        arancel_medio = mean(.data$tariff_simple_average, na.rm = TRUE),
+        n_lineas = dplyr::n(),
+        .groups = "drop"
+      ) |>
+      dplyr::rename(categoria = "hs2")
+
+    etiqueta_x <- "Cap\u00edtulo HS2"
+
+  } else if (.vista == "socio") {
+    datos_agg <- .datos_df |>
+      dplyr::filter(.data$partner_country_code != "000") |>
+      dplyr::group_by(.data$partner_country_code) |>
+      dplyr::summarise(
+        arancel_medio = mean(.data$tariff_simple_average, na.rm = TRUE),
+        n_lineas = dplyr::n(),
+        .groups = "drop"
+      ) |>
+      dplyr::mutate(
+        categoria = purrr::map_chr(.data$partner_country_code, resolver_nombre)
+      ) |>
+      dplyr::select("categoria", "arancel_medio", "n_lineas")
+
+    etiqueta_x <- "Pa\u00eds socio"
+
+  } else if (.vista == "anual") {
+    datos_agg <- .datos_df |>
+      dplyr::group_by(.data$year) |>
+      dplyr::summarise(
+        arancel_medio = mean(.data$tariff_simple_average, na.rm = TRUE),
+        n_lineas = dplyr::n(),
+        .groups = "drop"
+      ) |>
+      dplyr::rename(categoria = "year")
+
+    etiqueta_x <- "A\u00f1o"
+
+  } else {
+    stop("'.vista' debe ser 'producto', 'socio' o 'anual'.")
+  }
+
+  # Ordenar y limitar
+  if (.ordenar) {
+    datos_agg <- datos_agg |>
+      dplyr::arrange(dplyr::desc(.data$arancel_medio))
+  }
+
+  if (!is.null(.top_n) && nrow(datos_agg) > .top_n) {
+    datos_agg <- datos_agg |> dplyr::slice_head(n = .top_n)
+  }
+
+  # Reordenar factor para que ggplot respete el orden
+  if (.ordenar) {
+    datos_agg <- datos_agg |>
+      dplyr::mutate(categoria = stats::reorder(.data$categoria, .data$arancel_medio))
+  }
+
+  # Generar titulo automatico
+  if (is.null(.title)) {
+    reporter_name <- if (!is.null(.reporter)) resolver_nombre(.reporter) else "Varios"
+    .title <- paste0("Aranceles de ", reporter_name)
+  }
+
+  # Construir grafico
+  plt <- ggplot2::ggplot(
+    datos_agg,
+    ggplot2::aes(x = .data$categoria, y = .data$arancel_medio)
+  ) +
+    ggiraph::geom_col_interactive(
+      ggplot2::aes(
+        tooltip = paste0(
+          etiqueta_x, ": ", .data$categoria,
+          "\nArancel medio: ", formatC(round(.data$arancel_medio, 2), format = "f", big.mark = ".", decimal.mark = ",", digits = 2), "%",
+          "\nL\u00edneas arancelarias: ", .data$n_lineas
+        )
+      ),
+      fill = victorgmtools::colores_victorgm()[1],
+      width = 0.7
+    ) +
+    ggplot2::coord_flip() +
+    ggplot2::labs(
+      x = etiqueta_x,
+      y = "Arancel medio (%)"
+    )
+
+  # Aplicar estilo victorgm
+  plt <- plt |>
+    victorgmtools::graficos_estilo_victorgm(
+      .tipo_grafico_x = "nofecha",
+      .title = .title,
+      .subtitle = .subtitle,
+      .caption = .caption,
+      .suffix = "%",
+      .accuracy = 0.1
+    )
+
+  # Devolver estatico o interactivo
+  if (.estatico) {
+    return(plt)
+  }
+
+  ggiraph::girafe_options(
+    victorgmtools::to_giraph(plt),
+    ggiraph::opts_sizing(rescale = TRUE, width = 1)
+  )
+}
+
+#' Tabla de aranceles WITS/TRAINS
+#'
+#' Genera una tabla formateada (`gt`) con datos de aranceles agregados. Acepta un dataframe
+#' previamente obtenido con [get_tariffs()] o descarga los datos al vuelo.
+#'
+#' @param .datos_df Tibble. Dataframe con datos de aranceles (resultado de [get_tariffs()]). Si se proporciona, se ignoran `.reporter`, `.partner`, `.product` y `.year`. Por defecto, `NULL`.
+#' @param .reporter Cadena de caracteres. Código ISO3 del país declarante. Se usa cuando `.datos_df` es `NULL`. Por defecto, `NULL`.
+#' @param .partner Cadena de caracteres. Código ISO3 del país socio, o `"000"` (mundo). Por defecto, `"000"`.
+#' @param .product Cadena de caracteres. Código de producto HS6 o `"all"`. Por defecto, `"all"`.
+#' @param .year Cadena de caracteres o numérico. Año(s) de consulta. Por defecto, `"all"`.
+#' @param .vista Cadena de caracteres. Tipo de agrupación: `"producto"` (capítulos HS2), `"socio"` (países socios), `"anual"` (por año). Por defecto, `"producto"`.
+#' @param .tipo_arancel Cadena de caracteres. Filtrar por tipo de arancel (p.ej. `"MFN"`, `"Pref"`). Si `NULL`, se muestran todos. Por defecto, `NULL`.
+#' @param .title Cadena de caracteres. Título de la tabla. Por defecto, `NULL` (se genera automáticamente).
+#' @param .subtitle Cadena de caracteres. Subtítulo. Por defecto, `NULL`.
+#' @param .caption Cadena de caracteres. Nota al pie. Por defecto, `"Fuente: WITS (Banco Mundial)"`.
+#' @return Un objeto `gt_tbl` con la tabla formateada.
+#' @examples
+#' \dontrun{
+#' get_tariffs_tbl(.reporter = "ESP", .year = "2022", .vista = "producto")
+#' datos <- get_tariffs(reporter = "USA", partner = "000", year = 2022)
+#' get_tariffs_tbl(.datos_df = datos, .vista = "socio")
+#' }
+#' @export
+get_tariffs_tbl <- function(.datos_df = NULL,
+                            .reporter = NULL,
+                            .partner = "000",
+                            .product = "all",
+                            .year = "all",
+                            .vista = "producto",
+                            .tipo_arancel = NULL,
+                            .title = NULL,
+                            .subtitle = NULL,
+                            .caption = "Fuente: WITS (Banco Mundial)") {
+
+  # Obtener datos
+  if (is.null(.datos_df)) {
+    if (is.null(.reporter)) stop("Debe proporcionar '.reporter' o '.datos_df'.")
+    .datos_df <- victorgmtools::get_tariffs(
+      reporter = .reporter, partner = .partner,
+      product = .product, year = as.character(.year)
+    )
+  }
+
+  if (nrow(.datos_df) == 0) {
+    stop("No hay datos de aranceles para los par\u00e1metros indicados.")
+  }
+
+  # Filtrar tipo de arancel si se indica
+  if (!is.null(.tipo_arancel)) {
+    .datos_df <- .datos_df |>
+      dplyr::filter(.data$tariff_type %in% .tipo_arancel)
+  }
+
+  # Resolver nombres de paises
+  countries_df <- tryCatch(
+    victorgmtools::get_countries(),
+    error = function(e) NULL
+  )
+
+  resolver_nombre <- function(code) {
+    if (is.null(countries_df)) return(code)
+    nombre <- countries_df$name[countries_df$country_code == code]
+    if (length(nombre) == 0) {
+      nombre <- countries_df$name[countries_df$iso3_code == code]
+    }
+    if (length(nombre) == 0) return(code)
+    nombre[1]
+  }
+
+  # Agregar segun vista
+  col_minimo <- "Arancel m\u00ednimo"
+  col_maximo <- "Arancel m\u00e1ximo"
+  col_lineas <- "L\u00edneas"
+
+  if (.vista == "producto") {
+    col_capitulo <- "Cap\u00edtulo HS2"
+    datos_agg <- .datos_df |>
+      dplyr::mutate(hs2 = substr(.data$product_code, 1, 2)) |>
+      dplyr::group_by(.data$hs2) |>
+      dplyr::summarise(
+        arancel_medio = mean(.data$tariff_simple_average, na.rm = TRUE),
+        arancel_minimo = min(.data$tariff_simple_average, na.rm = TRUE),
+        arancel_maximo = max(.data$tariff_simple_average, na.rm = TRUE),
+        lineas = dplyr::n(),
+        .groups = "drop"
+      ) |>
+      dplyr::arrange(dplyr::desc(.data$arancel_medio))
+
+    names(datos_agg) <- c(col_capitulo, "Arancel medio", col_minimo, col_maximo, col_lineas)
+
+  } else if (.vista == "socio") {
+    col_pais <- "Pa\u00eds socio"
+    datos_agg <- .datos_df |>
+      dplyr::filter(.data$partner_country_code != "000") |>
+      dplyr::group_by(.data$partner_country_code) |>
+      dplyr::summarise(
+        arancel_medio = mean(.data$tariff_simple_average, na.rm = TRUE),
+        arancel_minimo = min(.data$tariff_simple_average, na.rm = TRUE),
+        arancel_maximo = max(.data$tariff_simple_average, na.rm = TRUE),
+        lineas = dplyr::n(),
+        .groups = "drop"
+      ) |>
+      dplyr::mutate(
+        pais_socio = purrr::map_chr(.data$partner_country_code, resolver_nombre)
+      ) |>
+      dplyr::select("pais_socio", "arancel_medio", "arancel_minimo",
+                     "arancel_maximo", "lineas") |>
+      dplyr::arrange(dplyr::desc(.data$arancel_medio))
+
+    names(datos_agg) <- c(col_pais, "Arancel medio", col_minimo, col_maximo, col_lineas)
+
+  } else if (.vista == "anual") {
+    col_anio <- "A\u00f1o"
+    datos_agg <- .datos_df |>
+      dplyr::group_by(.data$year) |>
+      dplyr::summarise(
+        arancel_medio = mean(.data$tariff_simple_average, na.rm = TRUE),
+        arancel_minimo = min(.data$tariff_simple_average, na.rm = TRUE),
+        arancel_maximo = max(.data$tariff_simple_average, na.rm = TRUE),
+        lineas = dplyr::n(),
+        .groups = "drop"
+      )
+
+    names(datos_agg) <- c(col_anio, "Arancel medio", col_minimo, col_maximo, col_lineas)
+    datos_agg <- datos_agg |> dplyr::arrange(.data[[col_anio]])
+
+  } else {
+    stop("'.vista' debe ser 'producto', 'socio' o 'anual'.")
+  }
+
+  # Generar titulo automatico
+  if (is.null(.title)) {
+    reporter_name <- if (!is.null(.reporter)) resolver_nombre(.reporter) else "Varios"
+    .title <- paste0("Aranceles de ", reporter_name)
+  }
+
+  # Aplicar estilo victorgm
+  victorgmtools::tablas_estilo_victorgm(
+    datos_agg,
+    .title = .title,
+    .subtitle = .subtitle,
+    .caption = .caption,
+    .columnas_numericas = c("Arancel medio", col_minimo, col_maximo),
+    .precision_decimales = 2
+  )
+}
+
 #' Obtener disponibilidad de datos TRAINS
 #'
 #' Obtiene información sobre la disponibilidad de datos en el dataset TRAINS de UNCTAD.
