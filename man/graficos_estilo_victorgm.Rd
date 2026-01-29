@@ -41,7 +41,10 @@ graficos_estilo_victorgm(
   .fuente_letra = "Source Sans 3",
   .logo_path = NULL,
   .logo_posicion = "bottomright",
-  .logo_escala = 0.12
+  .logo_escala = 0.12,
+  .url_enlace = "www.victorgutierrezmarcos.es",
+  .linea_separadora = TRUE,
+  .colores_linea = c("#5F2987", "#E2EFD9", "#B8860B")
 )
 }
 \arguments{

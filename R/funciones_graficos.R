@@ -367,14 +367,14 @@ graficos_estilo_victorgm <- function(
     .logo_path = NULL,
     .logo_posicion = "bottomright",
     .logo_escala = 0.12,
-    .url_enlace = "www.victorgutierrezmarcos.es/blog",
+    .url_enlace = "www.victorgutierrezmarcos.es",
     .linea_separadora = TRUE,
     .colores_linea = c("#5F2987", "#E2EFD9", "#B8860B")
 ) {
 
   # Registrar fuente de Google Fonts si es necesario
   fuente_ok <- victorgmtools:::registrar_fuente(.fuente_letra)
-  
+
   # Si falla la descarga de la fuente por defecto (Source Sans 3), usar sans como fallback
   # Solo intentamos el fallback si el usuario NO especificó una fuente personalizada distinta
   if (!fuente_ok && .fuente_letra == "Source Sans 3") {
@@ -741,33 +741,46 @@ graficos_estilo_victorgm <- function(
       ggplot2::theme(plot.subtitle = ggplot2::element_text(size = .subtitle_size, family = .fuente_letra, face = "italic", margin = ggplot2::margin(b = 10)))
   }
   
+  # Acumuladores de margen - se aplican una sola vez al final
+  bottom_margin_pt <- 5
+  top_margin_pt <- 5
+  right_margin_pt <- 10
+  left_margin_pt <- 10
+  has_caption <- !is.null(.caption) || (!is.null(.url_enlace) && .url_enlace != "")
+
+  # Margen superior del caption para separarlo de la línea separadora
+  caption_top_margin <- if (.linea_separadora) 12 else 2
+
   if(!is.null(.caption)){
     # Añadir enlace si existe
     if (!is.null(.url_enlace) && .url_enlace != "") {
       # Crear el enlace HTML con estilo
-      link_html <- sprintf("<br><span style='font-size:%dpx; color:gray50;'>%s</span>", 
-                           round(.caption_size * 0.9), # Un poco más pequeño
+      link_html <- sprintf("<br><span style='font-size:%dpx; color:gray50;'>%s</span>",
+                           round(.caption_size * 0.9),
                            .url_enlace)
       .caption <- paste0(.caption, link_html)
     }
-    
-    caption_formateado <- stringr::str_wrap(.caption, width = 80)
-    # Revertir el str_wrap para la parte HTML si se rompió (simple fix: asumir que el usuario pone saltos si es muy largo o confiar en ggtext)
-    # Mejor: aplicar str_wrap SOLO a la parte de texto original, no al HTML
-    
+
     .plot_to_return_plt <-
       .plot_to_return_plt +
-      ggplot2::labs(caption = .caption) + # Usamos .caption directamente que ya tiene HTML
-      ggplot2::theme(plot.caption = ggtext::element_markdown(hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50"))
+      ggplot2::labs(caption = .caption) +
+      ggplot2::theme(plot.caption = ggtext::element_markdown(
+        hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+        margin = ggplot2::margin(t = caption_top_margin)
+      ))
+    bottom_margin_pt <- bottom_margin_pt + 15
   } else if (!is.null(.url_enlace) && .url_enlace != "") {
-     # Si no hay caption pero sí enlace
-      .plot_to_return_plt <-
+    # Si no hay caption pero sí enlace
+    .plot_to_return_plt <-
       .plot_to_return_plt +
       ggplot2::labs(caption = .url_enlace) +
-      ggplot2::theme(plot.caption = ggtext::element_markdown(hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50"))
+      ggplot2::theme(plot.caption = ggtext::element_markdown(
+        hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+        margin = ggplot2::margin(t = caption_top_margin)
+      ))
+    bottom_margin_pt <- bottom_margin_pt + 15
   }
 
-  
   if(is.null(.title_x_axis)){
     .plot_to_return_plt <-
       .plot_to_return_plt +
@@ -778,7 +791,7 @@ graficos_estilo_victorgm <- function(
       ggplot2::labs(x = .title_x_axis) +
       ggplot2::theme(axis.title.x = ggplot2::element_text(family = .fuente_letra, size = .title_axis_size))
   }
-  
+
   if(is.null(.title_y_axis)){
     .plot_to_return_plt <-
       .plot_to_return_plt +
@@ -789,7 +802,7 @@ graficos_estilo_victorgm <- function(
       ggplot2::labs(y = .title_y_axis) +
       ggplot2::theme(axis.title.y = ggplot2::element_text(family = .fuente_letra, size = .title_axis_size))
   }
-  
+
   # Configurar update_geom_defaults para que geom_text use la fuente por defecto
   ggplot2::update_geom_defaults("text", list(family = .fuente_letra))
   ggplot2::update_geom_defaults("label", list(family = .fuente_letra))
@@ -802,31 +815,26 @@ graficos_estilo_victorgm <- function(
     linea_grob <- grid::rasterGrob(
       matrix(grad, nrow = 1),
       width = grid::unit(1, "npc"),
-      height = grid::unit(2, "pt"), # Línea fina
+      height = grid::unit(2, "pt"),
       interpolate = TRUE,
-      vp = grid::viewport(y = 0, just = "bottom") # Alinear al fondo
+      vp = grid::viewport(y = 0, just = "bottom")
     )
-    
-    # Ajustar margen inferior para dar espacio a la línea y el caption
-    # La línea se pondrá en y = 0 del panel, pero con clip="off" y movida hacia abajo
-    
-    # Posición: Justo encima del caption/logo.
-    # Usaremos una posición fija relativa al bottom del panel, asumiendo que el caption está más abajo.
-    # Un valor seguro suele ser alrededor de -1.5cm o -2cm dependiendo de los ejes.
-    # Pero para ser robusto, la pondremos justo donde empieza el margen inferior.
-    
-    y_linea <- grid::unit(0, "npc") - grid::unit(1.2, "cm") # Ajuste empírico para estar bajo el eje X
-    
+
+    # Posición adaptativa: estimar altura de las etiquetas del eje X
+    axis_label_height_cm <- .text_axis_size / 72 * 2.54 * abs(sin(.angle_x_axis_labels * pi / 180))
+    y_linea <- grid::unit(0, "npc") - grid::unit(0.3 + axis_label_height_cm, "cm")
+
     linea_grob$y <- y_linea
-    
+
     .plot_to_return_plt <- .plot_to_return_plt +
       ggplot2::annotation_custom(
         linea_grob,
         xmin = -Inf, xmax = Inf,
         ymin = -Inf, ymax = Inf
       ) +
-      ggplot2::coord_cartesian(clip = "off") +
-      ggplot2::theme(plot.margin = ggplot2::margin(b = 25)) # Asegurar espacio extra
+      ggplot2::coord_cartesian(clip = "off")
+
+    bottom_margin_pt <- bottom_margin_pt + 8
   }
 
   # Insertar logo si se ha indicado ruta
@@ -841,66 +849,51 @@ graficos_estilo_victorgm <- function(
 
     # Autoscaling usando snpc (Square Normalized Parent Coordinates)
     # Esto mantiene la proporción relativa al lado más pequeño del gráfico
-    # .logo_escala se interpreta como fracción del área visible
-    
-    # Usamos snpc para mantener el aspect ratio constante independientemente de la deformación del plot
-    logo_width <- grid::unit(.logo_escala * 2, "snpc") 
+    logo_width <- grid::unit(.logo_escala * 2, "snpc")
     logo_height <- grid::unit(.logo_escala * 2 * ar, "snpc")
 
     margin_pad_cm <- 0.2
-    
+
     # Variables para configuración
     x_pos <- NULL
     y_pos <- NULL
     hjust_val <- NULL
     vjust_val <- NULL
-    
-    # Posición ajustada para tener en cuenta la línea separadora si existe
-    y_base_offset <- if(.linea_separadora) 1.5 else 0
-    
-    # Configurar posición y márgenes según .logo_posicion
+
+    # Posición ajustada para tener en cuenta la línea separadora y el caption
+    y_base_offset <- 0
+    if (.linea_separadora) y_base_offset <- y_base_offset + 1.0
+    if (has_caption) y_base_offset <- y_base_offset + 1.2
+
+    # Configurar posición según .logo_posicion
     if (.logo_posicion == "bottomright") {
       x_pos <- grid::unit(1, "npc")
       y_pos <- grid::unit(0, "npc") - grid::unit(margin_pad_cm + y_base_offset, "cm")
       hjust_val <- 1
       vjust_val <- 1
-      
-      # Margen inferior extra solo si el logo sale del margen actual
-      # Pero theme() reemplaza el margen anterior, así que debemos sumar
-      # Como no podemos "sumar" fácilmente a un objeto theme existente sin complicación,
-      # definimos un margen generoso.
-      
-      .plot_to_return_plt <- .plot_to_return_plt +
-        ggplot2::theme(plot.margin = ggplot2::margin(t = 5, r = 10, b = 40, l = 10)) # Aumentado b
-        
+      bottom_margin_pt <- bottom_margin_pt + 40
+
     } else if (.logo_posicion == "bottomleft") {
       x_pos <- grid::unit(0, "npc")
       y_pos <- grid::unit(0, "npc") - grid::unit(margin_pad_cm + y_base_offset, "cm")
       hjust_val <- 0
       vjust_val <- 1
-      
-      .plot_to_return_plt <- .plot_to_return_plt +
-        ggplot2::theme(plot.margin = ggplot2::margin(t = 5, r = 10, b = 40, l = 10))
-        
+      bottom_margin_pt <- bottom_margin_pt + 40
+
     } else if (.logo_posicion == "topright") {
       x_pos <- grid::unit(1, "npc")
       y_pos <- grid::unit(1, "npc") + grid::unit(margin_pad_cm, "cm")
       hjust_val <- 1
       vjust_val <- 0
-      
-      # Aquí no afecta la línea inferior
-      .plot_to_return_plt <- .plot_to_return_plt +
-        ggplot2::theme(plot.margin = ggplot2::margin(t = 30, r = 10, b = 5, l = 10))
+      top_margin_pt <- top_margin_pt + 25
 
     } else if (.logo_posicion == "topleft") {
       x_pos <- grid::unit(0, "npc")
       y_pos <- grid::unit(1, "npc") + grid::unit(margin_pad_cm, "cm")
       hjust_val <- 0
       vjust_val <- 0
-      
-      .plot_to_return_plt <- .plot_to_return_plt +
-        ggplot2::theme(plot.margin = ggplot2::margin(t = 30, r = 10, b = 5, l = 10))
-        
+      top_margin_pt <- top_margin_pt + 25
+
     } else {
       stop("'.logo_posicion' debe ser 'topright', 'topleft', 'bottomright' o 'bottomleft'.")
     }
@@ -924,6 +917,13 @@ graficos_estilo_victorgm <- function(
       ) +
       ggplot2::coord_cartesian(clip = "off")
   }
+
+  # Aplicar márgenes acumulados una sola vez
+  .plot_to_return_plt <- .plot_to_return_plt +
+    ggplot2::theme(plot.margin = ggplot2::margin(
+      t = top_margin_pt, r = right_margin_pt,
+      b = bottom_margin_pt, l = left_margin_pt
+    ))
 
   return(.plot_to_return_plt)
 }
@@ -1125,14 +1125,14 @@ mapa_estilo_victorgm <- function(
     .logo_path = NULL,
     .logo_posicion = "bottomright",
     .logo_escala = 0.12,
-    .url_enlace = "www.victorgutierrezmarcos.es/blog",
+    .url_enlace = "www.victorgutierrezmarcos.es",
     .linea_separadora = TRUE,
     .colores_linea = c("#5F2987", "#E2EFD9", "#B8860B")
 ) {
 
   # Registrar fuente de Google Fonts si es necesario
   fuente_ok <- victorgmtools:::registrar_fuente(.fuente_letra)
-  
+
   # Si falla la descarga de la fuente por defecto (Source Sans 3), usar sans como fallback
   if (!fuente_ok && .fuente_letra == "Source Sans 3") {
     message("Usando 'sans' como fallback para 'Source Sans 3'.")
@@ -1538,33 +1538,48 @@ mapa_estilo_victorgm <- function(
       ggplot2::theme(plot.subtitle = ggplot2::element_text(size = .subtitle_size, family = .fuente_letra, face = "italic", margin = ggplot2::margin(b = 10)))
   }
   
+  # Acumuladores de margen - se aplican una sola vez al final
+  bottom_margin_pt <- 5
+  top_margin_pt <- 5
+  right_margin_pt <- 10
+  left_margin_pt <- 10
+  has_caption <- !is.null(.caption) || (!is.null(.url_enlace) && .url_enlace != "")
+
+  # Margen superior del caption para separarlo de la línea separadora
+  caption_top_margin <- if (.linea_separadora) 12 else 2
+
   if(!is.null(.caption)){
     # Añadir enlace si existe
     if (!is.null(.url_enlace) && .url_enlace != "") {
-      link_html <- sprintf("<br><span style='font-size:%dpx; color:gray50;'>%s</span>", 
-                           round(.caption_size * 0.9), 
+      link_html <- sprintf("<br><span style='font-size:%dpx; color:gray50;'>%s</span>",
+                           round(.caption_size * 0.9),
                            .url_enlace)
       .caption <- paste0(.caption, link_html)
     }
 
-    caption_formateado <- stringr::str_wrap(.caption, width = 80)
-    
     .map_to_return <-
       .map_to_return +
       ggplot2::labs(caption = .caption) +
-      ggplot2::theme(plot.caption = ggtext::element_markdown(hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50"))
+      ggplot2::theme(plot.caption = ggtext::element_markdown(
+        hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+        margin = ggplot2::margin(t = caption_top_margin)
+      ))
+    bottom_margin_pt <- bottom_margin_pt + 15
   } else if (!is.null(.url_enlace) && .url_enlace != "") {
-      .map_to_return <-
+    .map_to_return <-
       .map_to_return +
       ggplot2::labs(caption = .url_enlace) +
-      ggplot2::theme(plot.caption = ggtext::element_markdown(hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50"))
+      ggplot2::theme(plot.caption = ggtext::element_markdown(
+        hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+        margin = ggplot2::margin(t = caption_top_margin)
+      ))
+    bottom_margin_pt <- bottom_margin_pt + 15
   }
 
-  
   # Configurar update_geom_defaults para que geom_text use la fuente por defecto
   ggplot2::update_geom_defaults("text", list(family = .fuente_letra))
   ggplot2::update_geom_defaults("label", list(family = .fuente_letra))
-  
+
   # Insertar línea separadora
   if (.linea_separadora) {
     grad <- grDevices::colorRampPalette(.colores_linea)(100)
@@ -1575,18 +1590,20 @@ mapa_estilo_victorgm <- function(
       interpolate = TRUE,
       vp = grid::viewport(y = 0, just = "bottom")
     )
-    
-    y_linea <- grid::unit(0, "npc") - grid::unit(1.2, "cm")
+
+    # Posición fija para mapas (no tienen etiquetas de eje X rotadas)
+    y_linea <- grid::unit(0, "npc") - grid::unit(0.5, "cm")
     linea_grob$y <- y_linea
-    
+
     .map_to_return <- .map_to_return +
       ggplot2::annotation_custom(
         linea_grob,
         xmin = -Inf, xmax = Inf,
         ymin = -Inf, ymax = Inf
       ) +
-      ggplot2::coord_sf(clip = "off") +
-      ggplot2::theme(plot.margin = ggplot2::margin(b = 25))
+      ggplot2::coord_sf(clip = "off")
+
+    bottom_margin_pt <- bottom_margin_pt + 8
   }
 
   # Insertar logo si se ha indicado ruta
@@ -1602,52 +1619,48 @@ mapa_estilo_victorgm <- function(
     # Autoscaling usando snpc
     logo_width <- grid::unit(.logo_escala * 2, "snpc")
     logo_height <- grid::unit(.logo_escala * 2 * ar, "snpc")
-    
+
     margin_pad_cm <- 0.2
-    
+
     x_pos <- NULL
     y_pos <- NULL
     hjust_val <- NULL
     vjust_val <- NULL
-    
-    y_base_offset <- if(.linea_separadora) 1.5 else 0
-    
+
+    # Posición ajustada para tener en cuenta la línea separadora y el caption
+    y_base_offset <- 0
+    if (.linea_separadora) y_base_offset <- y_base_offset + 1.0
+    if (has_caption) y_base_offset <- y_base_offset + 1.2
+
+    # Configurar posición según .logo_posicion
     if (.logo_posicion == "bottomright") {
       x_pos <- grid::unit(1, "npc")
       y_pos <- grid::unit(0, "npc") - grid::unit(margin_pad_cm + y_base_offset, "cm")
       hjust_val <- 1
       vjust_val <- 1
-      
-      .map_to_return <- .map_to_return +
-        ggplot2::theme(plot.margin = ggplot2::margin(t = 5, r = 10, b = 40, l = 10))
-        
+      bottom_margin_pt <- bottom_margin_pt + 40
+
     } else if (.logo_posicion == "bottomleft") {
       x_pos <- grid::unit(0, "npc")
       y_pos <- grid::unit(0, "npc") - grid::unit(margin_pad_cm + y_base_offset, "cm")
       hjust_val <- 0
       vjust_val <- 1
-      
-      .map_to_return <- .map_to_return +
-        ggplot2::theme(plot.margin = ggplot2::margin(t = 5, r = 10, b = 40, l = 10))
-        
+      bottom_margin_pt <- bottom_margin_pt + 40
+
     } else if (.logo_posicion == "topright") {
       x_pos <- grid::unit(1, "npc")
       y_pos <- grid::unit(1, "npc") + grid::unit(margin_pad_cm, "cm")
       hjust_val <- 1
       vjust_val <- 0
-      
-      .map_to_return <- .map_to_return +
-        ggplot2::theme(plot.margin = ggplot2::margin(t = 30, r = 10, b = 5, l = 10))
+      top_margin_pt <- top_margin_pt + 25
 
     } else if (.logo_posicion == "topleft") {
       x_pos <- grid::unit(0, "npc")
       y_pos <- grid::unit(1, "npc") + grid::unit(margin_pad_cm, "cm")
       hjust_val <- 0
       vjust_val <- 0
-      
-      .map_to_return <- .map_to_return +
-        ggplot2::theme(plot.margin = ggplot2::margin(t = 30, r = 10, b = 5, l = 10))
-        
+      top_margin_pt <- top_margin_pt + 25
+
     } else {
       stop("'.logo_posicion' debe ser 'topright', 'topleft', 'bottomright' o 'bottomleft'.")
     }
@@ -1672,9 +1685,14 @@ mapa_estilo_victorgm <- function(
       ggplot2::coord_sf(clip = "off")
   }
 
+  # Aplicar márgenes acumulados una sola vez
+  .map_to_return <- .map_to_return +
+    ggplot2::theme(plot.margin = ggplot2::margin(
+      t = top_margin_pt, r = right_margin_pt,
+      b = bottom_margin_pt, l = left_margin_pt
+    ))
 
   return(.map_to_return)
-
 }
 
 # Función general para dar formato a tablas ----
