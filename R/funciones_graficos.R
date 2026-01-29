@@ -317,7 +317,7 @@ tema_victorgm <- function() {
 #' @param .color_titulo Cadena de caracteres. Color del título y subtítulo. Por defecto, `"#5F2987"` (morado).
 #' @param .caption Cadena de caracteres. Nota al pie del gráfico. Por defecto, `" "` (espacio en blanco; se muestra el enlace URL si está definido).
 #' @param .caption_size Número. Tamaño de la fuente de la nota al pie. Por defecto, `10`.
-#' @param .fuente_letra Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: `"Nunito Sans"`. Otras opciones comunes: `"Segoe UI"`, `"Arial"`, `"Times"`, `"Courier"`, `"Helvetica"`, etc.
+#' @param .fuente_letra Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: `"Source Sans 3"`. Otras opciones comunes: `"Segoe UI"`, `"Arial"`, `"Times"`, `"Courier"`, `"Helvetica"`, etc.
 #' @param .logo_path Cadena de caracteres. Ruta a una imagen PNG para incluir como logo en el gráfico. Por defecto, `NULL` (sin logo).
 #' @param .logo_posicion Cadena de caracteres. Esquina en la que colocar el logo: `"topright"`, `"topleft"`, `"bottomright"` o `"bottomleft"`. Por defecto, `"bottomright"`.
 #' @param .logo_escala Número. Tamaño del logo relativo al panel del gráfico (fracción de 0 a 1). Por defecto, `0.12`.
@@ -367,7 +367,7 @@ graficos_estilo_victorgm <- function(
     .color_titulo = "#5F2987",
     .caption = " ",
     .caption_size = 10,
-    .fuente_letra = "Nunito Sans",
+    .fuente_letra = "Source Sans 3",
     .logo_path = NULL,
     .logo_posicion = "bottomright",
     .logo_escala = 0.12,
@@ -382,10 +382,10 @@ graficos_estilo_victorgm <- function(
   # Registrar fuente de Google Fonts si es necesario
   fuente_ok <- victorgmtools:::registrar_fuente(.fuente_letra)
 
-  # Si falla la descarga de la fuente por defecto (Nunito Sans), usar sans como fallback
+  # Si falla la descarga de la fuente por defecto (Source Sans 3), usar sans como fallback
   # Solo intentamos el fallback si el usuario NO especificó una fuente personalizada distinta
-  if (!fuente_ok && .fuente_letra == "Nunito Sans") {
-    message("Usando 'sans' como fallback para 'Nunito Sans'.")
+  if (!fuente_ok && .fuente_letra == "Source Sans 3") {
+    message("Usando 'sans' como fallback para 'Source Sans 3'.")
     .fuente_letra <- "sans"
   } else if (!fuente_ok) {
     # Si el usuario especificó otra fuente (ej: Segoe UI) y falló la descarga de Google,
@@ -1046,7 +1046,7 @@ graficos_estilo_victorgm <- function(
 #' @param .subtitle Subtitulo del mapa. Habitualmente usado para definir las unidades de medida. Por defecto, `NULL`.
 #' @param .color_titulo Cadena de caracteres. Color del título y subtítulo. Por defecto, `"#5F2987"` (morado).
 #' @param .caption Nota al pie del mapa. Por defecto, `" "` (espacio en blanco; se muestra el enlace URL si está definido).
-#' @param .fuente_letra Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: `"Nunito Sans"`. Otras opciones comunes: `"Segoe UI"`, `"Arial"`, `"Times"`, `"Courier"`, `"Helvetica"`, etc.
+#' @param .fuente_letra Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: `"Source Sans 3"`. Otras opciones comunes: `"Segoe UI"`, `"Arial"`, `"Times"`, `"Courier"`, `"Helvetica"`, etc.
 #' @param .logo_path Cadena de caracteres. Ruta a una imagen PNG para incluir como logo en el gráfico. Por defecto, `NULL` (sin logo).
 #' @param .logo_posicion Cadena de caracteres. Esquina en la que colocar el logo: `"topright"`, `"topleft"`, `"bottomright"` o `"bottomleft"`. Por defecto, `"bottomright"`.
 #' @param .logo_escala Número. Tamaño del logo relativo. Por defecto, `0.12`.
@@ -1080,7 +1080,7 @@ mapa_estilo_victorgm <- function(
     .color_titulo = "#5F2987",
     .caption = " ",
     .caption_size = 10,
-    .fuente_letra = "Nunito Sans",
+    .fuente_letra = "Source Sans 3",
     .logo_path = NULL,
     .logo_posicion = "bottomright",
     .logo_escala = 0.12,
@@ -1095,9 +1095,9 @@ mapa_estilo_victorgm <- function(
   # Registrar fuente de Google Fonts si es necesario
   fuente_ok <- victorgmtools:::registrar_fuente(.fuente_letra)
 
-  # Si falla la descarga de la fuente por defecto (Nunito Sans), usar sans como fallback
-  if (!fuente_ok && .fuente_letra == "Nunito Sans") {
-    message("Usando 'sans' como fallback para 'Nunito Sans'.")
+  # Si falla la descarga de la fuente por defecto (Source Sans 3), usar sans como fallback
+  if (!fuente_ok && .fuente_letra == "Source Sans 3") {
+    message("Usando 'sans' como fallback para 'Source Sans 3'.")
     .fuente_letra <- "sans"
   } else if (!fuente_ok) {
     # Misma logica para mapas: si es custom y falla Google, asumir sistema
@@ -1735,7 +1735,7 @@ mapa_estilo_victorgm <- function(
 #' @param .formato_miles Cadena de caracteres. Separador de miles. Por defecto, `"."`.
 #' @param .formato_decimal Cadena de caracteres. Separador decimal. Por defecto, `","`.
 #' @param .font_size Cadena de caracteres. Tamaño de fuente para toda la tabla. Por defecto, `14`.
-#' @param .fuente_letra Cadena de caracteres. Fuente tipográfica. Por defecto, `"Nunito Sans"`.
+#' @param .fuente_letra Cadena de caracteres. Fuente tipográfica. Por defecto, `"Source Sans 3"`.
 #' @param .padding_celdas Número. Espaciado interno de las celdas en píxeles. Por defecto, `10`.
 #' @param .agrupaciones Lista con agrupaciones de columnas. Por defecto, `NULL`.
 #' @param .ancho_tabla Cadena de caracteres. Ancho de la tabla. Por defecto, `"100%"`.
@@ -1792,7 +1792,7 @@ tablas_estilo_victorgm <- function(
     .formato_miles = ".",
     .formato_decimal = ",",
     .font_size = 14,
-    .fuente_letra = "Nunito Sans",
+    .fuente_letra = "Source Sans 3",
     .padding_celdas = 10,
     .agrupaciones = NULL,
     .ancho_tabla = "100%",
@@ -2201,16 +2201,16 @@ tabla_estilo_victorgm <- tablas_estilo_victorgm
 #' según la fuente especificada.
 #'
 #' @param .tabla Objeto gt al que aplicar la configuración de fuente.
-#' @param .fuente_letra Cadena de caracteres. Nombre de la fuente principal. Por defecto, "Nunito Sans".
+#' @param .fuente_letra Cadena de caracteres. Nombre de la fuente principal. Por defecto, "Source Sans 3".
 #' @param .font_size Número. Tamaño de la fuente en píxeles.
 #' @return Objeto gt con la fuente configurada.
 #' @export
 configurar_fuente_tabla <- function(.tabla, .fuente_letra, .font_size) {
   # Stack de fuentes fallback según el sistema
   fuentes_sistema <- list(
-    "Nunito Sans" = list("Nunito Sans", "Source Sans 3", "Segoe UI", "Arial", "sans-serif"),
-    "Source Sans 3" = list("Source Sans 3", "Source Sans Pro", "Segoe UI", "Arial", "sans-serif"),
-    "Source Sans Pro" = list("Source Sans Pro", "Source Sans 3", "Segoe UI", "Arial", "sans-serif"),
+    "Source Sans 3" = list("Source Sans 3", "Source Sans Pro", "Nunito Sans", "Segoe UI", "Arial", "sans-serif"),
+    "Source Sans 3" = list("Source Sans 3", "Source Sans Pro", "Nunito Sans", "Segoe UI", "Arial", "sans-serif"),
+    "Source Sans Pro" = list("Source Sans Pro", "Source Sans 3", "Nunito Sans", "Segoe UI", "Arial", "sans-serif"),
 
     "Open Sans" = list("Open Sans", "Segoe UI", "Helvetica", "Arial", "sans-serif"),
     "Lato" = list("Lato", "Segoe UI", "Helvetica", "Arial", "sans-serif"),
