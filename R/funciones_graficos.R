@@ -1,3 +1,48 @@
+# Registro de fuentes Google para ggplot2 ----
+
+# Mapa interno de nombres de fuente a su nombre en Google Fonts
+.fuentes_google <- c(
+  "Source Sans 3"  = "Source Sans 3",
+  "Source Sans Pro" = "Source Sans Pro",
+  "Open Sans"      = "Open Sans",
+  "Lato"           = "Lato",
+  "Roboto"         = "Roboto"
+)
+
+#' Registrar fuente de Google Fonts para su uso en gráficos
+#'
+#' Descarga y registra una fuente de Google Fonts mediante `sysfonts` y activa
+#' `showtext` para que ggplot2 pueda utilizarla. Se ejecuta de forma silenciosa
+#' y solo descarga la fuente la primera vez.
+#'
+#' @param .fuente_letra Cadena de caracteres. Nombre de la fuente a registrar.
+#' @return Lógico. `TRUE` si la fuente se registró correctamente o ya estaba disponible, `FALSE` en caso contrario.
+#' @keywords internal
+registrar_fuente <- function(.fuente_letra) {
+  # Si la fuente ya esta registrada en sysfonts, no hacer nada
+  if (.fuente_letra %in% sysfonts::font_families()) {
+    showtext::showtext_auto()
+    return(TRUE)
+  }
+
+  # Intentar registrar desde Google Fonts
+  nombre_google <- .fuentes_google[.fuente_letra]
+  if (is.na(nombre_google)) nombre_google <- .fuente_letra
+
+  tryCatch({
+    sysfonts::font_add_google(nombre_google, .fuente_letra)
+    showtext::showtext_auto()
+    return(TRUE)
+  }, error = function(e) {
+    # Si falla la descarga, avisar sin interrumpir
+    message(
+      "No se pudo descargar la fuente '", .fuente_letra,
+      "' de Google Fonts. Se intentar\u00e1 usar la fuente del sistema o un fallback."
+    )
+    return(FALSE)
+  })
+}
+
 #Colores SG estudios ----
 #' Paleta de colores principal de victorgm
 #'
@@ -321,9 +366,18 @@ graficos_estilo_victorgm <- function(
     .fuente_letra = "Source Sans 3",
     .logo_path = NULL,
     .logo_posicion = "bottomright",
-    .logo_escala = 0.12
+  .logo_escala = 0.12
 ) {
+
+  # Registrar fuente de Google Fonts si es necesario
+  fuente_ok <- victorgmtools:::registrar_fuente(.fuente_letra)
   
+  # Si falla la descarga de la fuente por defecto (Source Sans 3), usar sans como fallback
+  if (!fuente_ok && .fuente_letra == "Source Sans 3") {
+    message("Usando 'sans' como fallback para 'Source Sans 3'.")
+    .fuente_letra <- "sans"
+  }
+
   # Función auxiliar para encontrar la mejor posición de leyenda automáticamente
   encontrar_mejor_posicion_leyenda <- function(plot_object) {
     tryCatch({
@@ -524,12 +578,16 @@ graficos_estilo_victorgm <- function(
   if (.tipo_grafico_x == "fecha") {
     # Determinar límites del eje x
     # Prioridad: .minimo_eje_x/.maximo_eje_x > .fecha_inicial_grafico/.fecha_final_grafico
-    if(!is.null(.minimo_eje_x) && !is.null(.maximo_eje_x)){
-      limits_x <- c(.minimo_eje_x, .maximo_eje_x)
-    } else if(is.null(.fecha_inicial_grafico) && is.null(.fecha_final_grafico)){
+    
+    lim_min <- if(!is.null(.minimo_eje_x)) .minimo_eje_x else .fecha_inicial_grafico
+    lim_max <- if(!is.null(.maximo_eje_x)) .maximo_eje_x else .fecha_final_grafico
+    
+    if (is.null(lim_min) && is.null(lim_max)) {
       limits_x <- NULL
     } else {
-      limits_x <- c(.fecha_inicial_grafico, .fecha_final_grafico)
+      # Construir vector de limites de longitud 2
+      limits_x <- c(if(is.null(lim_min)) NA else lim_min, 
+                    if(is.null(lim_max)) NA else lim_max)
     }
     
     # Aplicar escala del eje X
@@ -957,6 +1015,15 @@ mapa_estilo_victorgm <- function(
     .caption_size = 10,
     .fuente_letra = "Source Sans 3"
 ) {
+  # Registrar fuente de Google Fonts si es necesario
+  fuente_ok <- victorgmtools:::registrar_fuente(.fuente_letra)
+  
+  # Si falla la descarga de la fuente por defecto (Source Sans 3), usar sans como fallback
+  if (!fuente_ok && .fuente_letra == "Source Sans 3") {
+    message("Usando 'sans' como fallback para 'Source Sans 3'.")
+    .fuente_letra <- "sans"
+  }
+
   # Validar tipo de mapa
   if (!.tipo_mapa %in% c("coroplético", "burbujas")) {
     stop("El parámetro .tipo_mapa debe ser 'coroplético' o 'burbujas'")
@@ -1502,14 +1569,19 @@ tablas_estilo_victorgm <- function(
       column_labels.border.bottom.color = .color_borde_encabezado
     )
   
-  # CONFIGURAR FUENTES DE FORMA SEGURA
-  if (.usar_google_fonts) {
-    # Intentar Google Fonts con fallback
+  # CONFIGURAR FUENTES
+  # Para fuentes conocidas de Google Fonts, usar gt::google_font() como primaria
+  # con fallback a fuentes del sistema. Esto garantiza que la fuente se cargue
+  # en HTML sin necesidad de instalacion local.
+  es_google_font <- .fuente_letra %in% names(.fuentes_google)
+
+  if (es_google_font || .usar_google_fonts) {
+    nombre_google <- if (es_google_font) .fuentes_google[[.fuente_letra]] else .fuente_letra
     tryCatch({
       .tabla <- .tabla |>
         gt::opt_table_font(
           font = list(
-            gt::google_font(.fuente_letra),
+            gt::google_font(nombre_google),
             .fuente_letra,
             "system-ui",
             "sans-serif"
@@ -1517,11 +1589,9 @@ tablas_estilo_victorgm <- function(
           size = paste0(.font_size, "px")
         )
     }, error = function(e) {
-      warning("No se pudo cargar Google Fonts, usando fuentes del sistema")
       .tabla <<- configurar_fuente_tabla(.tabla, .fuente_letra, .font_size)
     })
   } else {
-    # Usar solo fuentes del sistema (RECOMENDADO)
     .tabla <- configurar_fuente_tabla(.tabla, .fuente_letra, .font_size)
   }
   
@@ -1864,7 +1934,11 @@ tabla_estilo_victorgm <- tablas_estilo_victorgm
 configurar_fuente_tabla <- function(.tabla, .fuente_letra, .font_size) {
   # Stack de fuentes fallback según el sistema
   fuentes_sistema <- list(
-    "Source Sans 3" = list("Source Sans 3", "Segoe UI", "Helvetica", "Arial", "sans-serif"),
+    "Source Sans 3" = list("Source Sans 3", "Source Sans Pro", "Segoe UI", "Arial", "sans-serif"),
+    "Source Sans Pro" = list("Source Sans Pro", "Source Sans 3", "Segoe UI", "Arial", "sans-serif"),
+    "Open Sans" = list("Open Sans", "Segoe UI", "Helvetica", "Arial", "sans-serif"),
+    "Lato" = list("Lato", "Segoe UI", "Helvetica", "Arial", "sans-serif"),
+    "Roboto" = list("Roboto", "Segoe UI", "Helvetica", "Arial", "sans-serif"),
     "Segoe UI" = list("Segoe UI", "Tahoma", "Geneva", "Verdana", "sans-serif"),
     "Arial" = list("Arial", "Helvetica", "sans-serif"),
     "Times" = list("Times New Roman", "Times", "serif"),

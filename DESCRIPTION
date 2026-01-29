@@ -31,6 +31,8 @@ Imports:
     DBI,
     duckplyr,
     sf,
+    showtext,
+    sysfonts,
     rnaturalearth,
     ggfx,
     slider,
