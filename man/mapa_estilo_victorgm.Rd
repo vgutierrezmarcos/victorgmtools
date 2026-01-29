@@ -33,13 +33,16 @@ mapa_estilo_victorgm(
   .color_titulo = "#5F2987",
   .caption = " ",
   .caption_size = 10,
-  .fuente_letra = "Source Sans 3",
+  .fuente_letra = "Nunito Sans",
   .logo_path = NULL,
   .logo_posicion = "bottomright",
   .logo_escala = 0.12,
   .url_enlace = "www.victorgutierrezmarcos.es",
   .linea_separadora = TRUE,
-  .colores_linea = c("#5F2987", "#E2EFD9", "#B8860B")
+  .colores_linea = c("#5F2987", "#E2EFD9", "#B8860B"),
+  .estatico = FALSE,
+  .width = 6,
+  .height = 5
 )
 }
 \arguments{
@@ -93,7 +96,7 @@ mapa_estilo_victorgm(
 
 \item{.caption}{Nota al pie del mapa. Por defecto, \code{" "} (espacio en blanco; se muestra el enlace URL si está definido).}
 
-\item{.fuente_letra}{Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: \code{"Source Sans 3"}. Otras opciones comunes: \code{"Segoe UI"}, \code{"Arial"}, \code{"Times"}, \code{"Courier"}, \code{"Helvetica"}, etc.}
+\item{.fuente_letra}{Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: \code{"Nunito Sans"}. Otras opciones comunes: \code{"Segoe UI"}, \code{"Arial"}, \code{"Times"}, \code{"Courier"}, \code{"Helvetica"}, etc.}
 
 \item{.logo_path}{Cadena de caracteres. Ruta a una imagen PNG para incluir como logo en el gráfico. Por defecto, \code{NULL} (sin logo).}
 

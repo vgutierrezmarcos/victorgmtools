@@ -30,7 +30,7 @@ tabla_estilo_victorgm(
   .formato_miles = ".",
   .formato_decimal = ",",
   .font_size = 14,
-  .fuente_letra = "Source Sans 3",
+  .fuente_letra = "Nunito Sans",
   .padding_celdas = 10,
   .agrupaciones = NULL,
   .ancho_tabla = "100\%",
@@ -81,7 +81,7 @@ tabla_estilo_victorgm(
 
 \item{.font_size}{Cadena de caracteres. Tamaño de fuente para toda la tabla. Por defecto, \code{14}.}
 
-\item{.fuente_letra}{Cadena de caracteres. Fuente tipográfica. Por defecto, \code{"Source Sans 3"}.}
+\item{.fuente_letra}{Cadena de caracteres. Fuente tipográfica. Por defecto, \code{"Nunito Sans"}.}
 
 \item{.padding_celdas}{Número. Espaciado interno de las celdas en píxeles. Por defecto, \code{10}.}
 
