@@ -366,7 +366,10 @@ graficos_estilo_victorgm <- function(
     .fuente_letra = "Source Sans 3",
     .logo_path = NULL,
     .logo_posicion = "bottomright",
-    .logo_escala = 0.12
+    .logo_escala = 0.12,
+    .url_enlace = "www.victorgutierrezmarcos.es/blog",
+    .linea_separadora = TRUE,
+    .colores_linea = c("#5F2987", "#E2EFD9", "#B8860B")
 ) {
 
   # Registrar fuente de Google Fonts si es necesario
@@ -739,13 +742,31 @@ graficos_estilo_victorgm <- function(
   }
   
   if(!is.null(.caption)){
+    # Añadir enlace si existe
+    if (!is.null(.url_enlace) && .url_enlace != "") {
+      # Crear el enlace HTML con estilo
+      link_html <- sprintf("<br><span style='font-size:%dpx; color:gray50;'>%s</span>", 
+                           round(.caption_size * 0.9), # Un poco más pequeño
+                           .url_enlace)
+      .caption <- paste0(.caption, link_html)
+    }
+    
     caption_formateado <- stringr::str_wrap(.caption, width = 80)
+    # Revertir el str_wrap para la parte HTML si se rompió (simple fix: asumir que el usuario pone saltos si es muy largo o confiar en ggtext)
+    # Mejor: aplicar str_wrap SOLO a la parte de texto original, no al HTML
     
     .plot_to_return_plt <-
       .plot_to_return_plt +
-      ggplot2::labs(caption = caption_formateado) +
-      ggplot2::theme(plot.caption = ggplot2::element_text(hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50"))
+      ggplot2::labs(caption = .caption) + # Usamos .caption directamente que ya tiene HTML
+      ggplot2::theme(plot.caption = ggtext::element_markdown(hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50"))
+  } else if (!is.null(.url_enlace) && .url_enlace != "") {
+     # Si no hay caption pero sí enlace
+      .plot_to_return_plt <-
+      .plot_to_return_plt +
+      ggplot2::labs(caption = .url_enlace) +
+      ggplot2::theme(plot.caption = ggtext::element_markdown(hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50"))
   }
+
   
   if(is.null(.title_x_axis)){
     .plot_to_return_plt <-
@@ -773,6 +794,41 @@ graficos_estilo_victorgm <- function(
   ggplot2::update_geom_defaults("text", list(family = .fuente_letra))
   ggplot2::update_geom_defaults("label", list(family = .fuente_letra))
 
+  # Insertar línea separadora
+  if (.linea_separadora) {
+    # Crear gradiente
+    grad <- grDevices::colorRampPalette(.colores_linea)(100)
+    # Crear raster grob (1 pixel alto, 100 ancho)
+    linea_grob <- grid::rasterGrob(
+      matrix(grad, nrow = 1),
+      width = grid::unit(1, "npc"),
+      height = grid::unit(2, "pt"), # Línea fina
+      interpolate = TRUE,
+      vp = grid::viewport(y = 0, just = "bottom") # Alinear al fondo
+    )
+    
+    # Ajustar margen inferior para dar espacio a la línea y el caption
+    # La línea se pondrá en y = 0 del panel, pero con clip="off" y movida hacia abajo
+    
+    # Posición: Justo encima del caption/logo.
+    # Usaremos una posición fija relativa al bottom del panel, asumiendo que el caption está más abajo.
+    # Un valor seguro suele ser alrededor de -1.5cm o -2cm dependiendo de los ejes.
+    # Pero para ser robusto, la pondremos justo donde empieza el margen inferior.
+    
+    y_linea <- grid::unit(0, "npc") - grid::unit(1.2, "cm") # Ajuste empírico para estar bajo el eje X
+    
+    linea_grob$y <- y_linea
+    
+    .plot_to_return_plt <- .plot_to_return_plt +
+      ggplot2::annotation_custom(
+        linea_grob,
+        xmin = -Inf, xmax = Inf,
+        ymin = -Inf, ymax = Inf
+      ) +
+      ggplot2::coord_cartesian(clip = "off") +
+      ggplot2::theme(plot.margin = ggplot2::margin(b = 25)) # Asegurar espacio extra
+  }
+
   # Insertar logo si se ha indicado ruta
   if (!is.null(.logo_path)) {
     if (!file.exists(.logo_path)) {
@@ -781,14 +837,16 @@ graficos_estilo_victorgm <- function(
 
     img <- png::readPNG(.logo_path)
     dims <- dim(img)
-    ar <- dims[1] / dims[2]
+    ar <- dims[1] / dims[2] # alto / ancho
 
-    # Calcular dimensiones en cm (ajustable con .logo_escala)
-    # Base: .logo_escala = 0.12 -> ~3 cm de ancho
-    logo_width_cm <- 25 * .logo_escala
-    logo_height_cm <- logo_width_cm * ar
+    # Autoscaling usando snpc (Square Normalized Parent Coordinates)
+    # Esto mantiene la proporción relativa al lado más pequeño del gráfico
+    # .logo_escala se interpreta como fracción del área visible
     
-    # Margen adicional entre el área de trazado y el logo (en cm)
+    # Usamos snpc para mantener el aspect ratio constante independientemente de la deformación del plot
+    logo_width <- grid::unit(.logo_escala * 2, "snpc") 
+    logo_height <- grid::unit(.logo_escala * 2 * ar, "snpc")
+
     margin_pad_cm <- 0.2
     
     # Variables para configuración
@@ -797,28 +855,32 @@ graficos_estilo_victorgm <- function(
     hjust_val <- NULL
     vjust_val <- NULL
     
+    # Posición ajustada para tener en cuenta la línea separadora si existe
+    y_base_offset <- if(.linea_separadora) 1.5 else 0
+    
     # Configurar posición y márgenes según .logo_posicion
     if (.logo_posicion == "bottomright") {
       x_pos <- grid::unit(1, "npc")
-      y_pos <- grid::unit(0, "npc") - grid::unit(margin_pad_cm, "cm")
+      y_pos <- grid::unit(0, "npc") - grid::unit(margin_pad_cm + y_base_offset, "cm")
       hjust_val <- 1
       vjust_val <- 1
       
-      # Convertir cm a points (1 cm approx 28.35 pts)
-      margin_bottom_pts <- (logo_height_cm + margin_pad_cm + 0.2) * 28.35
+      # Margen inferior extra solo si el logo sale del margen actual
+      # Pero theme() reemplaza el margen anterior, así que debemos sumar
+      # Como no podemos "sumar" fácilmente a un objeto theme existente sin complicación,
+      # definimos un margen generoso.
       
       .plot_to_return_plt <- .plot_to_return_plt +
-        ggplot2::theme(plot.margin = ggplot2::margin(t = 5, r = 10, b = margin_bottom_pts, l = 10))
+        ggplot2::theme(plot.margin = ggplot2::margin(t = 5, r = 10, b = 40, l = 10)) # Aumentado b
         
     } else if (.logo_posicion == "bottomleft") {
       x_pos <- grid::unit(0, "npc")
-      y_pos <- grid::unit(0, "npc") - grid::unit(margin_pad_cm, "cm")
+      y_pos <- grid::unit(0, "npc") - grid::unit(margin_pad_cm + y_base_offset, "cm")
       hjust_val <- 0
       vjust_val <- 1
       
-      margin_bottom_pts <- (logo_height_cm + margin_pad_cm + 0.2) * 28.35
       .plot_to_return_plt <- .plot_to_return_plt +
-        ggplot2::theme(plot.margin = ggplot2::margin(t = 5, r = 10, b = margin_bottom_pts, l = 10))
+        ggplot2::theme(plot.margin = ggplot2::margin(t = 5, r = 10, b = 40, l = 10))
         
     } else if (.logo_posicion == "topright") {
       x_pos <- grid::unit(1, "npc")
@@ -826,9 +888,9 @@ graficos_estilo_victorgm <- function(
       hjust_val <- 1
       vjust_val <- 0
       
-      margin_top_pts <- (logo_height_cm + margin_pad_cm + 0.2) * 28.35
+      # Aquí no afecta la línea inferior
       .plot_to_return_plt <- .plot_to_return_plt +
-        ggplot2::theme(plot.margin = ggplot2::margin(t = margin_top_pts, r = 10, b = 5, l = 10))
+        ggplot2::theme(plot.margin = ggplot2::margin(t = 30, r = 10, b = 5, l = 10))
 
     } else if (.logo_posicion == "topleft") {
       x_pos <- grid::unit(0, "npc")
@@ -836,9 +898,8 @@ graficos_estilo_victorgm <- function(
       hjust_val <- 0
       vjust_val <- 0
       
-      margin_top_pts <- (logo_height_cm + margin_pad_cm + 0.2) * 28.35
       .plot_to_return_plt <- .plot_to_return_plt +
-        ggplot2::theme(plot.margin = ggplot2::margin(t = margin_top_pts, r = 10, b = 5, l = 10))
+        ggplot2::theme(plot.margin = ggplot2::margin(t = 30, r = 10, b = 5, l = 10))
         
     } else {
       stop("'.logo_posicion' debe ser 'topright', 'topleft', 'bottomright' o 'bottomleft'.")
@@ -848,8 +909,8 @@ graficos_estilo_victorgm <- function(
       img,
       x = x_pos,
       y = y_pos,
-      width = grid::unit(logo_width_cm, "cm"),
-      height = grid::unit(logo_height_cm, "cm"),
+      width = logo_width,
+      height = logo_height,
       hjust = hjust_val,
       vjust = vjust_val,
       interpolate = TRUE
@@ -1063,7 +1124,10 @@ mapa_estilo_victorgm <- function(
     .fuente_letra = "Source Sans 3",
     .logo_path = NULL,
     .logo_posicion = "bottomright",
-    .logo_escala = 0.12
+    .logo_escala = 0.12,
+    .url_enlace = "www.victorgutierrezmarcos.es/blog",
+    .linea_separadora = TRUE,
+    .colores_linea = c("#5F2987", "#E2EFD9", "#B8860B")
 ) {
 
   # Registrar fuente de Google Fonts si es necesario
@@ -1475,23 +1539,139 @@ mapa_estilo_victorgm <- function(
   }
   
   if(!is.null(.caption)){
+    # Añadir enlace si existe
+    if (!is.null(.url_enlace) && .url_enlace != "") {
+      link_html <- sprintf("<br><span style='font-size:%dpx; color:gray50;'>%s</span>", 
+                           round(.caption_size * 0.9), 
+                           .url_enlace)
+      .caption <- paste0(.caption, link_html)
+    }
+
     caption_formateado <- stringr::str_wrap(.caption, width = 80)
     
     .map_to_return <-
       .map_to_return +
-      ggplot2::labs(caption = caption_formateado) +
-      ggplot2::theme(plot.caption = ggplot2::element_text(hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50"))
+      ggplot2::labs(caption = .caption) +
+      ggplot2::theme(plot.caption = ggtext::element_markdown(hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50"))
+  } else if (!is.null(.url_enlace) && .url_enlace != "") {
+      .map_to_return <-
+      .map_to_return +
+      ggplot2::labs(caption = .url_enlace) +
+      ggplot2::theme(plot.caption = ggtext::element_markdown(hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50"))
   }
+
   
   # Configurar update_geom_defaults para que geom_text use la fuente por defecto
   ggplot2::update_geom_defaults("text", list(family = .fuente_letra))
   ggplot2::update_geom_defaults("label", list(family = .fuente_letra))
   
+  # Insertar línea separadora
+  if (.linea_separadora) {
+    grad <- grDevices::colorRampPalette(.colores_linea)(100)
+    linea_grob <- grid::rasterGrob(
+      matrix(grad, nrow = 1),
+      width = grid::unit(1, "npc"),
+      height = grid::unit(2, "pt"),
+      interpolate = TRUE,
+      vp = grid::viewport(y = 0, just = "bottom")
+    )
+    
+    y_linea <- grid::unit(0, "npc") - grid::unit(1.2, "cm")
+    linea_grob$y <- y_linea
+    
+    .map_to_return <- .map_to_return +
+      ggplot2::annotation_custom(
+        linea_grob,
+        xmin = -Inf, xmax = Inf,
+        ymin = -Inf, ymax = Inf
+      ) +
+      ggplot2::coord_sf(clip = "off") +
+      ggplot2::theme(plot.margin = ggplot2::margin(b = 25))
+  }
+
   # Insertar logo si se ha indicado ruta
   if (!is.null(.logo_path)) {
     if (!file.exists(.logo_path)) {
       stop(paste("Archivo de logo no encontrado:", .logo_path))
     }
+
+    img <- png::readPNG(.logo_path)
+    dims <- dim(img)
+    ar <- dims[1] / dims[2]
+
+    # Autoscaling usando snpc
+    logo_width <- grid::unit(.logo_escala * 2, "snpc")
+    logo_height <- grid::unit(.logo_escala * 2 * ar, "snpc")
+    
+    margin_pad_cm <- 0.2
+    
+    x_pos <- NULL
+    y_pos <- NULL
+    hjust_val <- NULL
+    vjust_val <- NULL
+    
+    y_base_offset <- if(.linea_separadora) 1.5 else 0
+    
+    if (.logo_posicion == "bottomright") {
+      x_pos <- grid::unit(1, "npc")
+      y_pos <- grid::unit(0, "npc") - grid::unit(margin_pad_cm + y_base_offset, "cm")
+      hjust_val <- 1
+      vjust_val <- 1
+      
+      .map_to_return <- .map_to_return +
+        ggplot2::theme(plot.margin = ggplot2::margin(t = 5, r = 10, b = 40, l = 10))
+        
+    } else if (.logo_posicion == "bottomleft") {
+      x_pos <- grid::unit(0, "npc")
+      y_pos <- grid::unit(0, "npc") - grid::unit(margin_pad_cm + y_base_offset, "cm")
+      hjust_val <- 0
+      vjust_val <- 1
+      
+      .map_to_return <- .map_to_return +
+        ggplot2::theme(plot.margin = ggplot2::margin(t = 5, r = 10, b = 40, l = 10))
+        
+    } else if (.logo_posicion == "topright") {
+      x_pos <- grid::unit(1, "npc")
+      y_pos <- grid::unit(1, "npc") + grid::unit(margin_pad_cm, "cm")
+      hjust_val <- 1
+      vjust_val <- 0
+      
+      .map_to_return <- .map_to_return +
+        ggplot2::theme(plot.margin = ggplot2::margin(t = 30, r = 10, b = 5, l = 10))
+
+    } else if (.logo_posicion == "topleft") {
+      x_pos <- grid::unit(0, "npc")
+      y_pos <- grid::unit(1, "npc") + grid::unit(margin_pad_cm, "cm")
+      hjust_val <- 0
+      vjust_val <- 0
+      
+      .map_to_return <- .map_to_return +
+        ggplot2::theme(plot.margin = ggplot2::margin(t = 30, r = 10, b = 5, l = 10))
+        
+    } else {
+      stop("'.logo_posicion' debe ser 'topright', 'topleft', 'bottomright' o 'bottomleft'.")
+    }
+
+    logo_grob <- grid::rasterGrob(
+      img,
+      x = x_pos,
+      y = y_pos,
+      width = logo_width,
+      height = logo_height,
+      hjust = hjust_val,
+      vjust = vjust_val,
+      interpolate = TRUE
+    )
+
+    .map_to_return <- .map_to_return +
+      ggplot2::annotation_custom(
+        logo_grob,
+        xmin = -Inf, xmax = Inf,
+        ymin = -Inf, ymax = Inf
+      ) +
+      ggplot2::coord_sf(clip = "off")
+  }
+
 
     img <- png::readPNG(.logo_path)
     dims <- dim(img)

@@ -32,7 +32,10 @@ mapa_estilo_victorgm(
   .subtitle_size = 14,
   .caption = NULL,
   .caption_size = 10,
-  .fuente_letra = "Source Sans 3"
+  .fuente_letra = "Source Sans 3",
+  .logo_path = NULL,
+  .logo_posicion = "bottomright",
+  .logo_escala = 0.12
 )
 }
 \arguments{
@@ -85,6 +88,12 @@ mapa_estilo_victorgm(
 \item{.caption}{Nota al pie del mapa. Por defecto, \code{NULL}.}
 
 \item{.fuente_letra}{Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: \code{"Source Sans 3"}. Otras opciones comunes: \code{"Segoe UI"}, \code{"Arial"}, \code{"Times"}, \code{"Courier"}, \code{"Helvetica"}, etc.}
+
+\item{.logo_path}{Cadena de caracteres. Ruta a una imagen PNG para incluir como logo en el gráfico. Por defecto, \code{NULL} (sin logo).}
+
+\item{.logo_posicion}{Cadena de caracteres. Esquina en la que colocar el logo: \code{"topright"}, \code{"topleft"}, \code{"bottomright"} o \code{"bottomleft"}. Por defecto, \code{"bottomright"}.}
+
+\item{.logo_escala}{Número. Tamaño del logo relativo. Por defecto, \code{0.12}.}
 }
 \description{
 Fijar estilo de mapas coropléticos (por defecto) o de burbujas para VictorGM, con algunos parámetros opcionales. Habría que añadir el título al gráfico generado.
