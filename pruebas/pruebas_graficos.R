@@ -46,7 +46,7 @@ viviendas_plt <-
     )
   ) +
   # Interactive Area Layer
-  ggiraph::geom_area_interactive(
+  ggplot2::geom_area(
     mapping = ggplot2::aes(
       tooltip = paste0(
         "Año: ", fecha |> format("%Y"), "\n",
@@ -59,7 +59,7 @@ viviendas_plt <-
   ) +
   # Text Labels Layer (positioned at the last date inside the stack)
   ggiraph::geom_text_interactive(
-    data = datos_procesados_df |> dplyr::filter(fecha == fecha_max),
+    data = datos_procesados_df |> dplyr::filter(fecha == max(fecha, na.rm = TRUE)),
     mapping = ggplot2::aes(
       label = nombres_muy_cortos,
       data_id = nombres_muy_cortos

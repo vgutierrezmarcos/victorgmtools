@@ -10,7 +10,7 @@ registrar_fuente(.fuente_letra)
 \item{.fuente_letra}{Cadena de caracteres. Nombre de la fuente a registrar.}
 }
 \value{
-Invisible \code{NULL}. Se llama por sus efectos secundarios.
+Lógico. \code{TRUE} si la fuente se registró correctamente o ya estaba disponible, \code{FALSE} en caso contrario.
 }
 \description{
 Descarga y registra una fuente de Google Fonts mediante \code{sysfonts} y activa
