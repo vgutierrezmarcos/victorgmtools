@@ -45,6 +45,68 @@ registrar_fuente <- function(.fuente_letra) {
   })
 }
 
+#' Generar overlay HTML de logo con hover cross-fade para widgets interactivos
+#'
+#' Crea un bloque HTML con dos imágenes superpuestas (logo principal y logo hover)
+#' que realizan un cross-fade al pasar el ratón. El logo enlaza a una URL.
+#'
+#' @param .logo_path Cadena de caracteres. Ruta al archivo PNG del logo principal.
+#' @param .logo_hover_path Cadena de caracteres. Ruta al archivo PNG del logo en hover.
+#' @param .logo_posicion Cadena de caracteres. Esquina: `"topright"`, `"topleft"`, `"bottomright"` o `"bottomleft"`.
+#' @param .logo_ancho_pct Número. Ancho del logo como porcentaje del contenedor (0-100).
+#' @param .url_enlace Cadena de caracteres. URL destino al hacer clic en el logo.
+#' @return Cadena de caracteres con el HTML del overlay.
+#' @keywords internal
+crear_logo_html_overlay <- function(.logo_path,
+                                    .logo_hover_path,
+                                    .logo_posicion = "bottomright",
+                                    .logo_ancho_pct = 12.5,
+                                    .url_enlace = "www.victorgutierrezmarcos.es") {
+
+  # Base64-encode ambas imagenes
+  logo_b64 <- base64enc::base64encode(.logo_path)
+  logo_hover_b64 <- base64enc::base64encode(.logo_hover_path)
+
+  # Generar un ID unico para evitar colisiones CSS entre widgets
+
+  uid <- paste0("vgm-logo-", format(Sys.time(), "%H%M%S"), "-",
+                sample.int(1e6, 1))
+
+  # Mapear posicion a CSS
+  pos_css <- switch(.logo_posicion,
+    "bottomright" = "bottom: 8px; right: 8px;",
+    "bottomleft"  = "bottom: 8px; left: 8px;",
+    "topright"    = "top: 8px; right: 8px;",
+    "topleft"     = "top: 8px; left: 8px;",
+    stop("'.logo_posicion' debe ser 'topright', 'topleft', 'bottomright' o 'bottomleft'.")
+  )
+
+  # Asegurar protocolo en la URL
+  href <- if (!grepl("^https?://", .url_enlace)) {
+    paste0("https://", .url_enlace)
+  } else {
+    .url_enlace
+  }
+
+  sprintf(
+    '<div id="%s" style="position:absolute; %s width:%s%%; z-index:1000; pointer-events:auto;">
+  <style>
+    #%s .vgm-logo-main { transition: opacity 0.25s ease; opacity: 1; display: block; width: 100%%; }
+    #%s .vgm-logo-hover { transition: opacity 0.25s ease; opacity: 0; position: absolute; top: 0; left: 0; width: 100%%; }
+    #%s:hover .vgm-logo-main { opacity: 0; }
+    #%s:hover .vgm-logo-hover { opacity: 1; }
+  </style>
+  <a href="%s" target="_blank" rel="noopener" style="display:block; position:relative;">
+    <img class="vgm-logo-main" src="data:image/png;base64,%s" alt="Logo" />
+    <img class="vgm-logo-hover" src="data:image/png;base64,%s" alt="Logo hover" />
+  </a>
+</div>',
+    uid, pos_css, .logo_ancho_pct,
+    uid, uid, uid, uid,
+    href, logo_b64, logo_hover_b64
+  )
+}
+
 #Colores SG estudios ----
 #' Paleta de colores principal de victorgm
 #'
@@ -320,7 +382,8 @@ tema_victorgm <- function() {
 #' @param .fuente_letra Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: `"Source Sans 3"`. Otras opciones comunes: `"Segoe UI"`, `"Arial"`, `"Times"`, `"Courier"`, `"Helvetica"`, etc.
 #' @param .logo_path Cadena de caracteres. Ruta a una imagen PNG para incluir como logo en el gráfico. Por defecto, `NULL` (sin logo).
 #' @param .logo_posicion Cadena de caracteres. Esquina en la que colocar el logo: `"topright"`, `"topleft"`, `"bottomright"` o `"bottomleft"`. Por defecto, `"bottomright"`.
-#' @param .logo_escala Número. Tamaño del logo relativo al panel del gráfico (fracción de 0 a 1). Por defecto, `0.12`.
+#' @param .logo_ancho_pct Número. Ancho del logo como porcentaje del ancho del gráfico (de 0 a 100). Por defecto, `10`.
+#' @param .logo_hover_path Cadena de caracteres. Ruta a una imagen PNG alternativa que se muestra al pasar el ratón sobre el logo (solo en modo interactivo). Genera un efecto de cross-fade entre ambas imágenes. Por defecto, `NULL` (sin efecto hover).
 #' @return Objeto ggplot2 con el estilo corporativo VictorGM aplicado.
 #' @examples
 #' \dontrun{
@@ -370,7 +433,8 @@ graficos_estilo_victorgm <- function(
     .fuente_letra = "Source Sans 3",
     .logo_path = NULL,
     .logo_posicion = "bottomright",
-    .logo_escala = 0.12,
+    .logo_ancho_pct = 12.5,
+    .logo_hover_path = NULL,
     .url_enlace = "www.victorgutierrezmarcos.es",
     .linea_separadora = TRUE,
     .colores_linea = c("#5F2987", "#E2EFD9", "#B8860B"),
@@ -872,8 +936,8 @@ graficos_estilo_victorgm <- function(
     bottom_margin_pt <- bottom_margin_pt + 8
   }
 
-  # Insertar logo si se ha indicado ruta
-  if (!is.null(.logo_path)) {
+  # Insertar logo si se ha indicado ruta (grob solo en modo estático)
+  if (!is.null(.logo_path) && .estatico) {
     if (!file.exists(.logo_path)) {
       stop(paste("Archivo de logo no encontrado:", .logo_path))
     }
@@ -882,10 +946,10 @@ graficos_estilo_victorgm <- function(
     dims <- dim(img)
     ar <- dims[1] / dims[2] # alto / ancho
 
-    # Autoscaling usando snpc (Square Normalized Parent Coordinates)
-    # Esto mantiene la proporción relativa al lado más pequeño del gráfico
-    logo_width <- grid::unit(.logo_escala * 2, "snpc")
-    logo_height <- grid::unit(.logo_escala * 2 * ar, "snpc")
+    # Ancho del logo como fracción del gráfico, manteniendo proporciones constantes (snpc)
+    logo_width_frac <- .logo_ancho_pct / 100
+    logo_width <- grid::unit(logo_width_frac, "snpc")
+    logo_height <- grid::unit(logo_width_frac * ar, "snpc")
 
     margin_pad_cm <- 0.2
 
@@ -895,22 +959,22 @@ graficos_estilo_victorgm <- function(
     hjust_val <- NULL
     vjust_val <- NULL
 
-    # Para posiciones inferiores, alinear el logo verticalmente con el caption
-    logo_y_bottom <- grid::unit(0, "npc") - grid::unit(caption_area_offset_cm + 0.5, "cm")
+    # Para posiciones inferiores, alinear el logo a la misma altura que el caption
+    logo_y_bottom <- grid::unit(0, "npc") - grid::unit(caption_area_offset_cm, "cm")
 
     # Configurar posición según .logo_posicion
     if (.logo_posicion == "bottomright") {
       x_pos <- grid::unit(1, "npc")
       y_pos <- logo_y_bottom
       hjust_val <- 1
-      vjust_val <- 0.5
+      vjust_val <- 0.125
       bottom_margin_pt <- bottom_margin_pt + 40
 
     } else if (.logo_posicion == "bottomleft") {
       x_pos <- grid::unit(0, "npc")
       y_pos <- logo_y_bottom
       hjust_val <- 0
-      vjust_val <- 0.5
+      vjust_val <- 0.125
       bottom_margin_pt <- bottom_margin_pt + 40
 
     } else if (.logo_posicion == "topright") {
@@ -1012,6 +1076,38 @@ graficos_estilo_victorgm <- function(
         )
       }
     }, silent = TRUE)
+
+    # Inyectar overlay HTML del logo con hover si se proporcionaron ambas rutas
+    if (!is.null(.logo_path) && !is.null(.logo_hover_path)) {
+      if (!file.exists(.logo_path)) {
+        stop(paste("Archivo de logo no encontrado:", .logo_path))
+      }
+      if (!file.exists(.logo_hover_path)) {
+        stop(paste("Archivo de logo hover no encontrado:", .logo_hover_path))
+      }
+
+      logo_html <- crear_logo_html_overlay(
+        .logo_path       = .logo_path,
+        .logo_hover_path = .logo_hover_path,
+        .logo_posicion   = .logo_posicion,
+        .logo_ancho_pct  = .logo_ancho_pct,
+        .url_enlace      = .url_enlace
+      )
+
+      .plot_to_return_plt <- htmlwidgets::onRender(
+        .plot_to_return_plt,
+        sprintf(
+          "function(el, x) {
+             var container = el.querySelector('div.svg-container') || el;
+             container.style.position = 'relative';
+             var overlay = document.createElement('div');
+             overlay.innerHTML = %s;
+             container.appendChild(overlay.firstElementChild);
+           }",
+          jsonlite::toJSON(logo_html, auto_unbox = TRUE)
+        )
+      )
+    }
   }
 
   return(.plot_to_return_plt)
@@ -1049,7 +1145,8 @@ graficos_estilo_victorgm <- function(
 #' @param .fuente_letra Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: `"Source Sans 3"`. Otras opciones comunes: `"Segoe UI"`, `"Arial"`, `"Times"`, `"Courier"`, `"Helvetica"`, etc.
 #' @param .logo_path Cadena de caracteres. Ruta a una imagen PNG para incluir como logo en el gráfico. Por defecto, `NULL` (sin logo).
 #' @param .logo_posicion Cadena de caracteres. Esquina en la que colocar el logo: `"topright"`, `"topleft"`, `"bottomright"` o `"bottomleft"`. Por defecto, `"bottomright"`.
-#' @param .logo_escala Número. Tamaño del logo relativo. Por defecto, `0.12`.
+#' @param .logo_ancho_pct Número. Ancho del logo como porcentaje del ancho del gráfico (de 0 a 100). Por defecto, `10`.
+#' @param .logo_hover_path Cadena de caracteres. Ruta a una imagen PNG alternativa que se muestra al pasar el ratón sobre el logo (solo en modo interactivo). Genera un efecto de cross-fade entre ambas imágenes. Por defecto, `NULL` (sin efecto hover).
 #' @export
 mapa_estilo_victorgm <- function(
     .x,
@@ -1083,7 +1180,8 @@ mapa_estilo_victorgm <- function(
     .fuente_letra = "Source Sans 3",
     .logo_path = NULL,
     .logo_posicion = "bottomright",
-    .logo_escala = 0.12,
+    .logo_ancho_pct = 12.5,
+    .logo_hover_path = NULL,
     .url_enlace = "www.victorgutierrezmarcos.es",
     .linea_separadora = TRUE,
     .colores_linea = c("#5F2987", "#E2EFD9", "#B8860B"),
@@ -1572,8 +1670,8 @@ mapa_estilo_victorgm <- function(
     bottom_margin_pt <- bottom_margin_pt + 8
   }
 
-  # Insertar logo si se ha indicado ruta
-  if (!is.null(.logo_path)) {
+  # Insertar logo si se ha indicado ruta (grob solo en modo estático)
+  if (!is.null(.logo_path) && .estatico) {
     if (!file.exists(.logo_path)) {
       stop(paste("Archivo de logo no encontrado:", .logo_path))
     }
@@ -1582,9 +1680,10 @@ mapa_estilo_victorgm <- function(
     dims <- dim(img)
     ar <- dims[1] / dims[2]
 
-    # Autoscaling usando snpc
-    logo_width <- grid::unit(.logo_escala * 2, "snpc")
-    logo_height <- grid::unit(.logo_escala * 2 * ar, "snpc")
+    # Ancho del logo como fracción del gráfico, manteniendo proporciones constantes (snpc)
+    logo_width_frac <- .logo_ancho_pct / 100
+    logo_width <- grid::unit(logo_width_frac, "snpc")
+    logo_height <- grid::unit(logo_width_frac * ar, "snpc")
 
     margin_pad_cm <- 0.2
 
@@ -1593,22 +1692,22 @@ mapa_estilo_victorgm <- function(
     hjust_val <- NULL
     vjust_val <- NULL
 
-    # Para posiciones inferiores, alinear el logo verticalmente con el caption
-    logo_y_bottom <- grid::unit(0, "npc") - grid::unit(caption_area_offset_cm + 0.5, "cm")
+    # Para posiciones inferiores, alinear el logo a la misma altura que el caption
+    logo_y_bottom <- grid::unit(0, "npc") - grid::unit(caption_area_offset_cm, "cm")
 
     # Configurar posición según .logo_posicion
     if (.logo_posicion == "bottomright") {
       x_pos <- grid::unit(1, "npc")
       y_pos <- logo_y_bottom
       hjust_val <- 1
-      vjust_val <- 0.5
+      vjust_val <- 0.125
       bottom_margin_pt <- bottom_margin_pt + 40
 
     } else if (.logo_posicion == "bottomleft") {
       x_pos <- grid::unit(0, "npc")
       y_pos <- logo_y_bottom
       hjust_val <- 0
-      vjust_val <- 0.5
+      vjust_val <- 0.125
       bottom_margin_pt <- bottom_margin_pt + 40
 
     } else if (.logo_posicion == "topright") {
@@ -1706,6 +1805,38 @@ mapa_estilo_victorgm <- function(
         )
       }
     }, silent = TRUE)
+
+    # Inyectar overlay HTML del logo con hover si se proporcionaron ambas rutas
+    if (!is.null(.logo_path) && !is.null(.logo_hover_path)) {
+      if (!file.exists(.logo_path)) {
+        stop(paste("Archivo de logo no encontrado:", .logo_path))
+      }
+      if (!file.exists(.logo_hover_path)) {
+        stop(paste("Archivo de logo hover no encontrado:", .logo_hover_path))
+      }
+
+      logo_html <- crear_logo_html_overlay(
+        .logo_path       = .logo_path,
+        .logo_hover_path = .logo_hover_path,
+        .logo_posicion   = .logo_posicion,
+        .logo_ancho_pct  = .logo_ancho_pct,
+        .url_enlace      = .url_enlace
+      )
+
+      .map_to_return <- htmlwidgets::onRender(
+        .map_to_return,
+        sprintf(
+          "function(el, x) {
+             var container = el.querySelector('div.svg-container') || el;
+             container.style.position = 'relative';
+             var overlay = document.createElement('div');
+             overlay.innerHTML = %s;
+             container.appendChild(overlay.firstElementChild);
+           }",
+          jsonlite::toJSON(logo_html, auto_unbox = TRUE)
+        )
+      )
+    }
   }
 
   return(.map_to_return)

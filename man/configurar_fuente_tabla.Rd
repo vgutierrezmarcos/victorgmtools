@@ -9,7 +9,7 @@ configurar_fuente_tabla(.tabla, .fuente_letra, .font_size)
 \arguments{
 \item{.tabla}{Objeto gt al que aplicar la configuración de fuente.}
 
-\item{.fuente_letra}{Cadena de caracteres. Nombre de la fuente principal. Por defecto, "Nunito Sans".}
+\item{.fuente_letra}{Cadena de caracteres. Nombre de la fuente principal. Por defecto, "Source Sans 3".}
 
 \item{.font_size}{Número. Tamaño de la fuente en píxeles.}
 }

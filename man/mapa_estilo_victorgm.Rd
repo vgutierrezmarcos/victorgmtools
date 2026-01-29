@@ -33,10 +33,11 @@ mapa_estilo_victorgm(
   .color_titulo = "#5F2987",
   .caption = " ",
   .caption_size = 10,
-  .fuente_letra = "Nunito Sans",
+  .fuente_letra = "Source Sans 3",
   .logo_path = NULL,
   .logo_posicion = "bottomright",
-  .logo_escala = 0.12,
+  .logo_ancho_pct = 12.5,
+  .logo_hover_path = NULL,
   .url_enlace = "www.victorgutierrezmarcos.es",
   .linea_separadora = TRUE,
   .colores_linea = c("#5F2987", "#E2EFD9", "#B8860B"),
@@ -96,13 +97,15 @@ mapa_estilo_victorgm(
 
 \item{.caption}{Nota al pie del mapa. Por defecto, \code{" "} (espacio en blanco; se muestra el enlace URL si está definido).}
 
-\item{.fuente_letra}{Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: \code{"Nunito Sans"}. Otras opciones comunes: \code{"Segoe UI"}, \code{"Arial"}, \code{"Times"}, \code{"Courier"}, \code{"Helvetica"}, etc.}
+\item{.fuente_letra}{Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: \code{"Source Sans 3"}. Otras opciones comunes: \code{"Segoe UI"}, \code{"Arial"}, \code{"Times"}, \code{"Courier"}, \code{"Helvetica"}, etc.}
 
 \item{.logo_path}{Cadena de caracteres. Ruta a una imagen PNG para incluir como logo en el gráfico. Por defecto, \code{NULL} (sin logo).}
 
 \item{.logo_posicion}{Cadena de caracteres. Esquina en la que colocar el logo: \code{"topright"}, \code{"topleft"}, \code{"bottomright"} o \code{"bottomleft"}. Por defecto, \code{"bottomright"}.}
 
-\item{.logo_escala}{Número. Tamaño del logo relativo. Por defecto, \code{0.12}.}
+\item{.logo_ancho_pct}{Número. Ancho del logo como porcentaje del ancho del gráfico (de 0 a 100). Por defecto, \code{10}.}
+
+\item{.logo_hover_path}{Cadena de caracteres. Ruta a una imagen PNG alternativa que se muestra al pasar el ratón sobre el logo (solo en modo interactivo). Genera un efecto de cross-fade entre ambas imágenes. Por defecto, \code{NULL} (sin efecto hover).}
 }
 \description{
 Fijar estilo de mapas coropléticos (por defecto) o de burbujas para VictorGM, con algunos parámetros opcionales. Habría que añadir el título al gráfico generado.

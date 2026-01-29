@@ -90,7 +90,7 @@ viviendas_plt <-
       )
     ),
     position = ggplot2::position_stack(vjust = 0.5),
-    alpha = 0.01,
+    alpha = 0,
     size = 5
   ) +
   # 3. Label Layer
@@ -108,18 +108,20 @@ viviendas_plt <-
 
 
 viviendas_plt |> 
-  victorgmtools::graficos_estilo_victorgm(
+  graficos_estilo_victorgm(
     .tipo_grafico_x = "fecha",
     .tipo_grafico_y = "porcentaje",
     .title = "Régimen de tenencia de viviendas en España.",
     # .subtitle = "Porcentaje.",
     .caption = "Fuente: Censos de viviendas (Instituto Nacional de Estadística).",
     .fuente_letra = "Source Sans 3",
-    .logo_path = "pruebas/favicon-512x512.png",
+    .logo_path = "C:\Users\vgutierrez\Documents\src\victorgutierrezmarcos.github.io\blog\images\icon.png",
+    .logo_hover_path = "C:\Users\vgutierrez\Documents\src\victorgutierrezmarcos.github.io\blog\images\icon_inverse.png",
     .legend_position = "none",
     .fecha_inicial_grafico = fecha_min,
     .fecha_final_grafico = fecha_max,
-    .paleta_utilizada = paleta
+    .paleta_utilizada = paleta,
+    .logo_ancho_pct = 12.5
   )
 
 

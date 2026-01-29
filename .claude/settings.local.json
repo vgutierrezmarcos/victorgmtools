@@ -10,7 +10,9 @@
       "Bash(\"/mnt/c/Users/vgutierrez/AppData/Local/Programs/R/R-4.5.0/bin/Rscript.exe\" -e \"devtools::document\\(\\)\")",
       "Bash(\"/mnt/c/Users/vgutierrez/AppData/Local/Programs/R/R-4.5.0/bin/Rscript.exe\" -e \"devtools::check\\(\\)\")",
       "WebFetch(domain:www.piie.com)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(cmd.exe /c \"where Rscript.exe\")",
+      "Bash(python3:*)"
     ]
   }
 }

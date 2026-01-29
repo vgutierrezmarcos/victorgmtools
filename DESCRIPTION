@@ -10,7 +10,8 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Depends: 
     R (>= 2.10)
-Imports: 
+Imports:
+    base64enc,
     dplyr,
     tidyr,
     rlang,
@@ -22,6 +23,9 @@ Imports:
     gt,
     ggiraph,
     ggtext,
+    htmltools,
+    htmlwidgets,
+    jsonlite,
     quantmod,
     zoo,
     janitor,
