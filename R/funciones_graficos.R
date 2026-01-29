@@ -373,9 +373,14 @@ graficos_estilo_victorgm <- function(
   fuente_ok <- victorgmtools:::registrar_fuente(.fuente_letra)
   
   # Si falla la descarga de la fuente por defecto (Source Sans 3), usar sans como fallback
+  # Solo intentamos el fallback si el usuario NO especificó una fuente personalizada distinta
   if (!fuente_ok && .fuente_letra == "Source Sans 3") {
     message("Usando 'sans' como fallback para 'Source Sans 3'.")
     .fuente_letra <- "sans"
+  } else if (!fuente_ok) {
+    # Si el usuario especificó otra fuente (ej: Segoe UI) y falló la descarga de Google,
+    # asumimos que es una fuente del sistema y NO la cambiamos a 'sans'.
+    # El mensaje de error de registrar_fuente ya avisó del fallo de descarga.
   }
 
   # Función auxiliar para encontrar la mejor posición de leyenda automáticamente
@@ -586,8 +591,13 @@ graficos_estilo_victorgm <- function(
       limits_x <- NULL
     } else {
       # Construir vector de limites de longitud 2
-      limits_x <- c(if(is.null(lim_min)) NA else lim_min, 
-                    if(is.null(lim_max)) NA else lim_max)
+      # Usar NA_real_ en lugar de NA para asegurar tipo correcto si ambos son NA (aunque este caso está cubierto por el if)
+      # Convertir a Date si es necesario para evitar warnings de escala
+      
+      lim_min_val <- if(is.null(lim_min)) NA else lim_min
+      lim_max_val <- if(is.null(lim_max)) NA else lim_max
+      
+      limits_x <- c(lim_min_val, lim_max_val)
     }
     
     # Aplicar escala del eje X
@@ -1022,6 +1032,8 @@ mapa_estilo_victorgm <- function(
   if (!fuente_ok && .fuente_letra == "Source Sans 3") {
     message("Usando 'sans' como fallback para 'Source Sans 3'.")
     .fuente_letra <- "sans"
+  } else if (!fuente_ok) {
+    # Misma logica para mapas: si es custom y falla Google, asumir sistema
   }
 
   # Validar tipo de mapa

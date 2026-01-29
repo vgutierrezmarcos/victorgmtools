@@ -74,7 +74,7 @@ viviendas_plt <-
 
 viviendas_plt <-
   viviendas_plt |> 
-  graficos_estilo_victorgm(
+  victorgmtools::graficos_estilo_victorgm(
     .tipo_grafico_y = "porcentaje",
     .title = "Régimen de tenencias de viviendas en España.",
     .subtitle = "Porcentaje.",
