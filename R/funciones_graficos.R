@@ -366,7 +366,7 @@ graficos_estilo_victorgm <- function(
     .fuente_letra = "Source Sans 3",
     .logo_path = NULL,
     .logo_posicion = "bottomright",
-  .logo_escala = 0.12
+    .logo_escala = 0.12
 ) {
 
   # Registrar fuente de Google Fonts si es necesario
@@ -384,6 +384,7 @@ graficos_estilo_victorgm <- function(
   }
 
   # Función auxiliar para encontrar la mejor posición de leyenda automáticamente
+
   encontrar_mejor_posicion_leyenda <- function(plot_object) {
     tryCatch({
       # Construir el gráfico para extraer datos
@@ -779,55 +780,88 @@ graficos_estilo_victorgm <- function(
     }
 
     img <- png::readPNG(.logo_path)
-    logo_grob <- grid::rasterGrob(img, interpolate = TRUE)
+    dims <- dim(img)
+    ar <- dims[1] / dims[2]
 
-    # Obtener rangos del panel para calcular posicion en coordenadas de datos
-    built <- ggplot2::ggplot_build(.plot_to_return_plt)
-    params <- built$layout$panel_params[[1]]
+    # Calcular dimensiones en cm (ajustable con .logo_escala)
+    # Base: .logo_escala = 0.12 -> ~3 cm de ancho
+    logo_width_cm <- 25 * .logo_escala
+    logo_height_cm <- logo_width_cm * ar
+    
+    # Margen adicional entre el área de trazado y el logo (en cm)
+    margin_pad_cm <- 0.2
+    
+    # Variables para configuración
+    x_pos <- NULL
+    y_pos <- NULL
+    hjust_val <- NULL
+    vjust_val <- NULL
+    
+    # Configurar posición y márgenes según .logo_posicion
+    if (.logo_posicion == "bottomright") {
+      x_pos <- grid::unit(1, "npc")
+      y_pos <- grid::unit(0, "npc") - grid::unit(margin_pad_cm, "cm")
+      hjust_val <- 1
+      vjust_val <- 1
+      
+      # Convertir cm a points (1 cm approx 28.35 pts)
+      margin_bottom_pts <- (logo_height_cm + margin_pad_cm + 0.2) * 28.35
+      
+      .plot_to_return_plt <- .plot_to_return_plt +
+        ggplot2::theme(plot.margin = ggplot2::margin(t = 5, r = 10, b = margin_bottom_pts, l = 10))
+        
+    } else if (.logo_posicion == "bottomleft") {
+      x_pos <- grid::unit(0, "npc")
+      y_pos <- grid::unit(0, "npc") - grid::unit(margin_pad_cm, "cm")
+      hjust_val <- 0
+      vjust_val <- 1
+      
+      margin_bottom_pts <- (logo_height_cm + margin_pad_cm + 0.2) * 28.35
+      .plot_to_return_plt <- .plot_to_return_plt +
+        ggplot2::theme(plot.margin = ggplot2::margin(t = 5, r = 10, b = margin_bottom_pts, l = 10))
+        
+    } else if (.logo_posicion == "topright") {
+      x_pos <- grid::unit(1, "npc")
+      y_pos <- grid::unit(1, "npc") + grid::unit(margin_pad_cm, "cm")
+      hjust_val <- 1
+      vjust_val <- 0
+      
+      margin_top_pts <- (logo_height_cm + margin_pad_cm + 0.2) * 28.35
+      .plot_to_return_plt <- .plot_to_return_plt +
+        ggplot2::theme(plot.margin = ggplot2::margin(t = margin_top_pts, r = 10, b = 5, l = 10))
 
-    x_range <- params$x.range %||% params$x$continuous_range %||% c(0, 1)
-    y_range <- params$y.range %||% params$y$continuous_range %||% c(0, 1)
-
-    x_span <- diff(x_range)
-    y_span <- diff(y_range)
-    logo_w <- x_span * .logo_escala
-    logo_h <- y_span * .logo_escala
-    margen <- x_span * 0.015
-
-    coords <- switch(.logo_posicion,
-      "topright" = list(
-        xmin = x_range[2] - logo_w - margen,
-        xmax = x_range[2] - margen,
-        ymin = y_range[2] - logo_h - margen,
-        ymax = y_range[2] - margen
-      ),
-      "topleft" = list(
-        xmin = x_range[1] + margen,
-        xmax = x_range[1] + logo_w + margen,
-        ymin = y_range[2] - logo_h - margen,
-        ymax = y_range[2] - margen
-      ),
-      "bottomright" = list(
-        xmin = x_range[2] - logo_w - margen,
-        xmax = x_range[2] - margen,
-        ymin = y_range[1] + margen,
-        ymax = y_range[1] + logo_h + margen
-      ),
-      "bottomleft" = list(
-        xmin = x_range[1] + margen,
-        xmax = x_range[1] + logo_w + margen,
-        ymin = y_range[1] + margen,
-        ymax = y_range[1] + logo_h + margen
-      ),
+    } else if (.logo_posicion == "topleft") {
+      x_pos <- grid::unit(0, "npc")
+      y_pos <- grid::unit(1, "npc") + grid::unit(margin_pad_cm, "cm")
+      hjust_val <- 0
+      vjust_val <- 0
+      
+      margin_top_pts <- (logo_height_cm + margin_pad_cm + 0.2) * 28.35
+      .plot_to_return_plt <- .plot_to_return_plt +
+        ggplot2::theme(plot.margin = ggplot2::margin(t = margin_top_pts, r = 10, b = 5, l = 10))
+        
+    } else {
       stop("'.logo_posicion' debe ser 'topright', 'topleft', 'bottomright' o 'bottomleft'.")
+    }
+
+    logo_grob <- grid::rasterGrob(
+      img,
+      x = x_pos,
+      y = y_pos,
+      width = grid::unit(logo_width_cm, "cm"),
+      height = grid::unit(logo_height_cm, "cm"),
+      hjust = hjust_val,
+      vjust = vjust_val,
+      interpolate = TRUE
     )
 
     .plot_to_return_plt <- .plot_to_return_plt +
       ggplot2::annotation_custom(
         logo_grob,
-        xmin = coords$xmin, xmax = coords$xmax,
-        ymin = coords$ymin, ymax = coords$ymax
-      )
+        xmin = -Inf, xmax = Inf,
+        ymin = -Inf, ymax = Inf
+      ) +
+      ggplot2::coord_cartesian(clip = "off")
   }
 
   return(.plot_to_return_plt)
@@ -994,6 +1028,9 @@ mostrar <- function(.x,
 #' @param .subtitle Subtitulo del mapa. Habitualmente usado para definir las unidades de medida. Por defecto, `NULL`.
 #' @param .caption Nota al pie del mapa. Por defecto, `NULL`.
 #' @param .fuente_letra Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: `"Source Sans 3"`. Otras opciones comunes: `"Segoe UI"`, `"Arial"`, `"Times"`, `"Courier"`, `"Helvetica"`, etc.
+#' @param .logo_path Cadena de caracteres. Ruta a una imagen PNG para incluir como logo en el gráfico. Por defecto, `NULL` (sin logo).
+#' @param .logo_posicion Cadena de caracteres. Esquina en la que colocar el logo: `"topright"`, `"topleft"`, `"bottomright"` o `"bottomleft"`. Por defecto, `"bottomright"`.
+#' @param .logo_escala Número. Tamaño del logo relativo. Por defecto, `0.12`.
 #' @export
 mapa_estilo_victorgm <- function(
     .x,
@@ -1023,8 +1060,12 @@ mapa_estilo_victorgm <- function(
     .subtitle_size = 14,
     .caption = NULL,
     .caption_size = 10,
-    .fuente_letra = "Source Sans 3"
+    .fuente_letra = "Source Sans 3",
+    .logo_path = NULL,
+    .logo_posicion = "bottomright",
+    .logo_escala = 0.12
 ) {
+
   # Registrar fuente de Google Fonts si es necesario
   fuente_ok <- victorgmtools:::registrar_fuente(.fuente_letra)
   
@@ -1446,7 +1487,85 @@ mapa_estilo_victorgm <- function(
   ggplot2::update_geom_defaults("text", list(family = .fuente_letra))
   ggplot2::update_geom_defaults("label", list(family = .fuente_letra))
   
+  # Insertar logo si se ha indicado ruta
+  if (!is.null(.logo_path)) {
+    if (!file.exists(.logo_path)) {
+      stop(paste("Archivo de logo no encontrado:", .logo_path))
+    }
+
+    img <- png::readPNG(.logo_path)
+    dims <- dim(img)
+    ar <- dims[1] / dims[2]
+
+    # Calcular dimensiones en cm (ajustable con .logo_escala)
+    logo_width_cm <- 25 * .logo_escala
+    logo_height_cm <- logo_width_cm * ar
+    
+    margin_pad_cm <- 0.2
+    
+    x_pos <- NULL
+    y_pos <- NULL
+    hjust_val <- NULL
+    vjust_val <- NULL
+    
+    if (.logo_posicion == "bottomright") {
+      x_pos <- grid::unit(1, "npc")
+      y_pos <- grid::unit(0, "npc") - grid::unit(margin_pad_cm, "cm")
+      hjust_val <- 1
+      vjust_val <- 1
+      margin_bottom_pts <- (logo_height_cm + margin_pad_cm + 0.2) * 28.35
+      .map_to_return <- .map_to_return +
+        ggplot2::theme(plot.margin = ggplot2::margin(t = 5, r = 10, b = margin_bottom_pts, l = 10))
+    } else if (.logo_posicion == "bottomleft") {
+      x_pos <- grid::unit(0, "npc")
+      y_pos <- grid::unit(0, "npc") - grid::unit(margin_pad_cm, "cm")
+      hjust_val <- 0
+      vjust_val <- 1
+      margin_bottom_pts <- (logo_height_cm + margin_pad_cm + 0.2) * 28.35
+      .map_to_return <- .map_to_return +
+        ggplot2::theme(plot.margin = ggplot2::margin(t = 5, r = 10, b = margin_bottom_pts, l = 10))
+    } else if (.logo_posicion == "topright") {
+      x_pos <- grid::unit(1, "npc")
+      y_pos <- grid::unit(1, "npc") + grid::unit(margin_pad_cm, "cm")
+      hjust_val <- 1
+      vjust_val <- 0
+      margin_top_pts <- (logo_height_cm + margin_pad_cm + 0.2) * 28.35
+      .map_to_return <- .map_to_return +
+        ggplot2::theme(plot.margin = ggplot2::margin(t = margin_top_pts, r = 10, b = 5, l = 10))
+    } else if (.logo_posicion == "topleft") {
+      x_pos <- grid::unit(0, "npc")
+      y_pos <- grid::unit(1, "npc") + grid::unit(margin_pad_cm, "cm")
+      hjust_val <- 0
+      vjust_val <- 0
+      margin_top_pts <- (logo_height_cm + margin_pad_cm + 0.2) * 28.35
+      .map_to_return <- .map_to_return +
+        ggplot2::theme(plot.margin = ggplot2::margin(t = margin_top_pts, r = 10, b = 5, l = 10))
+    } else {
+      stop("'.logo_posicion' debe ser 'topright', 'topleft', 'bottomright' o 'bottomleft'.")
+    }
+
+    logo_grob <- grid::rasterGrob(
+      img,
+      x = x_pos,
+      y = y_pos,
+      width = grid::unit(logo_width_cm, "cm"),
+      height = grid::unit(logo_height_cm, "cm"),
+      hjust = hjust_val,
+      vjust = vjust_val,
+      interpolate = TRUE
+    )
+
+    .map_to_return <- .map_to_return +
+      ggplot2::annotation_custom(
+        logo_grob,
+        xmin = -Inf, xmax = Inf,
+        ymin = -Inf, ymax = Inf
+      ) +
+      ggplot2::coord_sf(clip = "off")
+  }
+
   return(.map_to_return)
+
 }
 
 # Función general para dar formato a tablas ----
