@@ -960,18 +960,58 @@ graficos_estilo_victorgm <- function(
 
   # Conversion to interactive or return static
   if (!.estatico) {
+    # Definir CSS para el tooltip usando la fuente seleccionada y colores corporativos
+    tooltip_css <- sprintf(
+      "background-color:rgba(255, 255, 255, 0.95);
+       color:%s;
+       font-family: '%s', sans-serif;
+       font-size: 14px;
+       border: 1px solid %s;
+       border-radius: 5px;
+       padding: 10px;
+       box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+       z-index: 999;",
+      "#2C3E50",        # Color de texto (gris oscuro/negro)
+      .fuente_letra,    # Fuente seleccionada
+      "#5F2987"         # Color del borde (morado VictorGM)
+    )
+
     .plot_to_return_plt <- ggiraph::girafe(
       ggobj = .plot_to_return_plt,
       width_svg = .width,
       height_svg = .height,
       options = list(
-        ggiraph::opts_hover(css = ''), 
+        ggiraph::opts_tooltip(
+          css = tooltip_css,
+          use_cursor_pos = TRUE,
+          opacity = 0.95
+        ),
+        ggiraph::opts_hover(css = ''),
         ggiraph::opts_hover_inv(css = "opacity:0.4;"),
         ggiraph::opts_sizing(rescale = TRUE, width = 1),
         position = "topright",
         saveaspng = TRUE
       )
     )
+
+    # Inyectar fuente de Google en el widget HTML para que el tooltip la reconozca
+    try({
+      nombre_google <- .fuentes_google[.fuente_letra]
+      if (is.na(nombre_google)) nombre_google <- .fuente_letra
+      
+      # Construir URL simplificada de Google Fonts
+      # Nota: Esto asume que es una fuente de Google. Si es del sistema, esto podría dar 404 pero no rompe el widget.
+      # Una mejora sería verificar si está en la lista conocida de fuentes de Google.
+      
+      if (.fuente_letra %in% names(.fuentes_google) || .fuente_letra %in% .fuentes_google) {
+        font_url <- paste0("https://fonts.googleapis.com/css?family=", gsub(" ", "+", nombre_google))
+        
+        .plot_to_return_plt <- htmlwidgets::prependContent(
+          .plot_to_return_plt,
+          htmltools::tags$link(rel = "stylesheet", type = "text/css", href = font_url)
+        )
+      }
+    }, silent = TRUE)
   }
 
   return(.plot_to_return_plt)
@@ -1618,18 +1658,54 @@ mapa_estilo_victorgm <- function(
 
   # Conversion to interactive or return static
   if (!.estatico) {
+    # Definir CSS para el tooltip usando la fuente seleccionada y colores corporativos
+    tooltip_css <- sprintf(
+      "background-color:rgba(255, 255, 255, 0.95);
+       color:%s;
+       font-family: '%s', sans-serif;
+       font-size: 14px;
+       border: 1px solid %s;
+       border-radius: 5px;
+       padding: 10px;
+       box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+       z-index: 999;",
+      "#2C3E50",        # Color de texto (gris oscuro/negro)
+      .fuente_letra,    # Fuente seleccionada
+      "#5F2987"         # Color del borde (morado VictorGM)
+    )
+
     .map_to_return <- ggiraph::girafe(
       ggobj = .map_to_return,
       width_svg = .width,
       height_svg = .height,
       options = list(
-        ggiraph::opts_hover(css = ''), 
+        ggiraph::opts_tooltip(
+          css = tooltip_css,
+          use_cursor_pos = TRUE,
+          opacity = 0.95
+        ),
+        ggiraph::opts_hover(css = ''),
         ggiraph::opts_hover_inv(css = "opacity:0.4;"),
         ggiraph::opts_sizing(rescale = TRUE, width = 1),
         position = "topright",
         saveaspng = TRUE
       )
     )
+
+    # Inyectar fuente de Google en el widget HTML para que el tooltip la reconozca
+    try({
+      nombre_google <- .fuentes_google[.fuente_letra]
+      if (is.na(nombre_google)) nombre_google <- .fuente_letra
+      
+      if (.fuente_letra %in% names(.fuentes_google) || .fuente_letra %in% .fuentes_google) {
+        font_url <- paste0("https://fonts.googleapis.com/css?family=", gsub(" ", "+", nombre_google))
+        
+        .map_to_return <- htmlwidgets::prependContent(
+          .map_to_return,
+          htmltools::tags$link(rel = "stylesheet", type = "text/css", href = font_url)
+        )
+      }
+    }, silent = TRUE)
   }
 
   return(.map_to_return)

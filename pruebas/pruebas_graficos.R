@@ -78,15 +78,20 @@ viviendas_plt <-
   ) +
   # Visual + Interaction Layer
   ggiraph::geom_area_interactive(
-    mapping = ggplot2::aes(
-      tooltip = paste0(
-        "Año: ", fecha |> format("%Y"), "\n",
-        nombres_cortos, ": ", scales::number_format(big.mark = ".", decimal.mark = ",", accuracy = 0.01, scale = 1e2, suffix = "%")(valores)
-      )
-    ),
     alpha = 0.8,
     color = "white",
     linewidth = 0.2
+  ) +
+  ggiraph::geom_point_interactive(
+    mapping = ggplot2::aes(
+      tooltip = paste0(
+        "<b>Año</b>: ", fecha |> format("%Y"), "\n",
+        "<b>", nombres_cortos, "</b>: ", scales::number_format(big.mark = ".", decimal.mark = ",", accuracy = 0.1, scale = 1e2, suffix = "%")(valores)
+      )
+    ),
+    position = ggplot2::position_stack(vjust = 0.5),
+    alpha = 0.01,
+    size = 5
   ) +
   # 3. Label Layer
   ggplot2::geom_text(
@@ -102,9 +107,8 @@ viviendas_plt <-
   )
 
 
-viviendas_plt <-
-  viviendas_plt |> 
-  victorgmtools::graficos_estilo_victorgm(
+viviendas_plt |> 
+  graficos_estilo_victorgm(
     .tipo_grafico_x = "fecha",
     .tipo_grafico_y = "porcentaje",
     .title = "Régimen de tenencia de viviendas en España.",
@@ -117,8 +121,5 @@ viviendas_plt <-
     .fecha_final_grafico = fecha_max,
     .paleta_utilizada = paleta
   )
-
-viviendas_plt |> 
-  victorgmtools::mostrar()
 
 
