@@ -60,7 +60,7 @@ registrar_fuente <- function(.fuente_letra) {
 crear_logo_html_overlay <- function(.logo_path,
                                     .logo_hover_path,
                                     .logo_posicion = "bottomright",
-                                    .logo_ancho_pct = 12.5,
+                                    .logo_ancho_pct = 10,
                                     .url_enlace = "www.victorgutierrezmarcos.es") {
 
   # Base64-encode ambas imagenes
@@ -440,7 +440,7 @@ graficos_estilo_victorgm <- function(
     .fuente_letra = "Source Sans 3",
     .logo_path = NULL,
     .logo_posicion = "bottomright",
-    .logo_ancho_pct = 12.5,
+    .logo_ancho_pct = 10,
     .logo_hover_path = NULL,
     .url_enlace = "www.victorgutierrezmarcos.es",
     .linea_separadora = TRUE,
@@ -826,26 +826,28 @@ graficos_estilo_victorgm <- function(
   }
   
   if(!is.null(.title)){
+    titulo_formateado <- stringr::str_wrap(.title, width = round(.title_width_pct / 100 * 50))
+
     .plot_to_return_plt <-
       .plot_to_return_plt +
-      ggplot2::labs(title = .title) +
-      ggplot2::theme(plot.title = ggtext::element_textbox_simple(
+      ggplot2::labs(title = titulo_formateado) +
+      ggplot2::theme(plot.title = ggtext::element_markdown(
         size = .title_size, face = "bold", color = .color_titulo,
-        width = grid::unit(.title_width_pct / 100, "npc"),
-        halign = 0,
+        hjust = 0,
         margin = ggplot2::margin(b = 5), family = .fuente_letra
       ))
   }
 
   if(!is.null(.subtitle)){
+    subtitulo_formateado <- stringr::str_wrap(.subtitle, width = round(.subtitle_width_pct / 100 * 65))
+
     .plot_to_return_plt <-
       .plot_to_return_plt +
-      ggplot2::labs(subtitle = .subtitle) +
-      ggplot2::theme(plot.subtitle = ggtext::element_textbox_simple(
+      ggplot2::labs(subtitle = subtitulo_formateado) +
+      ggplot2::theme(plot.subtitle = ggtext::element_markdown(
         size = .subtitle_size, family = .fuente_letra, face = "italic",
         color = .color_titulo,
-        width = grid::unit(.subtitle_width_pct / 100, "npc"),
-        halign = 0,
+        hjust = 0,
         margin = ggplot2::margin(b = 10)
       ))
   }
@@ -881,9 +883,8 @@ graficos_estilo_victorgm <- function(
     .plot_to_return_plt <-
       .plot_to_return_plt +
       ggplot2::labs(caption = .caption) +
-      ggplot2::theme(plot.caption = ggtext::element_textbox_simple(
-        halign = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
-        width = grid::unit(.caption_width_pct / 100, "npc"),
+      ggplot2::theme(plot.caption = ggtext::element_markdown(
+        hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
         margin = ggplot2::margin(t = caption_top_margin)
       ))
     bottom_margin_pt <- bottom_margin_pt + 15
@@ -892,9 +893,8 @@ graficos_estilo_victorgm <- function(
     .plot_to_return_plt <-
       .plot_to_return_plt +
       ggplot2::labs(caption = .url_enlace) +
-      ggplot2::theme(plot.caption = ggtext::element_textbox_simple(
-        halign = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
-        width = grid::unit(.caption_width_pct / 100, "npc"),
+      ggplot2::theme(plot.caption = ggtext::element_markdown(
+        hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
         margin = ggplot2::margin(t = caption_top_margin)
       ))
     bottom_margin_pt <- bottom_margin_pt + 15
@@ -983,8 +983,10 @@ graficos_estilo_victorgm <- function(
     logo_y_bottom <- grid::unit(0, "npc") - grid::unit(caption_area_offset_cm, "cm")
 
     # Configurar posición según .logo_posicion
+    logo_pad_cm <- 0.15
+
     if (.logo_posicion == "bottomright") {
-      x_pos <- grid::unit(1, "npc")
+      x_pos <- grid::unit(1, "npc") + grid::unit(logo_pad_cm, "cm")
       y_pos <- logo_y_bottom
       hjust_val <- 1
       vjust_val <- 0.125
@@ -998,7 +1000,7 @@ graficos_estilo_victorgm <- function(
       bottom_margin_pt <- bottom_margin_pt + 40
 
     } else if (.logo_posicion == "topright") {
-      x_pos <- grid::unit(1, "npc")
+      x_pos <- grid::unit(1, "npc") + grid::unit(logo_pad_cm, "cm")
       y_pos <- grid::unit(1, "npc") + grid::unit(margin_pad_cm, "cm")
       hjust_val <- 1
       vjust_val <- 0
@@ -1252,7 +1254,7 @@ mapa_estilo_victorgm <- function(
     .fuente_letra = "Source Sans 3",
     .logo_path = NULL,
     .logo_posicion = "bottomright",
-    .logo_ancho_pct = 12.5,
+    .logo_ancho_pct = 10,
     .logo_hover_path = NULL,
     .url_enlace = "www.victorgutierrezmarcos.es",
     .linea_separadora = TRUE,
@@ -1656,26 +1658,28 @@ mapa_estilo_victorgm <- function(
   }
   
   if(!is.null(.title)){
+    titulo_formateado <- stringr::str_wrap(.title, width = round(.title_width_pct / 100 * 50))
+
     .map_to_return <-
       .map_to_return +
-      ggplot2::labs(title = .title) +
-      ggplot2::theme(plot.title = ggtext::element_textbox_simple(
+      ggplot2::labs(title = titulo_formateado) +
+      ggplot2::theme(plot.title = ggtext::element_markdown(
         size = .title_size, face = "bold", color = .color_titulo,
-        width = grid::unit(.title_width_pct / 100, "npc"),
-        halign = 0,
+        hjust = 0,
         margin = ggplot2::margin(b = 5), family = .fuente_letra
       ))
   }
 
   if(!is.null(.subtitle)){
+    subtitulo_formateado <- stringr::str_wrap(.subtitle, width = round(.subtitle_width_pct / 100 * 65))
+
     .map_to_return <-
       .map_to_return +
-      ggplot2::labs(subtitle = .subtitle) +
-      ggplot2::theme(plot.subtitle = ggtext::element_textbox_simple(
+      ggplot2::labs(subtitle = subtitulo_formateado) +
+      ggplot2::theme(plot.subtitle = ggtext::element_markdown(
         size = .subtitle_size, family = .fuente_letra, face = "italic",
         color = .color_titulo,
-        width = grid::unit(.subtitle_width_pct / 100, "npc"),
-        halign = 0,
+        hjust = 0,
         margin = ggplot2::margin(b = 10)
       ))
   }
@@ -1706,9 +1710,8 @@ mapa_estilo_victorgm <- function(
     .map_to_return <-
       .map_to_return +
       ggplot2::labs(caption = .caption) +
-      ggplot2::theme(plot.caption = ggtext::element_textbox_simple(
-        halign = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
-        width = grid::unit(.caption_width_pct / 100, "npc"),
+      ggplot2::theme(plot.caption = ggtext::element_markdown(
+        hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
         margin = ggplot2::margin(t = caption_top_margin)
       ))
     bottom_margin_pt <- bottom_margin_pt + 15
@@ -1716,9 +1719,8 @@ mapa_estilo_victorgm <- function(
     .map_to_return <-
       .map_to_return +
       ggplot2::labs(caption = .url_enlace) +
-      ggplot2::theme(plot.caption = ggtext::element_textbox_simple(
-        halign = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
-        width = grid::unit(.caption_width_pct / 100, "npc"),
+      ggplot2::theme(plot.caption = ggtext::element_markdown(
+        hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
         margin = ggplot2::margin(t = caption_top_margin)
       ))
     bottom_margin_pt <- bottom_margin_pt + 15
@@ -1781,8 +1783,10 @@ mapa_estilo_victorgm <- function(
     logo_y_bottom <- grid::unit(0, "npc") - grid::unit(caption_area_offset_cm, "cm")
 
     # Configurar posición según .logo_posicion
+    logo_pad_cm <- 0.15
+
     if (.logo_posicion == "bottomright") {
-      x_pos <- grid::unit(1, "npc")
+      x_pos <- grid::unit(1, "npc") + grid::unit(logo_pad_cm, "cm")
       y_pos <- logo_y_bottom
       hjust_val <- 1
       vjust_val <- 0.125
@@ -1796,7 +1800,7 @@ mapa_estilo_victorgm <- function(
       bottom_margin_pt <- bottom_margin_pt + 40
 
     } else if (.logo_posicion == "topright") {
-      x_pos <- grid::unit(1, "npc")
+      x_pos <- grid::unit(1, "npc") + grid::unit(logo_pad_cm, "cm")
       y_pos <- grid::unit(1, "npc") + grid::unit(margin_pad_cm, "cm")
       hjust_val <- 1
       vjust_val <- 0

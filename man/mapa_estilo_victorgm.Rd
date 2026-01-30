@@ -2,6 +2,7 @@
 % Please edit documentation in R/funciones_graficos.R
 \name{mapa_estilo_victorgm}
 \alias{mapa_estilo_victorgm}
+\alias{mapas_estilo_victorgm}
 \title{Fijar estilo de mapas coropléticos (por defecto) o de burbujas para VictorGM, con algunos parámetros opcionales. Habría que añadir el título al gráfico generado.}
 \usage{
 mapa_estilo_victorgm(
@@ -33,6 +34,9 @@ mapa_estilo_victorgm(
   .color_titulo = "#5F2987",
   .caption = " ",
   .caption_size = 10,
+  .title_width_pct = 80,
+  .subtitle_width_pct = 80,
+  .caption_width_pct = 80,
   .fuente_letra = "Source Sans 3",
   .logo_path = NULL,
   .logo_posicion = "bottomright",
@@ -40,10 +44,57 @@ mapa_estilo_victorgm(
   .logo_hover_path = NULL,
   .url_enlace = "www.victorgutierrezmarcos.es",
   .linea_separadora = TRUE,
-  .colores_linea = c("#5F2987", "#E2EFD9", "#B8860B"),
+  .colores_linea = c("#5F2987", "#B8860B", "#E2EFD9"),
   .estatico = FALSE,
   .width = 6,
-  .height = 5
+  .height = 5,
+  .guardar_en = NULL
+)
+
+mapas_estilo_victorgm(
+  .x,
+  .tipo_mapa = "coroplético",
+  .region_geografica = "España",
+  .unidades_territoriales = "provincia",
+  .col_nombres = "nombres",
+  .col_valores = "valores",
+  .codigo_pais = "iso3A",
+  .color_negativo = "#A63A50",
+  .color_positivo = "#4A9079",
+  .color_neutro = "white",
+  .nivel_neutro = 0,
+  .color_na = "grey50",
+  .color_burbujas = "#4A9079",
+  .color_fondo_mapa = "grey95",
+  .tamano_min_burbuja = 1,
+  .tamano_max_burbuja = 20,
+  .alpha_burbujas = 0.7,
+  .resaltar = NULL,
+  .scale = 1,
+  .accuracy = 0.01,
+  .suffix = "",
+  .title = NULL,
+  .title_size = 18,
+  .subtitle = NULL,
+  .subtitle_size = 14,
+  .color_titulo = "#5F2987",
+  .caption = " ",
+  .caption_size = 10,
+  .title_width_pct = 80,
+  .subtitle_width_pct = 80,
+  .caption_width_pct = 80,
+  .fuente_letra = "Source Sans 3",
+  .logo_path = NULL,
+  .logo_posicion = "bottomright",
+  .logo_ancho_pct = 12.5,
+  .logo_hover_path = NULL,
+  .url_enlace = "www.victorgutierrezmarcos.es",
+  .linea_separadora = TRUE,
+  .colores_linea = c("#5F2987", "#B8860B", "#E2EFD9"),
+  .estatico = FALSE,
+  .width = 6,
+  .height = 5,
+  .guardar_en = NULL
 )
 }
 \arguments{
@@ -51,7 +102,7 @@ mapa_estilo_victorgm(
 
 \item{.tipo_mapa}{Cadena de caracteres. Puede tomar valores \code{"coroplético"} (por defecto) o \code{"burbujas"}.}
 
-\item{.region_geografica}{Cadena de caracteres. Puede tomar valores \code{"España"} o \code{"Mundo"}. Por defecto, \code{"España"}.}
+\item{.region_geografica}{Cadena de caracteres. Puede tomar valores \code{"España"}, \code{"Europa"} o \code{"Mundo"}. \code{"Europa"} representa un mapa mundial recortado a las coordenadas europeas. Por defecto, \code{"España"}.}
 
 \item{.unidades_territoriales}{Cadena de caracteres. Solo funciona en caso de que \code{.region_geografica == "España"}, ya que en caso contrario se representara por países. Puede tomar valores \code{"pais"}, \code{"ccaa"} o \code{"provincia"}. Por defecto, \code{"provincia"}.}
 
@@ -97,6 +148,14 @@ mapa_estilo_victorgm(
 
 \item{.caption}{Nota al pie del mapa. Por defecto, \code{" "} (espacio en blanco; se muestra el enlace URL si está definido).}
 
+\item{.caption_size}{Número. Tamaño de la fuente de la nota al pie. Por defecto, \code{10}.}
+
+\item{.title_width_pct}{Número. Porcentaje del ancho del gráfico que puede ocupar el título (0 a 100). Por defecto, \code{80}.}
+
+\item{.subtitle_width_pct}{Número. Porcentaje del ancho del gráfico que puede ocupar el subtítulo (0 a 100). Por defecto, \code{80}.}
+
+\item{.caption_width_pct}{Número. Porcentaje del ancho del gráfico que puede ocupar la nota al pie (0 a 100). Por defecto, \code{80}.}
+
 \item{.fuente_letra}{Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: \code{"Source Sans 3"}. Otras opciones comunes: \code{"Segoe UI"}, \code{"Arial"}, \code{"Times"}, \code{"Courier"}, \code{"Helvetica"}, etc.}
 
 \item{.logo_path}{Cadena de caracteres. Ruta a una imagen PNG para incluir como logo en el gráfico. Por defecto, \code{NULL} (sin logo).}
@@ -106,6 +165,8 @@ mapa_estilo_victorgm(
 \item{.logo_ancho_pct}{Número. Ancho del logo como porcentaje del ancho del gráfico (de 0 a 100). Por defecto, \code{10}.}
 
 \item{.logo_hover_path}{Cadena de caracteres. Ruta a una imagen PNG alternativa que se muestra al pasar el ratón sobre el logo (solo en modo interactivo). Genera un efecto de cross-fade entre ambas imágenes. Por defecto, \code{NULL} (sin efecto hover).}
+
+\item{.guardar_en}{Cadena de caracteres. Ruta del archivo PNG donde guardar el mapa. Si es interactivo, se guarda una captura de pantalla (requiere \code{webshot2}). Si el directorio no existe, se muestra un aviso sin detener la ejecución. Por defecto, \code{NULL} (no se guarda).}
 }
 \description{
 Fijar estilo de mapas coropléticos (por defecto) o de burbujas para VictorGM, con algunos parámetros opcionales. Habría que añadir el título al gráfico generado.

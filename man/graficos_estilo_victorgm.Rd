@@ -2,6 +2,7 @@
 % Please edit documentation in R/funciones_graficos.R
 \name{graficos_estilo_victorgm}
 \alias{graficos_estilo_victorgm}
+\alias{grafico_estilo_victorgm}
 \title{Aplicar estilo completo VictorGM a un gráfico}
 \usage{
 graficos_estilo_victorgm(
@@ -39,6 +40,9 @@ graficos_estilo_victorgm(
   .color_titulo = "#5F2987",
   .caption = " ",
   .caption_size = 10,
+  .title_width_pct = 80,
+  .subtitle_width_pct = 80,
+  .caption_width_pct = 80,
   .fuente_letra = "Source Sans 3",
   .logo_path = NULL,
   .logo_posicion = "bottomright",
@@ -46,10 +50,63 @@ graficos_estilo_victorgm(
   .logo_hover_path = NULL,
   .url_enlace = "www.victorgutierrezmarcos.es",
   .linea_separadora = TRUE,
-  .colores_linea = c("#5F2987", "#E2EFD9", "#B8860B"),
+  .colores_linea = c("#5F2987", "#B8860B", "#E2EFD9"),
   .estatico = FALSE,
   .width = 6,
-  .height = 5
+  .height = 5,
+  .guardar_en = NULL
+)
+
+grafico_estilo_victorgm(
+  .x,
+  .tipo_grafico_x = "fecha",
+  .tipo_grafico_y = NULL,
+  .scale = 1,
+  .accuracy = 1,
+  .suffix = "",
+  .minimo_eje_x = NULL,
+  .maximo_eje_x = NULL,
+  .minimo_eje_y = NULL,
+  .maximo_eje_y = NULL,
+  .date_labels = "\%Y",
+  .angle_x_axis_labels = 90,
+  .date_breaks = "1 year",
+  .fecha_inicial_grafico = NULL,
+  .fecha_final_grafico = NULL,
+  .axis_position = "right",
+  .legend_position = "bottom",
+  .title_axis_size = 12,
+  .text_axis_size = 12,
+  .legend_text_size = 16,
+  .text_size = 14,
+  .nrows_legend_color = 3,
+  .n_breaks_y = NULL,
+  .paleta_utilizada = NULL,
+  .n_colors = NULL,
+  .title_x_axis = NULL,
+  .title_y_axis = NULL,
+  .title = NULL,
+  .title_size = 18,
+  .subtitle = NULL,
+  .subtitle_size = 14,
+  .color_titulo = "#5F2987",
+  .caption = " ",
+  .caption_size = 10,
+  .title_width_pct = 80,
+  .subtitle_width_pct = 80,
+  .caption_width_pct = 80,
+  .fuente_letra = "Source Sans 3",
+  .logo_path = NULL,
+  .logo_posicion = "bottomright",
+  .logo_ancho_pct = 12.5,
+  .logo_hover_path = NULL,
+  .url_enlace = "www.victorgutierrezmarcos.es",
+  .linea_separadora = TRUE,
+  .colores_linea = c("#5F2987", "#B8860B", "#E2EFD9"),
+  .estatico = FALSE,
+  .width = 6,
+  .height = 5,
+  .guardar_en = NULL
 )
 }
 \arguments{
@@ -121,6 +178,12 @@ graficos_estilo_victorgm(
 
 \item{.caption_size}{Número. Tamaño de la fuente de la nota al pie. Por defecto, \code{10}.}
 
+\item{.title_width_pct}{Número. Porcentaje del ancho del gráfico que puede ocupar el título (0 a 100). Por defecto, \code{80}.}
+
+\item{.subtitle_width_pct}{Número. Porcentaje del ancho del gráfico que puede ocupar el subtítulo (0 a 100). Por defecto, \code{80}.}
+
+\item{.caption_width_pct}{Número. Porcentaje del ancho del gráfico que puede ocupar la nota al pie (0 a 100). Por defecto, \code{80}.}
+
 \item{.fuente_letra}{Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: \code{"Source Sans 3"}. Otras opciones comunes: \code{"Segoe UI"}, \code{"Arial"}, \code{"Times"}, \code{"Courier"}, \code{"Helvetica"}, etc.}
 
 \item{.logo_path}{Cadena de caracteres. Ruta a una imagen PNG para incluir como logo en el gráfico. Por defecto, \code{NULL} (sin logo).}
@@ -130,6 +193,8 @@ graficos_estilo_victorgm(
 \item{.logo_ancho_pct}{Número. Ancho del logo como porcentaje del ancho del gráfico (de 0 a 100). Por defecto, \code{10}.}
 
 \item{.logo_hover_path}{Cadena de caracteres. Ruta a una imagen PNG alternativa que se muestra al pasar el ratón sobre el logo (solo en modo interactivo). Genera un efecto de cross-fade entre ambas imágenes. Por defecto, \code{NULL} (sin efecto hover).}
+
+\item{.guardar_en}{Cadena de caracteres. Ruta del archivo PNG donde guardar el gráfico. Si es interactivo, se guarda una captura de pantalla (requiere \code{webshot2}). Si el directorio no existe, se muestra un aviso sin detener la ejecución. Por defecto, \code{NULL} (no se guarda).}
 }
 \value{
 Objeto ggplot2 con el estilo corporativo VictorGM aplicado.
