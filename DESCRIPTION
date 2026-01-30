@@ -48,6 +48,8 @@ Imports:
     tibble,
     tidyselect,
     xml2
+Suggests:
+    webshot2
 Remotes:
     fabiansalazares/wtor
 LazyData: true

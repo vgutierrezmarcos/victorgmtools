@@ -108,20 +108,21 @@ viviendas_plt <-
 
 
 viviendas_plt |> 
-  graficos_estilo_victorgm(
+  victorgmtools::graficos_estilo_victorgm(
     .tipo_grafico_x = "fecha",
     .tipo_grafico_y = "porcentaje",
     .title = "Régimen de tenencia de viviendas en España.",
-    # .subtitle = "Porcentaje.",
+    .subtitle = "Porcentaje.",
     .caption = "Fuente: Censos de viviendas (Instituto Nacional de Estadística).",
     .fuente_letra = "Source Sans 3",
-    .logo_path = "C:\Users\vgutierrez\Documents\src\victorgutierrezmarcos.github.io\blog\images\icon.png",
-    .logo_hover_path = "C:\Users\vgutierrez\Documents\src\victorgutierrezmarcos.github.io\blog\images\icon_inverse.png",
+    .logo_path = "C:/Users/vgutierrez/Documents/src/victorgutierrezmarcos.github.io/blog/images/icon.png",
+    .logo_hover_path = "C:/Users/vgutierrez/Documents/src/victorgutierrezmarcos.github.io/blog/images/icon_inverse.png",
     .legend_position = "none",
+    .colores_linea = c("#5F2987", "#B8860B", "#E2EFD9"),
     .fecha_inicial_grafico = fecha_min,
     .fecha_final_grafico = fecha_max,
     .paleta_utilizada = paleta,
-    .logo_ancho_pct = 12.5
+    .logo_ancho_pct = 10
   )
 
 

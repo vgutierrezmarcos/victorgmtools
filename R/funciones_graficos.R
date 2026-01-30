@@ -379,11 +379,15 @@ tema_victorgm <- function() {
 #' @param .color_titulo Cadena de caracteres. Color del título y subtítulo. Por defecto, `"#5F2987"` (morado).
 #' @param .caption Cadena de caracteres. Nota al pie del gráfico. Por defecto, `" "` (espacio en blanco; se muestra el enlace URL si está definido).
 #' @param .caption_size Número. Tamaño de la fuente de la nota al pie. Por defecto, `10`.
+#' @param .title_width_pct Número. Porcentaje del ancho del gráfico que puede ocupar el título (0 a 100). Por defecto, `80`.
+#' @param .subtitle_width_pct Número. Porcentaje del ancho del gráfico que puede ocupar el subtítulo (0 a 100). Por defecto, `80`.
+#' @param .caption_width_pct Número. Porcentaje del ancho del gráfico que puede ocupar la nota al pie (0 a 100). Por defecto, `80`.
 #' @param .fuente_letra Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: `"Source Sans 3"`. Otras opciones comunes: `"Segoe UI"`, `"Arial"`, `"Times"`, `"Courier"`, `"Helvetica"`, etc.
 #' @param .logo_path Cadena de caracteres. Ruta a una imagen PNG para incluir como logo en el gráfico. Por defecto, `NULL` (sin logo).
 #' @param .logo_posicion Cadena de caracteres. Esquina en la que colocar el logo: `"topright"`, `"topleft"`, `"bottomright"` o `"bottomleft"`. Por defecto, `"bottomright"`.
 #' @param .logo_ancho_pct Número. Ancho del logo como porcentaje del ancho del gráfico (de 0 a 100). Por defecto, `10`.
 #' @param .logo_hover_path Cadena de caracteres. Ruta a una imagen PNG alternativa que se muestra al pasar el ratón sobre el logo (solo en modo interactivo). Genera un efecto de cross-fade entre ambas imágenes. Por defecto, `NULL` (sin efecto hover).
+#' @param .guardar_en Cadena de caracteres. Ruta del archivo PNG donde guardar el gráfico. Si es interactivo, se guarda una captura de pantalla (requiere `webshot2`). Si el directorio no existe, se muestra un aviso sin detener la ejecución. Por defecto, `NULL` (no se guarda).
 #' @return Objeto ggplot2 con el estilo corporativo VictorGM aplicado.
 #' @examples
 #' \dontrun{
@@ -430,6 +434,9 @@ graficos_estilo_victorgm <- function(
     .color_titulo = "#5F2987",
     .caption = " ",
     .caption_size = 10,
+    .title_width_pct = 80,
+    .subtitle_width_pct = 80,
+    .caption_width_pct = 80,
     .fuente_letra = "Source Sans 3",
     .logo_path = NULL,
     .logo_posicion = "bottomright",
@@ -437,10 +444,11 @@ graficos_estilo_victorgm <- function(
     .logo_hover_path = NULL,
     .url_enlace = "www.victorgutierrezmarcos.es",
     .linea_separadora = TRUE,
-    .colores_linea = c("#5F2987", "#E2EFD9", "#B8860B"),
+    .colores_linea = c("#5F2987", "#B8860B", "#E2EFD9"),
     .estatico = FALSE,
     .width = 6,
-    .height = 5
+    .height = 5,
+    .guardar_en = NULL
 ) {
 
   # Registrar fuente de Google Fonts si es necesario
@@ -554,7 +562,9 @@ graficos_estilo_victorgm <- function(
       title = ggplot2::element_text(family = .fuente_letra),
       plot.margin = ggplot2::margin(t = 5, r = 10, b = 5, l = 10),
       legend.margin = ggplot2::margin(t = 1, r = 1, b = 1, l = 1),
-      axis.text = ggplot2::element_text(size = .text_axis_size, family = .fuente_letra)
+      axis.text = ggplot2::element_text(size = .text_axis_size, family = .fuente_letra),
+      plot.title.position = "plot",
+      plot.caption.position = "plot"
     ) +
     ggplot2::guides(color = ggplot2::guide_legend(nrow = .nrows_legend_color, byrow = TRUE),
                     fill = ggplot2::guide_legend(nrow = .nrows_legend_color, byrow = TRUE))
@@ -816,21 +826,28 @@ graficos_estilo_victorgm <- function(
   }
   
   if(!is.null(.title)){
-    titulo_formateado <- stringr::str_wrap(.title, width = 40)
-
     .plot_to_return_plt <-
       .plot_to_return_plt +
-      ggplot2::labs(title = titulo_formateado) +
-      ggplot2::theme(plot.title = ggplot2::element_text(size = .title_size, face = "bold", color = .color_titulo, margin = ggplot2::margin(b = 5), family = .fuente_letra))
+      ggplot2::labs(title = .title) +
+      ggplot2::theme(plot.title = ggtext::element_textbox_simple(
+        size = .title_size, face = "bold", color = .color_titulo,
+        width = grid::unit(.title_width_pct / 100, "npc"),
+        halign = 0,
+        margin = ggplot2::margin(b = 5), family = .fuente_letra
+      ))
   }
 
   if(!is.null(.subtitle)){
-    subtitulo_formateado <- stringr::str_wrap(.subtitle, width = 50)
-
     .plot_to_return_plt <-
       .plot_to_return_plt +
-      ggplot2::labs(subtitle = subtitulo_formateado) +
-      ggplot2::theme(plot.subtitle = ggplot2::element_text(size = .subtitle_size, family = .fuente_letra, face = "italic", color = .color_titulo, margin = ggplot2::margin(b = 10)))
+      ggplot2::labs(subtitle = .subtitle) +
+      ggplot2::theme(plot.subtitle = ggtext::element_textbox_simple(
+        size = .subtitle_size, family = .fuente_letra, face = "italic",
+        color = .color_titulo,
+        width = grid::unit(.subtitle_width_pct / 100, "npc"),
+        halign = 0,
+        margin = ggplot2::margin(b = 10)
+      ))
   }
 
   # Acumuladores de margen - se aplican una sola vez al final
@@ -864,8 +881,9 @@ graficos_estilo_victorgm <- function(
     .plot_to_return_plt <-
       .plot_to_return_plt +
       ggplot2::labs(caption = .caption) +
-      ggplot2::theme(plot.caption = ggtext::element_markdown(
-        hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+      ggplot2::theme(plot.caption = ggtext::element_textbox_simple(
+        halign = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+        width = grid::unit(.caption_width_pct / 100, "npc"),
         margin = ggplot2::margin(t = caption_top_margin)
       ))
     bottom_margin_pt <- bottom_margin_pt + 15
@@ -874,8 +892,9 @@ graficos_estilo_victorgm <- function(
     .plot_to_return_plt <-
       .plot_to_return_plt +
       ggplot2::labs(caption = .url_enlace) +
-      ggplot2::theme(plot.caption = ggtext::element_markdown(
-        hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+      ggplot2::theme(plot.caption = ggtext::element_textbox_simple(
+        halign = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+        width = grid::unit(.caption_width_pct / 100, "npc"),
         margin = ggplot2::margin(t = caption_top_margin)
       ))
     bottom_margin_pt <- bottom_margin_pt + 15
@@ -912,9 +931,10 @@ graficos_estilo_victorgm <- function(
     # Crear gradiente
     grad <- grDevices::colorRampPalette(.colores_linea)(100)
     # Crear raster grob (1 pixel alto, 100 ancho)
+    # width = 2 npc para que se extienda más allá del panel y cubra todo el ancho del plot
     linea_grob <- grid::rasterGrob(
       matrix(grad, nrow = 1),
-      width = grid::unit(1, "npc"),
+      width = grid::unit(2, "npc"),
       height = grid::unit(2, "pt"),
       interpolate = TRUE,
       vp = grid::viewport(y = 0, just = "bottom")
@@ -1110,16 +1130,60 @@ graficos_estilo_victorgm <- function(
     }
   }
 
+  # Guardar como PNG si se ha especificado ruta
+  if (!is.null(.guardar_en)) {
+    if (!grepl("\\.png$", .guardar_en, ignore.case = TRUE)) {
+      .guardar_en <- paste0(.guardar_en, ".png")
+    }
+
+    dir_guardado <- dirname(.guardar_en)
+    if (!dir.exists(dir_guardado)) {
+      warning(paste0("El directorio no existe: '", dir_guardado, "'. No se ha guardado el archivo."))
+    } else {
+      if (.estatico) {
+        tryCatch(
+          ggplot2::ggsave(
+            filename = .guardar_en,
+            plot = .plot_to_return_plt,
+            width = .width, height = .height,
+            dpi = 300, bg = "white"
+          ),
+          error = function(e) warning(paste0("Error al guardar el gráfico: ", e$message))
+        )
+      } else {
+        if (!requireNamespace("webshot2", quietly = TRUE)) {
+          warning("Se requiere el paquete 'webshot2' para guardar graficos interactivos como PNG. Instalar con: install.packages('webshot2')")
+        } else {
+          html_temp <- tempfile(fileext = ".html")
+          lib_dir <- sub("\\.html$", "_files", html_temp)
+          tryCatch(
+            {
+              htmlwidgets::saveWidget(.plot_to_return_plt, html_temp, selfcontained = FALSE)
+              webshot2::webshot(html_temp, file = .guardar_en, delay = 2)
+            },
+            error = function(e) warning(paste0("Error al guardar el grafico interactivo: ", e$message))
+          )
+          # Limpiar archivos intermedios
+          unlink(html_temp)
+          if (dir.exists(lib_dir)) unlink(lib_dir, recursive = TRUE)
+        }
+      }
+    }
+  }
+
   return(.plot_to_return_plt)
 }
 
+#' @rdname graficos_estilo_victorgm
+#' @export
+grafico_estilo_victorgm <- graficos_estilo_victorgm
 
 
 # Función general para dar formato a mapas coropléticos ----
 #' Fijar estilo de mapas coropléticos (por defecto) o de burbujas para VictorGM, con algunos parámetros opcionales. Habría que añadir el título al gráfico generado.
 #' @param .x Data frame que contenga 2 columnas: `.col_nombres` y `.col_valores` con los valores a representar.
 #' @param .tipo_mapa Cadena de caracteres. Puede tomar valores `"coroplético"` (por defecto) o `"burbujas"`.
-#' @param .region_geografica Cadena de caracteres. Puede tomar valores `"España"` o `"Mundo"`. Por defecto, `"España"`.
+#' @param .region_geografica Cadena de caracteres. Puede tomar valores `"España"`, `"Europa"` o `"Mundo"`. `"Europa"` representa un mapa mundial recortado a las coordenadas europeas. Por defecto, `"España"`.
 #' @param .unidades_territoriales Cadena de caracteres. Solo funciona en caso de que `.region_geografica == "España"`, ya que en caso contrario se representara por países. Puede tomar valores `"pais"`, `"ccaa"` o `"provincia"`. Por defecto, `"provincia"`.
 #' @param .col_nombres Cadena de caracteres. Sirve para indicar el nombre de la columna que contiene las áreas geográficas. En caso de `.unidades_territoriales == "provincias"` y `.unidades_territoriales == "ccaa"` se espera que introduzca un df con los códigos por provincias o de las comunidades de datacomex. En caso de `.unidades_territoriales == "pais"` se utilizará el código iso3A (se puede cambiar en el parámetro `.codigo_pais`). Por defecto, `"nombres"`.
 #' @param .col_valores Cadena de caracteres. Sirve para indicar el nombre de la columna que contiene los valores a representar. Por defecto, `"valores"`.
@@ -1142,11 +1206,16 @@ graficos_estilo_victorgm <- function(
 #' @param .subtitle Subtitulo del mapa. Habitualmente usado para definir las unidades de medida. Por defecto, `NULL`.
 #' @param .color_titulo Cadena de caracteres. Color del título y subtítulo. Por defecto, `"#5F2987"` (morado).
 #' @param .caption Nota al pie del mapa. Por defecto, `" "` (espacio en blanco; se muestra el enlace URL si está definido).
+#' @param .caption_size Número. Tamaño de la fuente de la nota al pie. Por defecto, `10`.
+#' @param .title_width_pct Número. Porcentaje del ancho del gráfico que puede ocupar el título (0 a 100). Por defecto, `80`.
+#' @param .subtitle_width_pct Número. Porcentaje del ancho del gráfico que puede ocupar el subtítulo (0 a 100). Por defecto, `80`.
+#' @param .caption_width_pct Número. Porcentaje del ancho del gráfico que puede ocupar la nota al pie (0 a 100). Por defecto, `80`.
 #' @param .fuente_letra Cadena de caracteres. Fuente tipográfica a utilizar en el gráfico. Por defecto, utiliza la fuente: `"Source Sans 3"`. Otras opciones comunes: `"Segoe UI"`, `"Arial"`, `"Times"`, `"Courier"`, `"Helvetica"`, etc.
 #' @param .logo_path Cadena de caracteres. Ruta a una imagen PNG para incluir como logo en el gráfico. Por defecto, `NULL` (sin logo).
 #' @param .logo_posicion Cadena de caracteres. Esquina en la que colocar el logo: `"topright"`, `"topleft"`, `"bottomright"` o `"bottomleft"`. Por defecto, `"bottomright"`.
 #' @param .logo_ancho_pct Número. Ancho del logo como porcentaje del ancho del gráfico (de 0 a 100). Por defecto, `10`.
 #' @param .logo_hover_path Cadena de caracteres. Ruta a una imagen PNG alternativa que se muestra al pasar el ratón sobre el logo (solo en modo interactivo). Genera un efecto de cross-fade entre ambas imágenes. Por defecto, `NULL` (sin efecto hover).
+#' @param .guardar_en Cadena de caracteres. Ruta del archivo PNG donde guardar el mapa. Si es interactivo, se guarda una captura de pantalla (requiere `webshot2`). Si el directorio no existe, se muestra un aviso sin detener la ejecución. Por defecto, `NULL` (no se guarda).
 #' @export
 mapa_estilo_victorgm <- function(
     .x,
@@ -1177,6 +1246,9 @@ mapa_estilo_victorgm <- function(
     .color_titulo = "#5F2987",
     .caption = " ",
     .caption_size = 10,
+    .title_width_pct = 80,
+    .subtitle_width_pct = 80,
+    .caption_width_pct = 80,
     .fuente_letra = "Source Sans 3",
     .logo_path = NULL,
     .logo_posicion = "bottomright",
@@ -1184,10 +1256,11 @@ mapa_estilo_victorgm <- function(
     .logo_hover_path = NULL,
     .url_enlace = "www.victorgutierrezmarcos.es",
     .linea_separadora = TRUE,
-    .colores_linea = c("#5F2987", "#E2EFD9", "#B8860B"),
+    .colores_linea = c("#5F2987", "#B8860B", "#E2EFD9"),
     .estatico = FALSE,
     .width = 6,
-    .height = 5
+    .height = 5,
+    .guardar_en = NULL
 ) {
 
   # Registrar fuente de Google Fonts si es necesario
@@ -1340,7 +1413,7 @@ mapa_estilo_victorgm <- function(
     sf::st_crs(canarias_shifted) <- sf::st_crs(peninsula)
     
     .x <- rbind(peninsula, canarias_shifted)
-  } else if(.region_geografica == "Mundo"){
+  } else if(.region_geografica %in% c("Mundo", "Europa")){
     if(.codigo_pais == "iso3A"){
       .x <-
         .x |>
@@ -1457,7 +1530,7 @@ mapa_estilo_victorgm <- function(
   
   # Aplicar resaltado si es necesario
   if(!is.null(.resaltar) && .tipo_mapa == "coroplético"){
-    if(.region_geografica == "Mundo"){
+    if(.region_geografica %in% c("Mundo", "Europa")){
       if(.codigo_pais == "iso_3A"){
         .paises <-
           comerciotools::get_iso_datacomex() |>
@@ -1566,7 +1639,9 @@ mapa_estilo_victorgm <- function(
     ggplot2::theme(
       axis.text = ggplot2::element_blank(),
       axis.ticks = ggplot2::element_blank(),
-      panel.grid = ggplot2::element_blank()
+      panel.grid = ggplot2::element_blank(),
+      plot.title.position = "plot",
+      plot.caption.position = "plot"
     )
   
   if(.region_geografica == "España"){
@@ -1581,21 +1656,28 @@ mapa_estilo_victorgm <- function(
   }
   
   if(!is.null(.title)){
-    titulo_formateado <- stringr::str_wrap(.title, width = 40)
-
     .map_to_return <-
       .map_to_return +
-      ggplot2::labs(title = titulo_formateado) +
-      ggplot2::theme(plot.title = ggplot2::element_text(size = .title_size, face = "bold", color = .color_titulo, margin = ggplot2::margin(b = 5), family = .fuente_letra))
+      ggplot2::labs(title = .title) +
+      ggplot2::theme(plot.title = ggtext::element_textbox_simple(
+        size = .title_size, face = "bold", color = .color_titulo,
+        width = grid::unit(.title_width_pct / 100, "npc"),
+        halign = 0,
+        margin = ggplot2::margin(b = 5), family = .fuente_letra
+      ))
   }
 
   if(!is.null(.subtitle)){
-    subtitulo_formateado <- stringr::str_wrap(.subtitle, width = 50)
-
     .map_to_return <-
       .map_to_return +
-      ggplot2::labs(subtitle = subtitulo_formateado) +
-      ggplot2::theme(plot.subtitle = ggplot2::element_text(size = .subtitle_size, family = .fuente_letra, face = "italic", color = .color_titulo, margin = ggplot2::margin(b = 10)))
+      ggplot2::labs(subtitle = .subtitle) +
+      ggplot2::theme(plot.subtitle = ggtext::element_textbox_simple(
+        size = .subtitle_size, family = .fuente_letra, face = "italic",
+        color = .color_titulo,
+        width = grid::unit(.subtitle_width_pct / 100, "npc"),
+        halign = 0,
+        margin = ggplot2::margin(b = 10)
+      ))
   }
 
   # Acumuladores de margen - se aplican una sola vez al final
@@ -1624,8 +1706,9 @@ mapa_estilo_victorgm <- function(
     .map_to_return <-
       .map_to_return +
       ggplot2::labs(caption = .caption) +
-      ggplot2::theme(plot.caption = ggtext::element_markdown(
-        hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+      ggplot2::theme(plot.caption = ggtext::element_textbox_simple(
+        halign = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+        width = grid::unit(.caption_width_pct / 100, "npc"),
         margin = ggplot2::margin(t = caption_top_margin)
       ))
     bottom_margin_pt <- bottom_margin_pt + 15
@@ -1633,8 +1716,9 @@ mapa_estilo_victorgm <- function(
     .map_to_return <-
       .map_to_return +
       ggplot2::labs(caption = .url_enlace) +
-      ggplot2::theme(plot.caption = ggtext::element_markdown(
-        hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+      ggplot2::theme(plot.caption = ggtext::element_textbox_simple(
+        halign = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+        width = grid::unit(.caption_width_pct / 100, "npc"),
         margin = ggplot2::margin(t = caption_top_margin)
       ))
     bottom_margin_pt <- bottom_margin_pt + 15
@@ -1647,9 +1731,10 @@ mapa_estilo_victorgm <- function(
   # Insertar línea separadora
   if (.linea_separadora) {
     grad <- grDevices::colorRampPalette(.colores_linea)(100)
+    # width = 2 npc para que se extienda más allá del panel y cubra todo el ancho del plot
     linea_grob <- grid::rasterGrob(
       matrix(grad, nrow = 1),
-      width = grid::unit(1, "npc"),
+      width = grid::unit(2, "npc"),
       height = grid::unit(2, "pt"),
       interpolate = TRUE,
       vp = grid::viewport(y = 0, just = "bottom")
@@ -1748,6 +1833,18 @@ mapa_estilo_victorgm <- function(
       ggplot2::coord_sf(clip = "off")
   }
 
+  # Recortar coordenadas para Europa (se aplica al final para que no sea sobreescrito
+  # por coord_sf de la línea separadora o el logo)
+  if (.region_geografica == "Europa") {
+    needs_clip_off <- .linea_separadora || (!is.null(.logo_path) && .estatico)
+    .map_to_return <- .map_to_return +
+      ggplot2::coord_sf(
+        xlim = c(-25, 50), ylim = c(34, 72),
+        expand = FALSE,
+        clip = if (needs_clip_off) "off" else "on"
+      )
+  }
+
   # Aplicar márgenes acumulados una sola vez
   .map_to_return <- .map_to_return +
     ggplot2::theme(plot.margin = ggplot2::margin(
@@ -1839,8 +1936,53 @@ mapa_estilo_victorgm <- function(
     }
   }
 
+  # Guardar como PNG si se ha especificado ruta
+  if (!is.null(.guardar_en)) {
+    if (!grepl("\\.png$", .guardar_en, ignore.case = TRUE)) {
+      .guardar_en <- paste0(.guardar_en, ".png")
+    }
+
+    dir_guardado <- dirname(.guardar_en)
+    if (!dir.exists(dir_guardado)) {
+      warning(paste0("El directorio no existe: '", dir_guardado, "'. No se ha guardado el archivo."))
+    } else {
+      if (.estatico) {
+        tryCatch(
+          ggplot2::ggsave(
+            filename = .guardar_en,
+            plot = .map_to_return,
+            width = .width, height = .height,
+            dpi = 300, bg = "white"
+          ),
+          error = function(e) warning(paste0("Error al guardar el mapa: ", e$message))
+        )
+      } else {
+        if (!requireNamespace("webshot2", quietly = TRUE)) {
+          warning("Se requiere el paquete 'webshot2' para guardar mapas interactivos como PNG. Instalar con: install.packages('webshot2')")
+        } else {
+          html_temp <- tempfile(fileext = ".html")
+          lib_dir <- sub("\\.html$", "_files", html_temp)
+          tryCatch(
+            {
+              htmlwidgets::saveWidget(.map_to_return, html_temp, selfcontained = FALSE)
+              webshot2::webshot(html_temp, file = .guardar_en, delay = 2)
+            },
+            error = function(e) warning(paste0("Error al guardar el mapa interactivo: ", e$message))
+          )
+          # Limpiar archivos intermedios
+          unlink(html_temp)
+          if (dir.exists(lib_dir)) unlink(lib_dir, recursive = TRUE)
+        }
+      }
+    }
+  }
+
   return(.map_to_return)
 }
+
+#' @rdname mapa_estilo_victorgm
+#' @export
+mapas_estilo_victorgm <- mapa_estilo_victorgm
 
 # Función general para dar formato a tablas ----
 
