@@ -109,11 +109,12 @@ viviendas_plt <-
 
 viviendas_plt |> 
   graficos_estilo_victorgm(
+    # .estatico = TRUE,
     .tipo_grafico_x = "fecha",
     .tipo_grafico_y = "porcentaje",
     .title = "Régimen de tenencia de viviendas en España.",
     .subtitle = "Porcentaje.",
-    .caption = "Fuente: Censos de viviendas (Instituto Nacional de Estadística).",
+    .caption = "<em>Fuente</em>: Censos de viviendas (Instituto Nacional de Estadística).<br><em>Autor</em>: Víctor Gutiérrez Marcos",
     .fuente_letra = "Source Sans 3",
     .logo_path = "C:/Users/vgutierrez/Documents/src/victorgutierrezmarcos.github.io/blog/images/icon.png",
     .logo_hover_path = "C:/Users/vgutierrez/Documents/src/victorgutierrezmarcos.github.io/blog/images/icon_inverse.png",
@@ -122,7 +123,9 @@ viviendas_plt |>
     .fecha_inicial_grafico = fecha_min,
     .fecha_final_grafico = fecha_max,
     .paleta_utilizada = paleta,
-    .logo_ancho_pct = 10
+    .logo_ancho_pct = 8,
+    .title_width_pct = 100,
+    .caption_width_pct = 90
   )
 
 

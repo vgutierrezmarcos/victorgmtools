@@ -60,7 +60,7 @@ registrar_fuente <- function(.fuente_letra) {
 crear_logo_html_overlay <- function(.logo_path,
                                     .logo_hover_path,
                                     .logo_posicion = "bottomright",
-                                    .logo_ancho_pct = 10,
+                                    .logo_ancho_pct = 8,
                                     .url_enlace = "www.victorgutierrezmarcos.es") {
 
   # Base64-encode ambas imagenes
@@ -434,13 +434,13 @@ graficos_estilo_victorgm <- function(
     .color_titulo = "#5F2987",
     .caption = " ",
     .caption_size = 10,
-    .title_width_pct = 80,
+    .title_width_pct = 100,
     .subtitle_width_pct = 80,
-    .caption_width_pct = 80,
+    .caption_width_pct = 85,
     .fuente_letra = "Source Sans 3",
     .logo_path = NULL,
     .logo_posicion = "bottomright",
-    .logo_ancho_pct = 10,
+    .logo_ancho_pct = 8,
     .logo_hover_path = NULL,
     .url_enlace = "www.victorgutierrezmarcos.es",
     .linea_separadora = TRUE,
@@ -826,28 +826,28 @@ graficos_estilo_victorgm <- function(
   }
   
   if(!is.null(.title)){
-    titulo_formateado <- stringr::str_wrap(.title, width = round(.title_width_pct / 100 * 50))
-
     .plot_to_return_plt <-
       .plot_to_return_plt +
-      ggplot2::labs(title = titulo_formateado) +
-      ggplot2::theme(plot.title = ggtext::element_markdown(
+      ggplot2::labs(title = .title) +
+      ggplot2::theme(plot.title = ggtext::element_textbox_simple(
         size = .title_size, face = "bold", color = .color_titulo,
-        hjust = 0,
+        width = grid::unit(.title_width_pct / 100, "npc"),
+        hjust = 0, halign = 0,
+        padding = ggplot2::margin(0, 0, 0, 0),
         margin = ggplot2::margin(b = 5), family = .fuente_letra
       ))
   }
 
   if(!is.null(.subtitle)){
-    subtitulo_formateado <- stringr::str_wrap(.subtitle, width = round(.subtitle_width_pct / 100 * 65))
-
     .plot_to_return_plt <-
       .plot_to_return_plt +
-      ggplot2::labs(subtitle = subtitulo_formateado) +
-      ggplot2::theme(plot.subtitle = ggtext::element_markdown(
+      ggplot2::labs(subtitle = .subtitle) +
+      ggplot2::theme(plot.subtitle = ggtext::element_textbox_simple(
         size = .subtitle_size, family = .fuente_letra, face = "italic",
         color = .color_titulo,
-        hjust = 0,
+        width = grid::unit(.subtitle_width_pct / 100, "npc"),
+        hjust = 0, halign = 0,
+        padding = ggplot2::margin(0, 0, 0, 0),
         margin = ggplot2::margin(b = 10)
       ))
   }
@@ -862,13 +862,13 @@ graficos_estilo_victorgm <- function(
 
   # Estimar distancia desde el panel inferior hasta el área del caption
   # Se usa para posicionar la línea separadora y el logo
-  tick_cm <- 0.3
+  tick_cm <- 0.1
   label_cm <- .text_axis_size * 4 / 72 * 2.54 * abs(sin(.angle_x_axis_labels * pi / 180)) +
               .text_axis_size / 72 * 2.54 * abs(cos(.angle_x_axis_labels * pi / 180))
   caption_area_offset_cm <- tick_cm + label_cm
 
   # Margen superior del caption para separarlo de la línea separadora
-  caption_top_margin <- if (.linea_separadora) 5 else 2
+  caption_top_margin <- if (.linea_separadora) 12 else 2
 
   if(!is.null(.caption)){
     # Añadir enlace si existe
@@ -883,8 +883,10 @@ graficos_estilo_victorgm <- function(
     .plot_to_return_plt <-
       .plot_to_return_plt +
       ggplot2::labs(caption = .caption) +
-      ggplot2::theme(plot.caption = ggtext::element_markdown(
-        hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+      ggplot2::theme(plot.caption = ggtext::element_textbox_simple(
+        hjust = 0, halign = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+        width = grid::unit(.caption_width_pct / 100, "npc"),
+        padding = ggplot2::margin(0, 0, 0, 0),
         margin = ggplot2::margin(t = caption_top_margin)
       ))
     bottom_margin_pt <- bottom_margin_pt + 15
@@ -893,11 +895,26 @@ graficos_estilo_victorgm <- function(
     .plot_to_return_plt <-
       .plot_to_return_plt +
       ggplot2::labs(caption = .url_enlace) +
-      ggplot2::theme(plot.caption = ggtext::element_markdown(
-        hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+      ggplot2::theme(plot.caption = ggtext::element_textbox_simple(
+        hjust = 0, halign = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+        width = grid::unit(.caption_width_pct / 100, "npc"),
+        padding = ggplot2::margin(0, 0, 0, 0),
         margin = ggplot2::margin(t = caption_top_margin)
       ))
     bottom_margin_pt <- bottom_margin_pt + 15
+  }
+
+  # Ajustar offset para captions multilínea: cada <br> comprime el panel,
+  # compensar para mantener línea separadora y logo a distancia fija del borde inferior
+  if (has_caption) {
+    .caption_final <- if (!is.null(.caption)) .caption
+                      else if (!is.null(.url_enlace) && .url_enlace != "") .url_enlace
+                      else ""
+    .br_matches <- gregexpr("<br", .caption_final, fixed = TRUE)[[1]]
+    .n_br <- if (.br_matches[1] == -1L) 0L else length(.br_matches)
+    if (.n_br > 0) {
+      caption_area_offset_cm <- caption_area_offset_cm + .n_br * .caption_size * 1.3 / 72 * 2.54
+    }
   }
 
   if(is.null(.title_x_axis)){
@@ -928,21 +945,39 @@ graficos_estilo_victorgm <- function(
 
   # Insertar línea separadora
   if (.linea_separadora) {
-    # Crear gradiente
     grad <- grDevices::colorRampPalette(.colores_linea)(100)
-    # Crear raster grob (1 pixel alto, 100 ancho)
-    # width = 2 npc para que se extienda más allá del panel y cubra todo el ancho del plot
+
+    # Ancho y posición horizontal de la línea (por defecto, cubrir todo el ancho del plot)
+    linea_x <- grid::unit(0.5, "npc")
+    linea_width <- grid::unit(2, "npc")
+    linea_just_h <- "center"
+
+    # Si hay logo en posición inferior, acortar la línea para no pasar detrás
+    if (!is.null(.logo_path)) {
+      recorte <- grid::unit((.logo_ancho_pct) / 100, "snpc")
+
+      if (.logo_posicion == "bottomright") {
+        linea_x <- grid::unit(0, "npc")
+        linea_width <- grid::unit(1, "npc") - recorte
+        linea_just_h <- "left"
+      } else if (.logo_posicion == "bottomleft") {
+        linea_x <- recorte
+        linea_width <- grid::unit(1, "npc") - recorte
+        linea_just_h <- "left"
+      }
+    }
+
     linea_grob <- grid::rasterGrob(
       matrix(grad, nrow = 1),
-      width = grid::unit(2, "npc"),
+      x = linea_x,
+      width = linea_width,
       height = grid::unit(2, "pt"),
       interpolate = TRUE,
+      just = c(linea_just_h, "center"),
       vp = grid::viewport(y = 0, just = "bottom")
     )
 
-    # Posición adaptativa: justo debajo de las etiquetas del eje X, encima del caption
     y_linea <- grid::unit(0, "npc") - grid::unit(caption_area_offset_cm, "cm")
-
     linea_grob$y <- y_linea
 
     .plot_to_return_plt <- .plot_to_return_plt +
@@ -1248,13 +1283,13 @@ mapa_estilo_victorgm <- function(
     .color_titulo = "#5F2987",
     .caption = " ",
     .caption_size = 10,
-    .title_width_pct = 80,
+    .title_width_pct = 100,
     .subtitle_width_pct = 80,
-    .caption_width_pct = 80,
+    .caption_width_pct = 85,
     .fuente_letra = "Source Sans 3",
     .logo_path = NULL,
     .logo_posicion = "bottomright",
-    .logo_ancho_pct = 10,
+    .logo_ancho_pct = 8,
     .logo_hover_path = NULL,
     .url_enlace = "www.victorgutierrezmarcos.es",
     .linea_separadora = TRUE,
@@ -1658,28 +1693,28 @@ mapa_estilo_victorgm <- function(
   }
   
   if(!is.null(.title)){
-    titulo_formateado <- stringr::str_wrap(.title, width = round(.title_width_pct / 100 * 50))
-
     .map_to_return <-
       .map_to_return +
-      ggplot2::labs(title = titulo_formateado) +
-      ggplot2::theme(plot.title = ggtext::element_markdown(
+      ggplot2::labs(title = .title) +
+      ggplot2::theme(plot.title = ggtext::element_textbox_simple(
         size = .title_size, face = "bold", color = .color_titulo,
-        hjust = 0,
+        width = grid::unit(.title_width_pct / 100, "npc"),
+        hjust = 0, halign = 0,
+        padding = ggplot2::margin(0, 0, 0, 0),
         margin = ggplot2::margin(b = 5), family = .fuente_letra
       ))
   }
 
   if(!is.null(.subtitle)){
-    subtitulo_formateado <- stringr::str_wrap(.subtitle, width = round(.subtitle_width_pct / 100 * 65))
-
     .map_to_return <-
       .map_to_return +
-      ggplot2::labs(subtitle = subtitulo_formateado) +
-      ggplot2::theme(plot.subtitle = ggtext::element_markdown(
+      ggplot2::labs(subtitle = .subtitle) +
+      ggplot2::theme(plot.subtitle = ggtext::element_textbox_simple(
         size = .subtitle_size, family = .fuente_letra, face = "italic",
         color = .color_titulo,
-        hjust = 0,
+        width = grid::unit(.subtitle_width_pct / 100, "npc"),
+        hjust = 0, halign = 0,
+        padding = ggplot2::margin(0, 0, 0, 0),
         margin = ggplot2::margin(b = 10)
       ))
   }
@@ -1693,10 +1728,10 @@ mapa_estilo_victorgm <- function(
                  (!is.null(.url_enlace) && .url_enlace != "")
 
   # Mapas no tienen etiquetas de eje, distancia fija desde el panel al caption
-  caption_area_offset_cm <- 0.3
+  caption_area_offset_cm <- 0.1
 
   # Margen superior del caption para separarlo de la línea separadora
-  caption_top_margin <- if (.linea_separadora) 5 else 2
+  caption_top_margin <- if (.linea_separadora) 12 else 2
 
   if(!is.null(.caption)){
     # Añadir enlace si existe
@@ -1710,8 +1745,10 @@ mapa_estilo_victorgm <- function(
     .map_to_return <-
       .map_to_return +
       ggplot2::labs(caption = .caption) +
-      ggplot2::theme(plot.caption = ggtext::element_markdown(
-        hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+      ggplot2::theme(plot.caption = ggtext::element_textbox_simple(
+        hjust = 0, halign = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+        width = grid::unit(.caption_width_pct / 100, "npc"),
+        padding = ggplot2::margin(0, 0, 0, 0),
         margin = ggplot2::margin(t = caption_top_margin)
       ))
     bottom_margin_pt <- bottom_margin_pt + 15
@@ -1719,11 +1756,26 @@ mapa_estilo_victorgm <- function(
     .map_to_return <-
       .map_to_return +
       ggplot2::labs(caption = .url_enlace) +
-      ggplot2::theme(plot.caption = ggtext::element_markdown(
-        hjust = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+      ggplot2::theme(plot.caption = ggtext::element_textbox_simple(
+        hjust = 0, halign = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+        width = grid::unit(.caption_width_pct / 100, "npc"),
+        padding = ggplot2::margin(0, 0, 0, 0),
         margin = ggplot2::margin(t = caption_top_margin)
       ))
     bottom_margin_pt <- bottom_margin_pt + 15
+  }
+
+  # Ajustar offset para captions multilínea: cada <br> comprime el panel,
+  # compensar para mantener línea separadora y logo a distancia fija del borde inferior
+  if (has_caption) {
+    .caption_final <- if (!is.null(.caption)) .caption
+                      else if (!is.null(.url_enlace) && .url_enlace != "") .url_enlace
+                      else ""
+    .br_matches <- gregexpr("<br", .caption_final, fixed = TRUE)[[1]]
+    .n_br <- if (.br_matches[1] == -1L) 0L else length(.br_matches)
+    if (.n_br > 0) {
+      caption_area_offset_cm <- caption_area_offset_cm + .n_br * .caption_size * 1.3 / 72 * 2.54
+    }
   }
 
   # Configurar update_geom_defaults para que geom_text use la fuente por defecto
@@ -1733,16 +1785,37 @@ mapa_estilo_victorgm <- function(
   # Insertar línea separadora
   if (.linea_separadora) {
     grad <- grDevices::colorRampPalette(.colores_linea)(100)
-    # width = 2 npc para que se extienda más allá del panel y cubra todo el ancho del plot
+
+    # Ancho y posición horizontal de la línea (por defecto, cubrir todo el ancho del plot)
+    linea_x <- grid::unit(0.5, "npc")
+    linea_width <- grid::unit(2, "npc")
+    linea_just_h <- "center"
+
+    # Si hay logo en posición inferior, acortar la línea para no pasar detrás
+    if (!is.null(.logo_path)) {
+      recorte <- grid::unit((.logo_ancho_pct) / 100, "snpc")
+
+      if (.logo_posicion == "bottomright") {
+        linea_x <- grid::unit(0, "npc")
+        linea_width <- grid::unit(1, "npc") - recorte
+        linea_just_h <- "left"
+      } else if (.logo_posicion == "bottomleft") {
+        linea_x <- recorte
+        linea_width <- grid::unit(1, "npc") - recorte
+        linea_just_h <- "left"
+      }
+    }
+
     linea_grob <- grid::rasterGrob(
       matrix(grad, nrow = 1),
-      width = grid::unit(2, "npc"),
+      x = linea_x,
+      width = linea_width,
       height = grid::unit(2, "pt"),
       interpolate = TRUE,
+      just = c(linea_just_h, "center"),
       vp = grid::viewport(y = 0, just = "bottom")
     )
 
-    # Posición fija para mapas (no tienen etiquetas de eje X)
     y_linea <- grid::unit(0, "npc") - grid::unit(caption_area_offset_cm, "cm")
     linea_grob$y <- y_linea
 
@@ -2530,3 +2603,4 @@ crear_agrupacion <- function(label, columns) {
   }
   return(list(label = label, columns = columns))
 }
+
