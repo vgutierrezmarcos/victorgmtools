@@ -8,7 +8,7 @@ crear_logo_html_overlay(
   .logo_path,
   .logo_hover_path,
   .logo_posicion = "bottomright",
-  .logo_ancho_pct = 10,
+  .logo_ancho_pct = 8,
   .url_enlace = "www.victorgutierrezmarcos.es"
 )
 }
