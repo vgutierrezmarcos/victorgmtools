@@ -33,7 +33,7 @@ get_conversion <- function(.datos_df,
   # Aplicar la conversión a cada fila del dataframe
   .datos_df <-
     .datos_df |>
-    dplyr::mutate(!!sym(valores_convertidos) := mapply(function(.col_fecha, .col_valores) {
+    dplyr::mutate(!!rlang::sym(valores_convertidos) := mapply(function(.col_fecha, .col_valores) {
       tipo_cambio <- get_tipo_cambio(.to = .to,
                                      .from = .from,
                                      .fecha = .col_fecha)
@@ -48,6 +48,8 @@ get_conversion <- function(.datos_df,
 #' @param .from_date Fecha. Fecha de inicio del dataframe a obtener. Por defecto, hoy hace un mes.
 #' @param .to_date Fecha. Fecha de final del dataframe a obtener. Por defecto, hoy.
 #' @param .frecuencia Frecuencia de los datos. Puede ser, `"diaria"`, `"mensual"` o `"anual"`. Por defecto, `"diaria"`.
+#' @param max_retries Entero. Número máximo de intentos de descarga si Yahoo Finance falla. Por defecto, `3`.
+#' @param retry_delay Número. Segundos de espera entre intentos. Por defecto, `2`.
 #' @export
 get_tipo_cambio_df <- function(.from_currency = "EUR",
                                .to_currency = "USD",
@@ -64,14 +66,19 @@ get_tipo_cambio_df <- function(.from_currency = "EUR",
   # Obtener datos en un solo request
   symbol <- paste0(.from_currency, .to_currency, "=X")
 
-  exchange_data <- tryCatch({
-    quantmod::getSymbols(symbol,
-                         from = .from_date,
-                         to = .to_date,
-                         auto.assign = FALSE)
-  }, error = function(e) {
-    stop(paste("Error al obtener datos:", e$message))
-  })
+  exchange_data <- NULL
+  ultimo_error <- NULL
+  for (intento in seq_len(max(1, max_retries))) {
+    exchange_data <- tryCatch(
+      quantmod::getSymbols(symbol, from = .from_date, to = .to_date, auto.assign = FALSE),
+      error = function(e) { ultimo_error <<- conditionMessage(e); NULL }
+    )
+    if (!is.null(exchange_data)) break
+    if (intento < max_retries) Sys.sleep(retry_delay)
+  }
+  if (is.null(exchange_data)) {
+    stop(paste0("Error al obtener datos de Yahoo Finance tras ", max_retries, " intento(s): ", ultimo_error))
+  }
 
   # Convertir a dataframe
   tipo_cambio_df <- data.frame(

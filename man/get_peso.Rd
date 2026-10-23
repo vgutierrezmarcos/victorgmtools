@@ -2,7 +2,7 @@
 % Please edit documentation in R/funciones_calculos.R
 \name{get_peso}
 \alias{get_peso}
-\title{Calcula el peso sobre el total del flujo. Devuelve un dataframe como el original, pero con una columna adiciona: \code{peso}, que hace referencia al peso del flujo sobre el total de \code{col.nombres} en la fecha indicada.}
+\title{Calcula el peso sobre el total del flujo. Devuelve un dataframe como el original, pero con una columna adicional: \code{peso}, que hace referencia al peso del flujo sobre el total de \code{col.nombres} en la fecha indicada.}
 \usage{
 get_peso(
   .datos_df,
@@ -27,5 +27,5 @@ get_peso(
 \item{.en_tanto_por_uno}{Valor lógico. Si se establece en \code{TRUE} devuelve los datos en tanto por uno y en caso contrario en tanto por cien. Por defecto, en tanto por cien.}
 }
 \description{
-Calcula el peso sobre el total del flujo. Devuelve un dataframe como el original, pero con una columna adiciona: \code{peso}, que hace referencia al peso del flujo sobre el total de \code{col.nombres} en la fecha indicada.
+Calcula el peso sobre el total del flujo. Devuelve un dataframe como el original, pero con una columna adicional: \code{peso}, que hace referencia al peso del flujo sobre el total de \code{col.nombres} en la fecha indicada.
 }

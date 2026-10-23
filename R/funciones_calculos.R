@@ -17,6 +17,10 @@ get_saldo <- function(.datos_df,
                       .export = "E",
                       .import = "I",
                       .saldo = "Saldo") {
+
+  .datos_df <- .datos_df |>
+    dplyr::filter(!!rlang::sym(.col_flujo) %in% c(.export, .import))
+
   suma_export <-
     .datos_df |>
     dplyr::filter(!!rlang::sym(.col_flujo) == .export) |>
@@ -33,34 +37,54 @@ get_saldo <- function(.datos_df,
 
   if (is.na(suma_export) || is.na(suma_import)) {
     print("La suma de exportaciones o de importaciones devuelve un valor NA.")
+    return(.datos_df)
   }
-  else if (suma_import < 0) {
+
+  # Verificar exportaciones negativas
+  if (suma_export < 0) {
+    warning("Hay datos de exportaciones negativos. No se ha calculado el saldo.")
+    return(.datos_df)
+  }
+
+  # Determinar columnas de agrupación
+  if (!is.null(.col_nombres)) {
+    cols_agrupar <- c(.col_fecha, .col_nombres)
+  } else {
+    cols_agrupar <- .col_fecha
+  }
+
+  if (suma_import < 0) {
     .datos_df |>
-      tidyr::pivot_wider(names_from = tidyselect::all_of(.col_flujo),
-                         values_from = .col_valores) |>
-      dplyr::group_by(dplyr::across(tidyselect::all_of(.col_nombres))) |>
+      tidyr::pivot_wider(names_from = dplyr::all_of(.col_flujo),
+                         values_from = dplyr::all_of(.col_valores)) |>
+      dplyr::group_by(dplyr::across(dplyr::all_of(cols_agrupar))) |>
       dplyr::mutate(!!rlang::sym(.saldo) := !!rlang::sym(.export) + !!rlang::sym(.import)) |>
       dplyr::ungroup() |>
       tidyr::pivot_longer(
-        cols = c(tidyselect::all_of(.export), tidyselect::all_of(.import), tidyselect::all_of(.saldo)),
+        cols = c(
+          dplyr::all_of(.export),
+          dplyr::all_of(.import),
+          dplyr::all_of(.saldo)
+        ),
         names_to = .col_flujo,
         values_to = .col_valores
       )
-  } else if (suma_import >= 0 & suma_export >= 0){
+  } else if (suma_import >= 0 & suma_export >= 0) {
     .datos_df |>
-      tidyr::pivot_wider(names_from = tidyselect::all_of(.col_flujo),
-                         values_from = .col_valores) |>
-      dplyr::group_by(dplyr::across(tidyselect::all_of(.col_nombres))) |>
+      tidyr::pivot_wider(names_from = dplyr::all_of(.col_flujo),
+                         values_from = dplyr::all_of(.col_valores)) |>
+      dplyr::group_by(dplyr::across(dplyr::all_of(cols_agrupar))) |>
       dplyr::mutate(!!rlang::sym(.saldo) := !!rlang::sym(.export) - !!rlang::sym(.import)) |>
       dplyr::ungroup() |>
       tidyr::pivot_longer(
-        cols = c(tidyselect::all_of(.export), tidyselect::all_of(.import), tidyselect::all_of(.saldo)),
+        cols = c(
+          dplyr::all_of(.export),
+          dplyr::all_of(.import),
+          dplyr::all_of(.saldo)
+        ),
         names_to = .col_flujo,
         values_to = .col_valores
       )
-  } else if (suma_export < 0){
-    print("Hay datos de exportaciones negativos. No se ha calculado el saldo.")
-    .datos_df
   }
 }
 
@@ -85,65 +109,32 @@ get_cobertura <- function(.datos_df,
                       .import = "I",
                       .cobertura = "Cobertura",
                       .en_tanto_por_uno = FALSE) {
-  suma_export <-
-    .datos_df |>
-    dplyr::filter(!!rlang::sym(.col_flujo) == .export) |>
-    dplyr::mutate(suma_E = sum(!!rlang::sym(.col_valores), na.rm = TRUE)) |>
-    dplyr::pull(suma_E) |>
-    unique()
+  .datos_df <- .datos_df |>
+    dplyr::filter(!!rlang::sym(.col_flujo) %in% c(.export, .import))
 
-  suma_import <-
-    .datos_df |>
-    dplyr::filter(!!rlang::sym(.col_flujo) == .import) |>
-    dplyr::mutate(suma_I = sum(!!rlang::sym(.col_valores), na.rm = TRUE)) |>
-    dplyr::pull(suma_I) |>
-    unique()
+  suma_export <- sum(.datos_df[[.col_valores]][.datos_df[[.col_flujo]] == .export], na.rm = TRUE)
+  suma_import <- sum(.datos_df[[.col_valores]][.datos_df[[.col_flujo]] == .import], na.rm = TRUE)
 
   if (is.na(suma_export) || is.na(suma_import)) {
-    print("La suma de exportaciones o de importaciones devuelve un valor NA.")
+    warning("La suma de exportaciones o de importaciones devuelve un valor NA. No se ha calculado la cobertura.")
+    return(.datos_df)
   }
-  else if (suma_import < 0) {
-    .datos_df <-
-      .datos_df |>
-      tidyr::pivot_wider(names_from = tidyselect::all_of(.col_flujo),
-                         values_from = .col_valores) |>
-      dplyr::group_by(dplyr::across(tidyselect::all_of(.col_nombres))) |>
-      dplyr::mutate(!!rlang::sym(.cobertura) := !!rlang::sym(.export) / !!rlang::sym(.import)) |>
-      dplyr::ungroup() |>
-      tidyr::pivot_longer(
-        cols = c(tidyselect::all_of(.export), tidyselect::all_of(.import), tidyselect::all_of(.cobertura)),
-        names_to = .col_flujo,
-        values_to = .col_valores
-      )
-    if(!.en_tanto_por_uno){
-      .datos_df <-
-        .datos_df |>
-        dplyr::mutate(!!rlang::sym(.cobertura) := !!rlang::sym(.cobertura) * 100)
-    }
-    .datos_df
-  } else if (suma_import >= 0 & suma_export >= 0){
-    .datos_df <-
-      .datos_df |>
-      tidyr::pivot_wider(names_from = tidyselect::all_of(.col_flujo),
-                         values_from = .col_valores) |>
-      dplyr::group_by(dplyr::across(tidyselect::all_of(.col_nombres))) |>
-      dplyr::mutate(!!rlang::sym(.cobertura) := !!rlang::sym(.export) / !!rlang::sym(.import)) |>
-      dplyr::ungroup() |>
-      tidyr::pivot_longer(
-        cols = c(tidyselect::all_of(.export), tidyselect::all_of(.import), tidyselect::all_of(.cobertura)),
-        names_to = .col_flujo,
-        values_to = .col_valores
-      )
-    if(!.en_tanto_por_uno){
-      .datos_df <-
-        .datos_df |>
-        dplyr::mutate(!!rlang::sym(.cobertura) := !!rlang::sym(.cobertura) * 100)
-    }
-    .datos_df
-  } else if (suma_export < 0){
-    print("Hay datos de exportaciones negativos. No se ha calculado la cobertura.")
-    .datos_df
+  if (suma_export < 0) {
+    warning("Hay datos de exportaciones negativos. No se ha calculado la cobertura.")
+    return(.datos_df)
   }
+
+  factor_escala <- if (isTRUE(.en_tanto_por_uno)) 1 else 100
+
+  .datos_df |>
+    tidyr::pivot_wider(names_from = dplyr::all_of(.col_flujo),
+                       values_from = dplyr::all_of(.col_valores)) |>
+    dplyr::mutate(!!rlang::sym(.cobertura) := factor_escala * !!rlang::sym(.export) / !!rlang::sym(.import)) |>
+    tidyr::pivot_longer(
+      cols = c(dplyr::all_of(.export), dplyr::all_of(.import), dplyr::all_of(.cobertura)),
+      names_to = .col_flujo,
+      values_to = .col_valores
+    )
 }
 
 # Tasa de variación ----
@@ -153,7 +144,7 @@ get_cobertura <- function(.datos_df,
 #' @param .frecuencia Cadena de caracteres. Indica la frecuencia de los datos. Permite `"anual"`, `"semestral"`, `"trimestral"`, `"mensual"`, `"semanal"` y `"diaria"`. Por defecto, `"mensual"`.
 #' @param .col_valores Cadena de caracteres. Nombre de la columna del dataframe que contiene los valores sobre los que se quiere calcular la tasa de variación. Por defecto, `"valores"`.
 #' @param .col_nombres Cadena de caracteres. Nombre de la columna del dataframe que contiene los nombres sobre los que se quiere calcular la tasa de variación. Por ejemplo, si se quiere calcular la tasa de variación para cada provincia o para cada flujo se podrá especificar aquí `.col_nombres = c("provincia", "flujo")`. Admite varias columnas (p.ej. `c("flujo", "pais")`). Por defecto, `"nombres"`. En su ausencia señalar `.col_nombres = NULL`.
-#' @param .col_flujo Cadena de caracteres. Establece el nombre de la columna que determina el sentido del flujo. Si no existiese esta columna y todas las observaciones reflejasen el mismo tipo de flujo permite establecer `.col_flujo = NULL`, que es su valor por defecto. Nótese que también se puede establecer la columna flujo en `.col_nombres` con el mismo efecto.
+#' @param .col_flujo Cadena de caracteres. Establece el nombre de la columna que determina el sentido del flujo. Si no existiese esta columna y todas las observaciones reflejasen el mismo tipo de flujo permite establecer `.col_flujo = NULL`. Nótese que también se puede establecer la columna flujo en `.col_nombres` con el mismo efecto. Por defecto, `NULL`.
 #' @param .col_fecha Cadena de caracteres. Nombre de la columna del dataframe que contiene las fechas (en formato fecha). La fórmula entiende que los datos son mensuales. Por defecto, `"fecha"`.
 #' @param .en_tanto_por_uno Valor lógico. Si se establece en `TRUE` devuelve los datos en tanto por uno y en caso contrario en tanto por cien. Por defecto, en tanto por cien.
 #' @export
@@ -230,27 +221,27 @@ get_tasa_variacion <- function(.datos_df,
     .datos_df <-
       .datos_df |>
       tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-      tidyr::replace_na(setNames(list(0), .col_valores))
+      tidyr::replace_na(stats::setNames(list(0), .col_valores))
   } else if (!is.null(.col_nombres) & is.null(.col_flujo)) {
     .datos_df <-
       .datos_df |>
       dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres))) |>
       tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-      tidyr::replace_na(setNames(list(0), .col_valores)) |>
+      tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
       dplyr::ungroup()
   } else if (is.null(.col_nombres) & !is.null(.col_flujo)) {
     .datos_df <-
       .datos_df |>
       dplyr::group_by(dplyr::across(dplyr::all_of(.col_flujo))) |>
       tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-      tidyr::replace_na(setNames(list(0), .col_valores)) |>
+      tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
       dplyr::ungroup()
   } else if (!is.null(.col_nombres) & !is.null(.col_flujo)) {
     .datos_df <-
       .datos_df |>
       dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres)), dplyr::across(dplyr::all_of(.col_flujo))) |>
       tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-      tidyr::replace_na(setNames(list(0), .col_valores)) |>
+      tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
       dplyr::ungroup()
   }
 
@@ -326,7 +317,7 @@ get_tasa_variacion <- function(.datos_df,
 #' @param .col_valores Cadena de caracteres. Nombre de la columna del dataframe que contiene los valores sobre los que se quiere calcular la tasa de variación. Por defecto, `"valores"`.
 #' @param .col_nombres Cadena de caracteres. Nombre de la columna del dataframe que contiene los nombres sobre los que se quiere calcular la tasa de variación. Por ejemplo, si se quiere calcular la tasa de variación para cada provincia o para cada flujo se podrá especificar aquí. Admite varias columnas (p.ej. `c("flujo", "pais")`). Por defecto, "nombres". En su ausencia señalar `.col_nombres = NULL`.
 #' @param .col_fecha Cadena de caracteres. Nombre de la columna del dataframe que contiene las fechas (en formato fecha). La fórmula entiende que los datos son mensuales. Por defecto, `"fecha"`.
-#' @param .col_flujo Cadena de caracteres. Establece el nombre de la columna que determina el sentido del flujo. Si no existiese esta columna y todas las observaciones reflejasen el mismo tipo de flujo permite establecer `.col_flujo = NULL`, que es su valor por defecto. Nótese que también se puede establecer la columna flujo en `.col_nombres` con el mismo efecto.
+#' @param .col_flujo Cadena de caracteres. Establece el nombre de la columna que determina el sentido del flujo. Si no existiese esta columna y todas las observaciones reflejasen el mismo tipo de flujo permite establecer `.col_flujo = NULL`. Nótese que también se puede establecer la columna flujo en `.col_nombres` con el mismo efecto. Por defecto, `NULL`.
 #' @param .en_tanto_por_uno Valor lógico. Si se establece en `TRUE` devuelve los datos en tanto por uno y en caso contrario en tanto por cien. Por defecto, en tanto por cien.
 #' @param .completar_df Valor lógico. Indica si quieres rellenar los datos faltantes con ceros. Por defecto, `FALSE`.
 #' @export
@@ -388,27 +379,27 @@ get_tasa_variacion_fecha_ref <- function(.datos_df,
       .datos_df <-
         .datos_df |>
         tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-        tidyr::replace_na(setNames(list(0), .col_valores))
+        tidyr::replace_na(stats::setNames(list(0), .col_valores))
       } else if (!is.null(.col_nombres) & is.null(.col_flujo)) {
       .datos_df <-
         .datos_df |>
         dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres))) |>
         tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-        tidyr::replace_na(setNames(list(0), .col_valores)) |>
+        tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
         dplyr::ungroup()
       } else if (is.null(.col_nombres) & !is.null(.col_flujo)) {
         .datos_df <-
           .datos_df |>
           dplyr::group_by(dplyr::across(dplyr::all_of(.col_flujo))) |>
           tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-          tidyr::replace_na(setNames(list(0), .col_valores)) |>
+          tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
           dplyr::ungroup()
       } else if (!is.null(.col_nombres) & !is.null(.col_flujo)) {
         .datos_df <-
           .datos_df |>
           dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres)), dplyr::across(dplyr::all_of(.col_flujo))) |>
           tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-          tidyr::replace_na(setNames(list(0), .col_valores)) |>
+          tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
           dplyr::ungroup()
       }
   }
@@ -503,7 +494,7 @@ get_tasa_variacion_fecha_ref <- function(.datos_df,
 #' @param .frecuencia Cadena de caracteres. Indica la frecuencia de los datos. Permite `"anual"`, `"semestral"`, `"trimestral"`, `"mensual"`, `"semanal"` y `"diaria"`. Por defecto, `"mensual"`.
 #' @param .col_valores Cadena de caracteres. Nombre de la columna del dataframe que contiene los valores sobre los que se quiere calcular la variación. Por defecto, `"valores"`.
 #' @param .col_nombres Cadena de caracteres. Nombre de la columna del dataframe que contiene los nombres sobre los que se quiere calcular la variación. Por ejemplo, si se quiere calcular la variación para cada provincia o para cada flujo se podrá especificar aquí `.col_nombres = c("provincia", "flujo")`. Admite varias columnas (p.ej. `c("flujo", "pais")`). Por defecto, `"nombres"`. En su ausencia señalar `.col_nombres = NULL`.
-#' @param .col_flujo Cadena de caracteres. Establece el nombre de la columna que determina el sentido del flujo. Si no existiese esta columna y todas las observaciones reflejasen el mismo tipo de flujo permite establecer `.col_flujo = NULL`, que es su valor por defecto. Nótese que también se puede establecer la columna flujo en `.col_nombres` con el mismo efecto.
+#' @param .col_flujo Cadena de caracteres. Establece el nombre de la columna que determina el sentido del flujo. Si no existiese esta columna y todas las observaciones reflejasen el mismo tipo de flujo permite establecer `.col_flujo = NULL`. Por defecto, `NULL`. Nótese que también se puede establecer la columna flujo en `.col_nombres` con el mismo efecto.
 #' @param .col_fecha Cadena de caracteres. Nombre de la columna del dataframe que contiene las fechas (en formato fecha). La fórmula entiende que los datos son mensuales. Por defecto, `"fecha"`.
 #' @export
 get_variacion <- function(.datos_df,
@@ -578,27 +569,27 @@ get_variacion <- function(.datos_df,
     .datos_df <-
       .datos_df |>
       tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-      tidyr::replace_na(setNames(list(0), .col_valores))
+      tidyr::replace_na(stats::setNames(list(0), .col_valores))
   } else if (!is.null(.col_nombres) & is.null(.col_flujo)) {
     .datos_df <-
       .datos_df |>
       dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres))) |>
       tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-      tidyr::replace_na(setNames(list(0), .col_valores)) |>
+      tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
       dplyr::ungroup()
   } else if (is.null(.col_nombres) & !is.null(.col_flujo)) {
     .datos_df <-
       .datos_df |>
       dplyr::group_by(dplyr::across(dplyr::all_of(.col_flujo))) |>
       tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-      tidyr::replace_na(setNames(list(0), .col_valores)) |>
+      tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
       dplyr::ungroup()
   } else if (!is.null(.col_nombres) & !is.null(.col_flujo)) {
     .datos_df <-
       .datos_df |>
       dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres)), dplyr::across(dplyr::all_of(.col_flujo))) |>
       tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-      tidyr::replace_na(setNames(list(0), .col_valores)) |>
+      tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
       dplyr::ungroup()
   }
 
@@ -669,7 +660,7 @@ get_variacion <- function(.datos_df,
 #' @param .col_valores Cadena de caracteres. Nombre de la columna del dataframe que contiene los valores sobre los que se quiere calcular la variación. Por defecto, `"valores"`.
 #' @param .col_nombres Cadena de caracteres. Nombre de la columna del dataframe que contiene los nombres sobre los que se quiere calcular la variación. Por ejemplo, si se quiere calcular la variación para cada provincia o para cada flujo se podrá especificar aquí. Admite varias columnas (p.ej. `c("flujo", "pais")`). Por defecto, "nombres". En su ausencia señalar `.col_nombres = NULL`.
 #' @param .col_fecha Cadena de caracteres. Nombre de la columna del dataframe que contiene las fechas (en formato fecha). La fórmula entiende que los datos son mensuales. Por defecto, `"fecha"`.
-#' @param .col_flujo Cadena de caracteres. Establece el nombre de la columna que determina el sentido del flujo. Si no existiese esta columna y todas las observaciones reflejasen el mismo tipo de flujo permite establecer `.col_flujo = NULL`, que es su valor por defecto. Nótese que también se puede establecer la columna flujo en `.col_nombres` con el mismo efecto.
+#' @param .col_flujo Cadena de caracteres. Establece el nombre de la columna que determina el sentido del flujo. Si no existiese esta columna y todas las observaciones reflejasen el mismo tipo de flujo permite establecer `.col_flujo = NULL`. Nótese que también se puede establecer la columna flujo en `.col_nombres` con el mismo efecto. Por defecto, `NULL`.
 #' @param .completar_df Valor lógico. Indica si quieres rellenar los datos faltantes con ceros. Por defecto, `FALSE`.
 #' @export
 get_variacion_fecha_ref <- function(.datos_df,
@@ -729,27 +720,27 @@ get_variacion_fecha_ref <- function(.datos_df,
       .datos_df <-
         .datos_df |>
         tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-        tidyr::replace_na(setNames(list(0), .col_valores))
+        tidyr::replace_na(stats::setNames(list(0), .col_valores))
     } else if (!is.null(.col_nombres) & is.null(.col_flujo)) {
       .datos_df <-
         .datos_df |>
         dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres))) |>
         tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-        tidyr::replace_na(setNames(list(0), .col_valores)) |>
+        tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
         dplyr::ungroup()
     } else if (is.null(.col_nombres) & !is.null(.col_flujo)) {
       .datos_df <-
         .datos_df |>
         dplyr::group_by(dplyr::across(dplyr::all_of(.col_flujo))) |>
         tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-        tidyr::replace_na(setNames(list(0), .col_valores)) |>
+        tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
         dplyr::ungroup()
     } else if (!is.null(.col_nombres) & !is.null(.col_flujo)) {
       .datos_df <-
         .datos_df |>
         dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres)), dplyr::across(dplyr::all_of(.col_flujo))) |>
         tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-        tidyr::replace_na(setNames(list(0), .col_valores)) |>
+        tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
         dplyr::ungroup()
     }
   }
@@ -838,7 +829,7 @@ get_variacion_fecha_ref <- function(.datos_df,
 #' @param .frecuencia Cadena de caracteres. Indica la frecuencia de los datos. Permite `"anual"`, `"semestral"`, `"trimestral"`, `"mensual"`, `"semanal"` y `"diaria"`. Por defecto, `"mensual"`.
 #' @param .col_valores Cadena de caracteres. Nombre de la columna del dataframe que contiene los valores sobre los que se quiere calcular el acumulado. Por defecto, `"valores"`.
 #' @param .col_nombres Cadena de caracteres. Nombre de la columna del dataframe que contiene los nombres sobre los que se quiere calcular el acumulado. Por ejemplo, si se quiere calcular el acumulado para cada provincia o para cada flujo se podrá especificar aquí. Admite varias columnas (p.ej. `c("flujo", "pais")`). Por defecto, `"nombres"`. En su ausencia señalar `.col_nombres = NULL`.
-#' @param .col_flujo Cadena de caracteres. Establece el nombre de la columna que determina el sentido del flujo. Si no existiese esta columna y todas las observaciones reflejasen el mismo tipo de flujo permite establecer `.col_flujo = NULL`, que es su valor por defecto. Nótese que también se puede establecer la columna flujo en `.col_nombres` con el mismo efecto.
+#' @param .col_flujo Cadena de caracteres. Establece el nombre de la columna que determina el sentido del flujo. Si no existiese esta columna y todas las observaciones reflejasen el mismo tipo de flujo permite establecer `.col_flujo = NULL`. Nótese que también se puede establecer la columna flujo en `.col_nombres` con el mismo efecto. Por defecto, `NULL`.
 #' @param .col_fecha Cadena de caracteres. Nombre de la columna del dataframe que contiene las fechas (en formato fecha). Se entiende que habrá un dato mensual. Por defecto, `"fecha"`.
 #' @export
 get_acumulado <- function(.datos_df,
@@ -917,27 +908,27 @@ get_acumulado <- function(.datos_df,
     .datos_df <-
       .datos_df |>
       tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-      tidyr::replace_na(setNames(list(0), .col_valores))
+      tidyr::replace_na(stats::setNames(list(0), .col_valores))
   } else if (!is.null(.col_nombres) & is.null(.col_flujo)){
     .datos_df <-
       .datos_df |>
       dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres))) |>
       tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-      tidyr::replace_na(setNames(list(0), .col_valores)) |>
+      tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
       dplyr::ungroup()
   } else if (is.null(.col_nombres) & !is.null(.col_flujo)){
     .datos_df <-
       .datos_df |>
       dplyr::group_by(dplyr::across(dplyr::all_of(.col_flujo))) |>
       tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-      tidyr::replace_na(setNames(list(0), .col_valores)) |>
+      tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
       dplyr::ungroup()
   } else if (!is.null(.col_nombres) & !is.null(.col_flujo)){
     .datos_df <-
       .datos_df |>
       dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres)), dplyr::across(dplyr::all_of(.col_flujo))) |>
       tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-      tidyr::replace_na(setNames(list(0), .col_valores)) |>
+      tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
       dplyr::ungroup()
   }
 
@@ -1077,12 +1068,12 @@ get_acumulado_duckplyr <- function(.datos_df,
     .datos_df <- .datos_df |>
       dplyr::group_by(dplyr::across(dplyr::all_of(grouping_cols))) |>
       tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-      tidyr::replace_na(setNames(list(0), .col_valores)) |>
+      tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
       dplyr::ungroup()
   } else {
     .datos_df <- .datos_df |>
       tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-      tidyr::replace_na(setNames(list(0), .col_valores))
+      tidyr::replace_na(stats::setNames(list(0), .col_valores))
   }
 
   # Calcular acumulado usando funciones de ventana optimizadas
@@ -1127,7 +1118,7 @@ get_acumulado_duckplyr <- function(.datos_df,
 #' @param .frecuencia Cadena de caracteres. Indica la frecuencia de los datos. Permite `"anual"`, `"semestral"`, `"trimestral"`, `"mensual"`, `"semanal"` y `"diaria"`. Por defecto, `"mensual"`.
 #' @param .col_valores Cadena de caracteres. Nombre de la columna del dataframe que contiene los valores sobre los que se quiere calcular el acumulado. Por defecto, `"valores"`.
 #' @param .col_nombres Cadena de caracteres. Nombre de la columna del dataframe que contiene los nombres sobre los que se quiere calcular el acumulado. Por ejemplo, si se quiere calcular el acumulado para cada provincia o para cada flujo se podrá especificar aquí. Admite varias columnas (p.ej. `c("flujo", "pais")`). Por defecto, `"nombres"`. En su ausencia señalar `.col_nombres = NULL`.
-#' @param .col_flujo Cadena de caracteres. Establece el nombre de la columna que determina el sentido del flujo. Si no existiese esta columna y todas las observaciones reflejasen el mismo tipo de flujo permite establecer `.col_flujo = NULL`, que es su valor por defecto. Nótese que también se puede establecer la columna flujo en `.col_nombres` con el mismo efecto.
+#' @param .col_flujo Cadena de caracteres. Establece el nombre de la columna que determina el sentido del flujo. Si no existiese esta columna y todas las observaciones reflejasen el mismo tipo de flujo permite establecer `.col_flujo = NULL`. Nótese que también se puede establecer la columna flujo en `.col_nombres` con el mismo efecto. Por defecto, `NULL`.
 #' @param .col_fecha Cadena de caracteres. Nombre de la columna del dataframe que contiene las fechas (en formato fecha). Se entiende que habrá un dato mensual. Por defecto, `"fecha"`.
 #' @param .completar_df Valor lógico. Establecer en `TRUE` si se desea que se complete el dataframe para las observaciones faltantes con valor cero. Por defecto, `FALSE`.
 #' @export
@@ -1184,27 +1175,27 @@ get_acumulado_desde_1_enero <- function(.datos_df,
       .datos_df <-
         .datos_df |>
         tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-        tidyr::replace_na(setNames(list(0), .col_valores))
+        tidyr::replace_na(stats::setNames(list(0), .col_valores))
     } else if (!is.null(.col_nombres) & is.null(.col_flujo)) {
       .datos_df <-
         .datos_df |>
         dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres))) |>
         tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-        tidyr::replace_na(setNames(list(0), .col_valores)) |>
+        tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
         dplyr::ungroup()
     } else if (is.null(.col_nombres) & !is.null(.col_flujo)) {
       .datos_df <-
         .datos_df |>
         dplyr::group_by(dplyr::across(dplyr::all_of(.col_flujo))) |>
         tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-        tidyr::replace_na(setNames(list(0), .col_valores)) |>
+        tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
         dplyr::ungroup()
     } else if (!is.null(.col_nombres) & !is.null(.col_flujo)) {
       .datos_df <-
         .datos_df |>
         dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres)), dplyr::across(dplyr::all_of(.col_flujo))) |>
         tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-        tidyr::replace_na(setNames(list(0), .col_valores)) |>
+        tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
         dplyr::ungroup()
     }
   }
@@ -1340,20 +1331,20 @@ get_contribucion <- function(.datos_df,
     .datos_df <-
       .datos_df |>
       tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-      tidyr::replace_na(setNames(list(0), .col_valores))
+      tidyr::replace_na(stats::setNames(list(0), .col_valores))
   } else if (!is.null(.col_nombres) & is.null(.col_flujo)) {
     .datos_df <-
       .datos_df |>
       dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres))) |>
       tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-      tidyr::replace_na(setNames(list(0), .col_valores)) |>
+      tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
       dplyr::ungroup()
   } else if  (is.null(.col_nombres) & !is.null(.col_flujo)) {
     .datos_df <-
       .datos_df |>
       dplyr::group_by(dplyr::across(dplyr::all_of(.col_flujo))) |>
       tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-      tidyr::replace_na(setNames(list(0), .col_valores)) |>
+      tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
       dplyr::ungroup()
   } else if  (!is.null(.col_nombres) & !is.null(.col_flujo)) {
     .datos_df <-
@@ -1361,7 +1352,7 @@ get_contribucion <- function(.datos_df,
       dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres)),
                       dplyr::across(dplyr::all_of(.col_flujo))) |>
       tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-      tidyr::replace_na(setNames(list(0), .col_valores)) |>
+      tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
       dplyr::ungroup()
   }
 
@@ -1390,7 +1381,11 @@ get_contribucion <- function(.datos_df,
         )
       )
   } else if (!is.null(.col_nombres) & is.null(.col_flujo)) {
-    dato_anterior_total <- .datos_df[[.col_valores]][periodos_atras + 1]
+    # Calcular totales por fecha
+    totales_por_fecha <- .datos_df |>
+      dplyr::group_by(dplyr::across(dplyr::all_of(.col_fecha))) |>
+      dplyr::summarise(total_fecha = sum(!!rlang::sym(.col_valores), na.rm = TRUE)) |>
+      dplyr::ungroup()
 
     .datos_df <-
       .datos_df |>
@@ -1398,15 +1393,16 @@ get_contribucion <- function(.datos_df,
                       dplyr::across(dplyr::all_of(.col_nombres))) |>
       dplyr::summarise(!!rlang::sym(.col_valores) := sum(!!rlang::sym(.col_valores), na.rm = TRUE)) |>
       dplyr::ungroup() |>
+      dplyr::left_join(totales_por_fecha, by = .col_fecha) |>
       dplyr::arrange(dplyr::across(dplyr::all_of(.col_fecha)),
                      dplyr::across(dplyr::all_of(.col_nombres))) |>
       dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres))) |>
       dplyr::mutate(
-        # dato_anterior_grupo = dplyr::lag(!!rlang::sym(.col_valores), periodos_atras + 1),
+        total_fecha_anterior = dplyr::lag(total_fecha, periodos_atras),
         !!rlang::sym(col_contribucion) :=
           (!!rlang::sym(.col_valores) - dplyr::lag(!!rlang::sym(.col_valores), periodos_atras)) /
-          dato_anterior_total) |>
-      # dplyr::select(-dato_anterior_grupo) |>
+          total_fecha_anterior) |>
+      dplyr::select(-total_fecha, -total_fecha_anterior) |>
       dplyr::mutate(
         !!rlang::sym(col_contribucion) := dplyr::case_when(
           .data[[.col_fecha]] %in% primeras_fechas ~ NA_real_,
@@ -1445,7 +1441,9 @@ get_contribucion <- function(.datos_df,
       dplyr::group_by(dplyr::across(dplyr::all_of(.col_fecha)),
                       dplyr::across(dplyr::all_of(.col_flujo))) |>
       dplyr::mutate(total = sum(!!rlang::sym(.col_valores), na.rm = TRUE)) |>
-      dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres))) |>
+      dplyr::ungroup() |>
+      dplyr::group_by(dplyr::across(dplyr::all_of(.col_flujo)),
+                      dplyr::across(dplyr::all_of(.col_nombres))) |>
       dplyr::mutate(!!rlang::sym(col_contribucion) :=
                       (!!rlang::sym(.col_valores) - dplyr::lag(!!rlang::sym(.col_valores), periodos_atras)) /
                       dplyr::lag(total, n = periodos_atras)) |>
@@ -1463,7 +1461,7 @@ get_contribucion <- function(.datos_df,
 }
 
 # Peso ----
-#' Calcula el peso sobre el total del flujo. Devuelve un dataframe como el original, pero con una columna adiciona: `peso`, que hace referencia al peso del flujo sobre el total de `col.nombres` en la fecha indicada.
+#' Calcula el peso sobre el total del flujo. Devuelve un dataframe como el original, pero con una columna adicional: `peso`, que hace referencia al peso del flujo sobre el total de `col.nombres` en la fecha indicada.
 #' @param .datos_df Data frame que contiene los datos.
 #' @param .col_valores Cadena de caracteres. Nombre de la columna con valores. Por defecto, `"valores"`.
 #' @param .col_nombres Cadena de caracteres. Nombre de la columna con nombres. Por defecto, `"nombres"`.
@@ -1571,7 +1569,7 @@ get_peso <- function(.datos_df,
 #' @param .frecuencia Cadena de caracteres. Indica la frecuencia de los datos. Permite `"anual"`, `"semestral"`, `"trimestral"`, `"mensual"`, `"semanal"` y `"diaria"`. Por defecto, `"mensual"`.
 #' @param .col_valores Cadena de caracteres. Nombre de la columna del dataframe que contiene los valores. Por defecto, "valores".
 #' @param .col_nombres Cadena de caracteres. Nombre de la columna del dataframe que contiene los nombres para realizar la agrupación. Permite introducir el nombre de varias columnas. Por ejemplo, si se quiere calcular la media móvil de las exportaciones para cada provincia sobre el total se podrá especificar aquí `.col_nombres = ("flujo", "provincia")`. Por defecto, `"nombres"`.
-#' @param .col_flujo Cadena de caracteres. Establece el nombre de la columna que determina el sentido del flujo. Si no existiese esta columna y todas las observaciones reflejasen el mismo tipo de flujo permite establecer `.col_flujo = NULL`, que es su valor por defecto. Nótese que también se puede establecer la columna flujo en `.col_nombres` con el mismo efecto.
+#' @param .col_flujo Cadena de caracteres. Establece el nombre de la columna que determina el sentido del flujo. Si no existiese esta columna y todas las observaciones reflejasen el mismo tipo de flujo permite establecer `.col_flujo = NULL`. Nótese que también se puede establecer la columna flujo en `.col_nombres` con el mismo efecto. Por defecto, `NULL`.
 #' @param .col_fecha Cadena de caracteres. Nombre de la columna del dataframe que contiene las fechas (en formato fecha). Por defecto, `"fecha"`.
 #' @export
 get_media_movil <- function(.datos_df,
@@ -1647,7 +1645,7 @@ get_media_movil <- function(.datos_df,
     .datos_df |>
     dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres)), dplyr::across(dplyr::all_of(.col_flujo))) |>
     tidyr::complete(!!rlang::sym(.col_fecha) := date_seq) |>
-    tidyr::replace_na(setNames(list(0), .col_valores)) |>
+    tidyr::replace_na(stats::setNames(list(0), .col_valores)) |>
     dplyr::ungroup()
 
   col_media_movil <- paste0("mm_", periodos_atras, "_",  periodo)
@@ -1677,7 +1675,7 @@ get_media_movil <- function(.datos_df,
 }
 
 # Contribución acumulada ----
-#' Calcula la contribución al crecimiento en los últimos `.años_atras_contribucion` del acumulado a `.periodos_atras_acumulado`. Devuelve un dataframe con 2 columnas: `nombres` y `valores`, que hacen referencia a la contribución a `años_atras_contribucion` a la variación del `.flujo` en el último periodo con datos disponibles.
+#' Calcula la contribución de cada grupo al crecimiento del acumulado entre la última fecha y `.años_atras_contribucion` años antes: la diferencia del acumulado de cada grupo dividida por el acumulado total inicial (del mismo flujo). Devuelve un dataframe con el flujo y los nombres (si los hay), `fecha_inicial`, `fecha_final`, `acumulado_inicial`, `acumulado_final` y `contribucion`, ordenado de mayor a menor contribución.
 #' @param .datos_df Data frame que contiene los datos sobre los que se quiere calcular la contribución. Es necesario que comprenda únicamente exportaciones o únicamente importaciones. Preferiblemente incluirá 3 columnas `fecha`, `nombres` y `valores`, y la columna `nombres` incluirá datos de la variable sobre la que se quiere calcular la contribución y al nivel de desagregación deseado (p.ej. si se quiere obtener la contribución por sectores nivel 1, `datos_df` incluirá el nombre de los sectores nivel 1 en la columna `nombres`).
 #' @param .años_atras_contribucion Número. Número de años sobre el que se quiera calcular la contribución al crecimiento. Por defecto, 3 años.
 #' @param .periodos_atras_acumulado Número. Número de periodos sobre el que se quiera calcular el acumulado sobre el que establecer la tasa de variación. Por defecto, 1 año (en el caso de datos semanales se aproximará con 52 semanas, y en el caso de datos diarios con 365 días sin tener en cuenta años bisiestos).
@@ -1704,16 +1702,13 @@ get_contribucion_acumulada <- function(.datos_df,
   stopifnot(
     "El input debe ser un data frame." = is.data.frame(.datos_df),
     "No existe la columna señalada para la fecha." = .col_fecha_contr_acum %in% names(.datos_df),
-    "No existe la columna señalada para los valores." = .col_valores_contr_acum %in% names(.datos_df)
+    "No existe la columna señalada para los valores." = .col_valores_contr_acum %in% names(.datos_df),
+    "`.frecuencia` no reconocida." = .frecuencia %in% c("anual", "semestral", "trimestral", "mensual", "semanal", "diaria")
   )
 
   if (!is.null(.col_filtro)) {
     stopifnot("Las columnas especificadas en .col_filtro no existen." = all(.col_filtro %in% names(.datos_df)))
-  }
-
-  if (!is.null(.col_filtro)) {
-    .datos_df <-
-      .datos_df |>
+    .datos_df <- .datos_df |>
       dplyr::filter(!!rlang::sym(.col_filtro) == .filtro)
   }
 
@@ -1722,191 +1717,190 @@ get_contribucion_acumulada <- function(.datos_df,
     .datos_df[[.col_fecha_contr_acum]] <- as.Date(.datos_df[[.col_fecha_contr_acum]])
   }
 
-  if(!is.null(.periodos_atras_acumulado)){
-    periodos_atras_acumulado <- .periodos_atras_acumulado
-  } else if (.frecuencia == "anual"){
-    periodos_atras_acumulado <- 1
-  } else if (.frecuencia == "semestral"){
-    periodos_atras_acumulado <- 2
-  } else if (.frecuencia == "trimestral"){
-    periodos_atras_acumulado <- 4
-  } else if (.frecuencia == "mensual"){
-    periodos_atras_acumulado <- 12
-  } else if (.frecuencia == "semanal"){
-    periodos_atras_acumulado <- 52
-  } else if (.frecuencia == "diaria"){
-    periodos_atras_acumulado <- 365
-  }
+  periodos_por_frecuencia <- c(anual = 1, semestral = 2, trimestral = 4, mensual = 12, semanal = 52, diaria = 365)
+  nombre_periodo <- c(anual = "años", semestral = "semestres", trimestral = "trimestres",
+                      mensual = "meses", semanal = "semanas", diaria = "dias")
+  secuencia <- c(anual = "year", semestral = "6 months", trimestral = "quarter", mensual = "month",
+                 semanal = "week", diaria = "day")
 
-  if (.frecuencia == "anual"){
-    variable_secuencia <- "year"
-    periodo <- "años"
-  } else if (.frecuencia == "semestral"){
-    variable_secuencia <- "6 months"
-    periodo <- "semestres"
-  } else if (.frecuencia == "trimestral"){
-    variable_secuencia <- "quarter"
-    periodo <- "trimestres"
-  } else if (.frecuencia == "mensual"){
-    variable_secuencia <- "month"
-    periodo <- "meses"
-  } else if (.frecuencia == "semanal"){
-    variable_secuencia <- "week"
-    periodo <- "semanas"
-  } else if (.frecuencia == "diaria"){
-    variable_secuencia <- "day"
-    periodo <- "dias"
-  }
+  periodos_atras_acumulado <- if (!is.null(.periodos_atras_acumulado)) .periodos_atras_acumulado else periodos_por_frecuencia[[.frecuencia]]
 
-  .datos_df <-
-    .datos_df[!is.na(.datos_df[[.col_fecha_contr_acum]]),]
-
+  .datos_df <- .datos_df[!is.na(.datos_df[[.col_fecha_contr_acum]]), ]
   min_date <- min(.datos_df[[.col_fecha_contr_acum]], na.rm = TRUE)
   max_date <- max(.datos_df[[.col_fecha_contr_acum]], na.rm = TRUE)
+  if (is.infinite(min_date) || is.infinite(max_date)) stop("Las fechas no tienen un formato válido.")
 
-  if (is.infinite(min_date) || is.infinite(max_date)) {
-    stop("Las fechas no tienen un formato válido.")
-  }
+  cols_grupo <- c(.col_flujo, .col_nombres_contr_acum)
+  date_seq <- seq.Date(from = min_date, to = max_date, by = secuencia[[.frecuencia]])
 
-  date_seq <- seq.Date(from = min_date,
-                       to = max_date,
-                       by = variable_secuencia)
-
-  .datos_df <-
-    .datos_df |>
-    dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres_contr_acum))) |>
+  # Serie completa y agregada por fecha y grupos
+  datos_df <- .datos_df |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(c(.col_fecha_contr_acum, cols_grupo)))) |>
+    dplyr::summarise(!!rlang::sym(.col_valores_contr_acum) := sum(!!rlang::sym(.col_valores_contr_acum), na.rm = TRUE),
+                     .groups = "drop") |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(cols_grupo))) |>
     tidyr::complete(!!rlang::sym(.col_fecha_contr_acum) := date_seq) |>
-    tidyr::replace_na(setNames(list(0), .col_valores_contr_acum)) |>
+    tidyr::replace_na(stats::setNames(list(0), .col_valores_contr_acum)) |>
     dplyr::ungroup()
 
-  if (is.null(.col_nombres_contr_acum) & is.null(.col_flujo)) {
-    datos_df <-
-      .datos_df |>
-      dplyr::select(dplyr::all_of(.col_fecha_contr_acum), dplyr::all_of(.col_valores_contr_acum)) |>
-      dplyr::group_by(dplyr::across(dplyr::all_of(.col_fecha_contr_acum))) |>
-      dplyr::summarise(.col_valores_contr_acum = sum(.col_valores_contr_acum, na.rm = TRUE)) |>
-      dplyr::ungroup()
+  col_acumulado <- paste0("acumulado_", periodos_atras_acumulado, "_", nombre_periodo[[.frecuencia]])
 
-  } else if (!is.null(.col_nombres_contr_acum) & is.null(.col_flujo)) {
-    datos_df <-
-      .datos_df |>
-      dplyr::select(dplyr::all_of(.col_fecha_contr_acum), dplyr::all_of(.col_nombres_contr_acum), dplyr::all_of(.col_valores_contr_acum)) |>
-      dplyr::group_by(dplyr::across(dplyr::all_of(.col_fecha_contr_acum)), dplyr::across(dplyr::all_of(.col_nombres_contr_acum))) |>
-      dplyr::summarise(.col_valores_contr_acum = sum(.col_valores_contr_acum, na.rm = TRUE)) |>
-      dplyr::ungroup()
-  } else if (is.null(.col_nombres_contr_acum) & !is.null(.col_flujo)) {
-    datos_df <-
-      .datos_df |>
-      dplyr::select(dplyr::all_of(.col_fecha_contr_acum), dplyr::all_of(.col_flujo), dplyr::all_of(.col_valores_contr_acum)) |>
-      dplyr::group_by(dplyr::across(dplyr::all_of(.col_fecha_contr_acum)), dplyr::across(dplyr::all_of(.col_flujo))) |>
-      dplyr::summarise(.col_valores_contr_acum = sum(.col_valores_contr_acum, na.rm = TRUE)) |>
-      dplyr::ungroup()
-  } else if (!is.null(.col_nombres_contr_acum) & !is.null(.col_flujo)) {
-    datos_df <-
-      .datos_df |>
-      dplyr::select(dplyr::all_of(.col_fecha_contr_acum), dplyr::all_of(.col_flujo), dplyr::all_of(.col_nombres_contr_acum), dplyr::all_of(.col_valores_contr_acum)) |>
-      dplyr::group_by(dplyr::across(dplyr::all_of(.col_fecha_contr_acum)), dplyr::across(dplyr::all_of(.col_flujo)), dplyr::across(dplyr::all_of(.col_nombres_contr_acum))) |>
-      dplyr::summarise(.col_valores_contr_acum = sum(.col_valores_contr_acum, na.rm = TRUE)) |>
-      dplyr::ungroup()
+  acumulados_df <- datos_df |>
+    get_acumulado(.periodos_atras = periodos_atras_acumulado,
+                  .frecuencia = .frecuencia,
+                  .col_valores = .col_valores_contr_acum,
+                  .col_nombres = .col_nombres_contr_acum,
+                  .col_fecha = .col_fecha_contr_acum,
+                  .col_flujo = .col_flujo) |>
+    dplyr::rename(acumulado = !!rlang::sym(col_acumulado))
+
+  fecha_final <- max_date
+  fecha_inicial <- fecha_final - lubridate::years(.años_atras_contribucion)
+  if (!fecha_inicial %in% acumulados_df[[.col_fecha_contr_acum]]) {
+    stop("No hay observaciones en la fecha inicial (", fecha_inicial, "): no se puede calcular la contribución.")
   }
 
-  col_acumulado <- paste0("acumulado_", periodos_atras_acumulado, "_", periodo)
+  escala <- if (isTRUE(.en_tanto_por_uno)) 1 else 100
 
-  acumulados_df <-
-    datos_df |>
-    get_acumulado(.periodos_atras = periodos_atras_acumulado, .col_valores = .col_valores_contr_acum, .col_nombres = .col_nombres_contr_acum, .col_fecha = .col_fecha_contr_acum, .col_flujo = .col_flujo) |>
-    dplyr::filter(.col_fecha_contr_acum %in% c(max(.col_fecha_contr_acum), max(.col_fecha_contr_acum) - years(.años_atras_contribucion))) |>
-    dplyr::rename(col_acumulado = !!rlang::sym(col_acumulado))
+  acumulados_df |>
+    dplyr::filter(!!rlang::sym(.col_fecha_contr_acum) %in% c(fecha_inicial, fecha_final)) |>
+    dplyr::mutate(momento = ifelse(!!rlang::sym(.col_fecha_contr_acum) == fecha_final, "acumulado_final", "acumulado_inicial")) |>
+    dplyr::select(dplyr::all_of(cols_grupo), momento, acumulado) |>
+    tidyr::pivot_wider(names_from = momento, values_from = acumulado) |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(.col_flujo))) |>
+    dplyr::mutate(
+      fecha_inicial = fecha_inicial,
+      fecha_final = fecha_final,
+      contribucion = escala * (acumulado_final - acumulado_inicial) / sum(acumulado_inicial, na.rm = TRUE)
+    ) |>
+    dplyr::ungroup() |>
+    dplyr::arrange(dplyr::across(dplyr::all_of(.col_flujo)), dplyr::desc(contribucion)) |>
+    dplyr::relocate(fecha_inicial, fecha_final, .before = acumulado_inicial)
+}
 
-  if (is.null(.col_nombres_contr_acum) & is.null(.col_flujo)) {
-    dato_anterior_total <-
-      acumulados_df |>
-      dplyr::filter(.col_fecha_contr_acum == min(.col_fecha_contr_acum)) |>
-      dplyr::group_by(.col_fecha_contr_acum) |>
-      dplyr::summarise(col_acumulado = sum(col_acumulado, na.rm = TRUE)) |>
-      dplyr::ungroup() |>
-      dplyr::pull(col_acumulado)
+# Agregado por periodos ----
+#' Agrega los datos en bloques de `.periodos` observaciones consecutivas, devolviendo una sola observación por bloque. Permite, por ejemplo, convertir datos mensuales en trimestrales (`.periodos = 3`), semestrales (`.periodos = 6`) o anuales (`.periodos = 12`). El bloque parcial final (con menos de `.periodos` observaciones) se descarta.
+#' @param .datos_df Data frame que contiene los datos sobre los que se quiere realizar la agregación.
+#' @param .periodos Número entero. Número de observaciones consecutivas que componen cada bloque. Por defecto, `3` (conversión de datos mensuales a trimestrales).
+#' @param .transformacion Cadena de caracteres o función. Transformación a aplicar dentro de cada bloque. Admite las cadenas `"suma"`, `"media"`, `"mediana"`, `"max"` y `"min"`, o cualquier función que reciba un vector numérico y devuelva un escalar (p. ej. `mean`, `sd`, `\(x) quantile(x, 0.9)`). Por defecto, `"suma"`.
+#' @param .alineacion Cadena de caracteres. Determina la fecha asignada al bloque agregado y, en su caso, cómo se forman los bloques. `"ultima"` (por defecto) agrupa observaciones consecutivas desde el inicio de la serie de cada grupo y asigna como fecha la del último periodo del bloque. `"natural"` alinea los bloques al calendario (p. ej. trimestres ene-mar, abr-jun, jul-sep, oct-dic) en función de `.frecuencia`, asignando también la fecha del último periodo del bloque.
+#' @param .frecuencia Cadena de caracteres. Frecuencia de los datos de entrada. Solo se utiliza cuando `.alineacion = "natural"` para determinar las fronteras del calendario. Permite `"anual"`, `"semestral"`, `"trimestral"`, `"mensual"`, `"semanal"` y `"diaria"`. Por defecto, `"mensual"`.
+#' @param .col_valores Cadena de caracteres. Nombre de la columna del dataframe que contiene los valores sobre los que se quiere realizar la agregación. Por defecto, `"valores"`. La columna devuelta conserva este mismo nombre.
+#' @param .col_nombres Cadena de caracteres. Nombre de la columna del dataframe que contiene los nombres sobre los que se quiere realizar la agregación por separado (p. ej. para cada provincia). Admite varias columnas (p. ej. `c("flujo", "pais")`). Por defecto, `"nombres"`. En su ausencia señalar `.col_nombres = NULL`.
+#' @param .col_flujo Cadena de caracteres. Establece el nombre de la columna que determina el sentido del flujo. Si no existiese esta columna y todas las observaciones reflejasen el mismo tipo de flujo permite establecer `.col_flujo = NULL`. Nótese que también se puede establecer la columna flujo en `.col_nombres` con el mismo efecto. Por defecto, `NULL`.
+#' @param .col_fecha Cadena de caracteres. Nombre de la columna del dataframe que contiene las fechas (en formato fecha). Por defecto, `"fecha"`.
+#' @export
+get_agregado <- function(.datos_df,
+                         .periodos = 3,
+                         .transformacion = "suma",
+                         .alineacion = "ultima",
+                         .frecuencia = "mensual",
+                         .col_valores = "valores",
+                         .col_nombres = "nombres",
+                         .col_flujo = NULL,
+                         .col_fecha = "fecha") {
+  stopifnot(
+    "El input debe ser un data frame." = is.data.frame(.datos_df),
+    "No existe la columna señalada para la fecha." = .col_fecha %in% names(.datos_df),
+    "No existe la columna señalada para los valores." = .col_valores %in% names(.datos_df),
+    "`.periodos` debe ser un entero positivo." = is.numeric(.periodos) && length(.periodos) == 1 && .periodos >= 1,
+    "`.alineacion` debe ser \"ultima\" o \"natural\"." = .alineacion %in% c("ultima", "natural")
+  )
 
-    contribucion_acumulada_df <-
-      acumulados_df |>
-      dplyr::select(dplyr::all_of(.col_fecha_contr_acum), col_acumulado) |>
-      dplyr::mutate(col_contribucion = (col_acumulado - dplyr::lag(col_acumulado, 1)) * 100 / (dato_anterior_total)) |>
-      dplyr::filter(.col_fecha_contr_acum == max(.col_fecha_contr_acum)) |>
-      dplyr::arrange(desc(col_contribucion)) |>
-      dplyr::select(col_contribucion) |>
-      dplyr::rename(valores = col_contribucion)
-  } else if (!is.null(.col_nombres_contr_acum) & is.null(.col_flujo)){
-    dato_anterior_total <-
-      acumulados_df |>
-      dplyr::filter(.col_fecha_contr_acum == min(.col_fecha_contr_acum)) |>
-      dplyr::group_by(.col_fecha_contr_acum) |>
-      dplyr::summarise(col_acumulado = sum(col_acumulado, na.rm = TRUE)) |>
-      dplyr::ungroup() |>
-      dplyr::pull(col_acumulado)
+  .periodos <- as.integer(.periodos)
 
-    contribucion_acumulada_df <-
-      acumulados_df |>
-      dplyr::select(dplyr::all_of(.col_fecha_contr_acum), dplyr::all_of(.col_nombres_contr_acum), col_acumulado) |>
-      dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres_contr_acum))) |>
-      dplyr::mutate(col_contribucion = (col_acumulado - dplyr::lag(col_acumulado, 1)) * 100 / (dato_anterior_total)) |>
-      dplyr::ungroup() |>
-      dplyr::filter(.col_fecha_contr_acum == max(.col_fecha_contr_acum)) |>
-      dplyr::arrange(desc(col_contribucion)) |>
-      dplyr::select(dplyr::all_of(.col_nombres_contr_acum), col_contribucion) |>
-      dplyr::rename(valores = col_contribucion)
-  } else if (is.null(.col_nombres_contr_acum) & !is.null(.col_flujo)){
-    contribucion_acumulada_df <-
-      acumulados_df |>
-      dplyr::select(dplyr::all_of(.col_fecha_contr_acum), dplyr::all_of(.col_flujo), col_acumulado) |>
-      dplyr::group_by(dplyr::across(dplyr::all_of(.col_flujo))) |>
-      dplyr::group_modify(~{
-        grupo_actual <- .x
-        dato_anterior_grupo <-
-          grupo_actual |>
-          dplyr::filter(.col_fecha_contr_acum == min(.col_fecha_contr_acum)) |>
-          dplyr::group_by(.col_fecha_contr_acum) |>
-          dplyr::summarise(col_acumulado = sum(col_acumulado, na.rm = TRUE)) |>
-          dplyr::ungroup() |>
-          dplyr::pull(col_acumulado)
-        grupo_actual |>
-          dplyr::mutate(col_contribucion = (col_acumulado - dplyr::lag(col_acumulado, 1)) * 100 / (dato_anterior_grupo)) |>
-          dplyr::filter(.col_fecha_contr_acum == max(.col_fecha_contr_acum)) |>
-          dplyr::arrange(desc(col_contribucion)) |>
-          dplyr::select(col_contribucion) |>
-          dplyr::rename(valores = col_contribucion)
-        }) |>
-      dplyr::ungroup()
-  } else if (!is.null(.col_nombres_contr_acum) & !is.null(.col_flujo)){
-    contribucion_acumulada_df <-
-      acumulados_df |>
-      dplyr::select(dplyr::all_of(.col_fecha_contr_acum), dplyr::all_of(.col_nombres_contr_acum), dplyr::all_of(.col_flujo), col_acumulado) |>
-      dplyr::group_by(dplyr::across(dplyr::all_of(.col_flujo))) |>
-      dplyr::group_modify( ~ {
-        grupo_actual <- .x
-        dato_anterior_grupo <-
-          grupo_actual |>
-          dplyr::filter(.col_fecha_contr_acum == min(.col_fecha_contr_acum)) |>
-          dplyr::group_by(.col_fecha_contr_acum) |>
-          dplyr::summarise(col_acumulado = sum(col_acumulado, na.rm = TRUE)) |>
-          dplyr::ungroup() |>
-          dplyr::pull(col_acumulado)
-        grupo_actual |>
-          dplyr::group_by(dplyr::across(dplyr::all_of(.col_nombres_contr_acum))) |>
-          dplyr::mutate(col_contribucion = (col_acumulado - dplyr::lag(col_acumulado, 1)) * 100 / (dato_anterior_grupo)) |>
-          dplyr::ungroup() |>
-          dplyr::filter(.col_fecha_contr_acum == max(.col_fecha_contr_acum)) |>
-          dplyr::arrange(desc(col_contribucion)) |>
-          dplyr::select(dplyr::all_of(.col_nombres_contr_acum), col_contribucion) |>
-          dplyr::rename(valores = col_contribucion)
-      }) |>
-      dplyr::ungroup()
+  # Resolver la transformación a una función escalar
+  if (is.character(.transformacion)) {
+    fun_agregar <- switch(
+      .transformacion,
+      "suma"     = function(x) sum(x, na.rm = TRUE),
+      "media"    = function(x) mean(x, na.rm = TRUE),
+      "mediana"  = function(x) stats::median(x, na.rm = TRUE),
+      "max"      = function(x) max(x, na.rm = TRUE),
+      "min"      = function(x) min(x, na.rm = TRUE),
+      stop("Transformación no reconocida. Use \"suma\", \"media\", \"mediana\", \"max\", \"min\" o proporcione una función.")
+    )
+  } else if (is.function(.transformacion)) {
+    fun_agregar <- .transformacion
+  } else {
+    stop("`.transformacion` debe ser una cadena de caracteres o una función.")
   }
 
-  if(!.en_tanto_por_uno){
-    .datos_df <-
-      .datos_df |>
-      dplyr::mutate(valores = valores * 100)
+  if (!inherits(.datos_df[[.col_fecha]], "Date")) {
+    warning("Se ha convertido la columna de fechas a formato fecha.")
+    .datos_df[[.col_fecha]] <- as.Date(.datos_df[[.col_fecha]])
   }
 
-  return(contribucion_acumulada_df)
+  .datos_df <- .datos_df[!is.na(.datos_df[[.col_fecha]]), ]
+
+  # Columnas de agrupación (excluyendo la fecha y los valores)
+  cols_grupo <- c(.col_nombres, .col_flujo)
+  cols_grupo <- cols_grupo[!is.null(cols_grupo)]
+
+  # Asignar identificador de bloque y fecha del bloque (última observación del bloque)
+  if (.alineacion == "ultima") {
+    asignar_bloque <- function(df) {
+      df <- df |>
+        dplyr::arrange(!!rlang::sym(.col_fecha)) |>
+        dplyr::mutate(.bloque_id = ((dplyr::row_number() - 1L) %/% .periodos) + 1L)
+      df
+    }
+  } else {
+    # Alineación al calendario en función de la frecuencia de entrada
+    indice_periodo <- function(fechas) {
+      switch(
+        .frecuencia,
+        "anual"      = as.integer(format(fechas, "%Y")),
+        "semestral"  = {
+          y <- as.integer(format(fechas, "%Y"))
+          m <- as.integer(format(fechas, "%m"))
+          y * 2L + ((m - 1L) %/% 6L)
+        },
+        "trimestral" = {
+          y <- as.integer(format(fechas, "%Y"))
+          m <- as.integer(format(fechas, "%m"))
+          y * 4L + ((m - 1L) %/% 3L)
+        },
+        "mensual"    = {
+          y <- as.integer(format(fechas, "%Y"))
+          m <- as.integer(format(fechas, "%m"))
+          y * 12L + (m - 1L)
+        },
+        "semanal"    = as.integer(floor(unclass(fechas) / 7)),
+        "diaria"     = as.integer(unclass(fechas)),
+        stop("`.frecuencia` no reconocida.")
+      )
+    }
+    asignar_bloque <- function(df) {
+      idx <- indice_periodo(df[[.col_fecha]])
+      df$.bloque_id <- idx %/% as.integer(.periodos)
+      df
+    }
+  }
+
+  if (length(cols_grupo) > 0) {
+    .datos_df <- .datos_df |>
+      dplyr::group_by(dplyr::across(dplyr::all_of(cols_grupo))) |>
+      dplyr::group_modify(~ asignar_bloque(.x)) |>
+      dplyr::ungroup()
+  } else {
+    .datos_df <- asignar_bloque(.datos_df)
+  }
+
+  cols_resumen <- c(cols_grupo, ".bloque_id")
+
+  resultado <- .datos_df |>
+    dplyr::group_by(dplyr::across(dplyr::all_of(cols_resumen))) |>
+    dplyr::summarise(
+      !!rlang::sym(.col_fecha) := max(!!rlang::sym(.col_fecha), na.rm = TRUE),
+      !!rlang::sym(.col_valores) := fun_agregar(!!rlang::sym(.col_valores)),
+      .n_obs = dplyr::n(),
+      .groups = "drop"
+    ) |>
+    # Descartar bloques incompletos (parciales)
+    dplyr::filter(.n_obs == .periodos) |>
+    dplyr::select(-.bloque_id, -.n_obs) |>
+    dplyr::arrange(dplyr::across(dplyr::all_of(c(cols_grupo, .col_fecha))))
+
+  return(resultado)
 }

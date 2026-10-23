@@ -24,6 +24,10 @@ get_tipo_cambio_df(
 \item{.to_date}{Fecha. Fecha de final del dataframe a obtener. Por defecto, hoy.}
 
 \item{.frecuencia}{Frecuencia de los datos. Puede ser, \code{"diaria"}, \code{"mensual"} o \code{"anual"}. Por defecto, \code{"diaria"}.}
+
+\item{max_retries}{Entero. Número máximo de intentos de descarga si Yahoo Finance falla. Por defecto, \code{3}.}
+
+\item{retry_delay}{Número. Segundos de espera entre intentos. Por defecto, \code{2}.}
 }
 \description{
 Función para obtener un dataframe con datos del tipo de cambio entre 2 divisas en un periodo especificado. Devuelve el dataframe inicial con una columna adicional \verb{tipo_cambio_".from_currency"_".to_currency"}, que convierte los datos de la columna \code{.col_valores}.

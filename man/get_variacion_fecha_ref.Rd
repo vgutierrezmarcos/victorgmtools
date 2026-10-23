@@ -28,7 +28,7 @@ get_variacion_fecha_ref(
 
 \item{.col_fecha}{Cadena de caracteres. Nombre de la columna del dataframe que contiene las fechas (en formato fecha). La fórmula entiende que los datos son mensuales. Por defecto, \code{"fecha"}.}
 
-\item{.col_flujo}{Cadena de caracteres. Establece el nombre de la columna que determina el sentido del flujo. Si no existiese esta columna y todas las observaciones reflejasen el mismo tipo de flujo permite establecer \code{.col_flujo = NULL}, que es su valor por defecto. Nótese que también se puede establecer la columna flujo en \code{.col_nombres} con el mismo efecto.}
+\item{.col_flujo}{Cadena de caracteres. Establece el nombre de la columna que determina el sentido del flujo. Si no existiese esta columna y todas las observaciones reflejasen el mismo tipo de flujo permite establecer \code{.col_flujo = NULL}. Nótese que también se puede establecer la columna flujo en \code{.col_nombres} con el mismo efecto. Por defecto, \code{NULL}.}
 
 \item{.completar_df}{Valor lógico. Indica si quieres rellenar los datos faltantes con ceros. Por defecto, \code{FALSE}.}
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/funciones_calculos.R
 \name{get_contribucion_acumulada}
 \alias{get_contribucion_acumulada}
-\title{Calcula la contribución al crecimiento en los últimos \code{.años_atras_contribucion} del acumulado a \code{.periodos_atras_acumulado}. Devuelve un dataframe con 2 columnas: \code{nombres} y \code{valores}, que hacen referencia a la contribución a \code{años_atras_contribucion} a la variación del \code{.flujo} en el último periodo con datos disponibles.}
+\title{Calcula la contribución de cada grupo al crecimiento del acumulado entre la última fecha y \code{.años_atras_contribucion} años antes: la diferencia del acumulado de cada grupo dividida por el acumulado total inicial (del mismo flujo). Devuelve un dataframe con el flujo y los nombres (si los hay), \code{fecha_inicial}, \code{fecha_final}, \code{acumulado_inicial}, \code{acumulado_final} y \code{contribucion}, ordenado de mayor a menor contribución.}
 \usage{
 get_contribucion_acumulada(
   .datos_df,
@@ -42,5 +42,5 @@ get_contribucion_acumulada(
 \item{.en_tanto_por_uno}{Valor lógico. Si se establece en \code{TRUE} devuelve los datos en tanto por uno y en caso contrario en tanto por cien. Por defecto, en tanto por cien.}
 }
 \description{
-Calcula la contribución al crecimiento en los últimos \code{.años_atras_contribucion} del acumulado a \code{.periodos_atras_acumulado}. Devuelve un dataframe con 2 columnas: \code{nombres} y \code{valores}, que hacen referencia a la contribución a \code{años_atras_contribucion} a la variación del \code{.flujo} en el último periodo con datos disponibles.
+Calcula la contribución de cada grupo al crecimiento del acumulado entre la última fecha y \code{.años_atras_contribucion} años antes: la diferencia del acumulado de cada grupo dividida por el acumulado total inicial (del mismo flujo). Devuelve un dataframe con el flujo y los nombres (si los hay), \code{fecha_inicial}, \code{fecha_final}, \code{acumulado_inicial}, \code{acumulado_final} y \code{contribucion}, ordenado de mayor a menor contribución.
 }

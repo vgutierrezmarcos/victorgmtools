@@ -2,7 +2,7 @@
 % Please edit documentation in R/funciones_fred.R
 \name{get_fred_plt}
 \alias{get_fred_plt}
-\title{Obtiene un gráfico con los datos de series temporales de FRED (St. Louis FED) adaptado en formato.}
+\title{Gráfico de una serie de FRED}
 \usage{
 get_fred_plt(
   .analysed_series_id,
@@ -18,44 +18,67 @@ get_fred_plt(
   .analysed_realtime_end = NULL,
   .analysed_vintage_dates = NULL,
   .analysed_output_type = NULL,
-  .estatico_toggle = FALSE,
-  .representar_eje_horizontal = TRUE
+  .title = NULL,
+  .subtitle = NULL,
+  .caption = "Fuente: Federal Reserve Bank of St. Louis (FRED).",
+  .estatico = FALSE,
+  .representar_eje_horizontal = TRUE,
+  .color = NULL,
+  .estatico_toggle = NULL,
+  ...
 )
 }
 \arguments{
-\item{.analysed_series_id}{Requerido. Cadena de caracteres. Indica el código de la serie de la que se desea obtener el gráfico. Se pueden consultar todas las series disponibles en la página web: https://fred.stlouisfed.org/.}
+\item{.analysed_series_id}{Requerido. Cadena de caracteres. Código de la serie FRED. Se pueden consultar todas las series disponibles en \url{https://fred.stlouisfed.org/}.}
 
-\item{.analysed_observation_start}{Cadena de caracteres. Primera observación de la serie temporal. Por defecto, NULL, devuelve desde la primera observación disponible.}
+\item{.analysed_observation_start}{Fecha o cadena de caracteres (formato YYYY-MM-DD). Primera observación de la serie temporal. Por defecto, \code{NULL} (desde la primera observación disponible).}
 
-\item{.analysed_observation_end}{Cadena de caracteres. Última observación de la serie temporal. Por defecto, NULL, devuelve desde la última observación disponible.}
+\item{.analysed_observation_end}{Fecha o cadena de caracteres (formato YYYY-MM-DD). Última observación de la serie temporal. Por defecto, \code{NULL} (hasta la última observación disponible).}
 
-\item{.analysed_frequency}{Cadena de caracteres. Frecuencia de la agregación de los datos. Puede ser: 'd' (diario), 'w' (semanal), 'bw' (bisemanal), 'm' (mensual), 'q' (trimestral), 'sa' (semestral), 'a' (anual), 'wef' (semanal, terminando el viernes), 'weth' (semanal, terminando el jueves), 'wew' (semanal, terminando el miércoles), 'wetu' (semanal, terminando el martes), 'wem' (semanal, terminando el lunes), 'wesu' (semanal, terminando el domingo), 'wesa' (semanal, terminando el sábado), 'bwew' (bisemanal, terminando el miércoles), 'bwem' (bisemanal, terminando el lunes). Por defecto, \code{NULL} (frecuencia nativa).}
+\item{.analysed_frequency}{Cadena de caracteres. Frecuencia de agregación de los datos: \code{"d"} (diaria), \code{"w"} (semanal), \code{"bw"} (bisemanal), \code{"m"} (mensual), \code{"q"} (trimestral), \code{"sa"} (semestral), \code{"a"} (anual). Por defecto, \code{NULL} (frecuencia original de la serie).}
 
-\item{.analysed_aggregation_method}{Cadena de caracteres. Método de agregación de los datos. Puede ser: 'avg' (promedio), 'sum' (suma), 'eop' (fin de periodo). Por defecto, \code{NULL}.}
+\item{.analysed_aggregation_method}{Cadena de caracteres. Método de agregación cuando se cambia la frecuencia: \code{"avg"} (media), \code{"sum"} (suma), \code{"eop"} (fin de periodo). Por defecto, \code{NULL}.}
 
-\item{.analysed_limit}{Número entero. El número máximo de resultados a devolver. Por defecto, \code{NULL} (devuelve todos).}
+\item{.analysed_limit}{Entero. Número máximo de observaciones a devolver. Por defecto, \code{NULL} (sin límite).}
 
-\item{.analysed_offset}{Número entero. El número de resultados a saltar. Por defecto, \code{NULL}.}
+\item{.analysed_offset}{Entero. Número de observaciones a saltar desde el inicio. Por defecto, \code{NULL}.}
 
-\item{.analysed_sort_order}{Cadena de caracteres. El orden de clasificación de los resultados. Puede ser 'asc' (ascendente) o 'desc' (descendente). Por defecto, \code{NULL}.}
+\item{.analysed_sort_order}{Cadena de caracteres. Orden de las observaciones: \code{"asc"} o \code{"desc"}. Por defecto, \code{NULL}.}
 
-\item{.analysed_units}{Cadena de caracteres. Unidades de transformación de los datos. Puede ser: 'lin' (niveles), 'chg' (cambio), 'ch1' (cambio respecto a hace 1 año), 'pch' (porcentaje de cambio), 'pc1' (porcentaje de cambio respecto a hace 1 año), 'pca' (porcentaje de cambio anual compuesto), 'cch' (cambio continuo compuesto), 'cca' (cambio continuo compuesto anual), 'log' (logaritmo natural). Por defecto, \code{NULL} (niveles).}
+\item{.analysed_units}{Cadena de caracteres. Transformación de unidades: \code{"lin"} (niveles), \code{"chg"} (cambio), \code{"ch1"} (cambio interanual), \code{"pch"} (cambio porcentual), \code{"pc1"} (cambio porcentual interanual), \code{"pca"} (cambio porcentual anualizado), \code{"cch"} (cambio porcentual compuesto), \code{"cca"} (cambio porcentual compuesto anualizado), \code{"log"} (logaritmo natural). Por defecto, \code{NULL}.}
 
-\item{.analysed_realtime_start}{Cadena de caracteres o Fecha. Fecha de inicio del periodo en tiempo real. Por defecto, \code{NULL}.}
+\item{.analysed_realtime_start}{Fecha o cadena de caracteres. Inicio del periodo de tiempo real para datos revisados. Por defecto, \code{NULL}.}
 
-\item{.analysed_realtime_end}{Cadena de caracteres o Fecha. Fecha de fin del periodo en tiempo real. Por defecto, \code{NULL}.}
+\item{.analysed_realtime_end}{Fecha o cadena de caracteres. Fin del periodo de tiempo real para datos revisados. Por defecto, \code{NULL}.}
 
-\item{.analysed_vintage_dates}{Cadena de caracteres o vector de Fechas. Fechas vintage a descargar. Por defecto, \code{NULL}.}
+\item{.analysed_vintage_dates}{Cadena de caracteres o vector. Fechas de vintage para obtener datos históricos. Por defecto, \code{NULL}.}
 
-\item{.analysed_output_type}{Número entero. Tipo de salida. 1 = Observaciones por periodo en tiempo real, 2 = Observaciones por fecha vintage, 3 = Observaciones por fecha vintage y todas las observaciones, 4 = Observaciones iniciales por fecha vintage. Por defecto, \code{NULL}.}
+\item{.analysed_output_type}{Entero. Tipo de salida: 1 (observaciones), 2 (todas las revisiones), 3 (nuevas y revisadas), 4 (fechas de publicación inicial). Por defecto, \code{NULL}.}
 
-\item{.estatico_toggle}{Valor lógico. En caso de \code{TRUE} el gráfico devuelto no es interactivo (no usa el paquete ggiraph). Por defecto, \code{FALSE}.}
+\item{.title, .subtitle}{Título y subtítulo del gráfico. Por defecto, el nombre y las unidades de la serie.}
 
-\item{.representar_eje_horizontal}{Valor lógico. En caso de \code{TRUE} se dibuja una línea horizontal en y = 0. Por defecto, \code{TRUE}.}
+\item{.caption}{Pie del gráfico. Por defecto, \code{"Fuente: Federal Reserve Bank of St. Louis (FRED)."}.}
+
+\item{.estatico}{Valor lógico. \code{TRUE} devuelve un \code{ggplot} estático; \code{FALSE} (por defecto) un gráfico interactivo \code{ggiraph}.}
+
+\item{.representar_eje_horizontal}{Valor lógico. Si \code{TRUE} (por defecto) dibuja una línea horizontal en cero.}
+
+\item{.color}{Color de la serie. Por defecto, el primero de \code{\link[=colores_victorgm]{colores_victorgm()}}.}
+
+\item{.estatico_toggle}{Obsoleto; usar \code{.estatico}.}
+
+\item{...}{Otros argumentos que se pasan a \code{\link[=graficos_estilo_victorgm]{graficos_estilo_victorgm()}}.}
 }
 \value{
-Un objeto \code{ggplot} (estático) o \code{girafe} (interactivo) con la visualización de la serie temporal.
+Un objeto \code{ggplot} o \code{girafe}.
 }
 \description{
-Obtiene un gráfico con los datos de series temporales de FRED (St. Louis FED) adaptado en formato.
+Descarga una serie temporal de FRED y la representa como línea con puntos interactivos, con el
+estilo de \code{\link[=graficos_estilo_victorgm]{graficos_estilo_victorgm()}}. El título y el subtítulo se toman de los metadatos de la
+serie si no se indican.
+}
+\examples{
+\dontrun{
+get_fred_plt("UNRATE", .analysed_observation_start = "2015-01-01")
+}
 }

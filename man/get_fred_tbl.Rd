@@ -2,7 +2,7 @@
 % Please edit documentation in R/funciones_fred.R
 \name{get_fred_tbl}
 \alias{get_fred_tbl}
-\title{Obtiene una tabla con los datos de series temporales de FRED (St. Louis FED) adaptado en formato.}
+\title{Obtener una tabla gt con datos de FRED}
 \usage{
 get_fred_tbl(
   .analysed_series_id,
@@ -17,39 +17,51 @@ get_fred_tbl(
   .analysed_realtime_start = NULL,
   .analysed_realtime_end = NULL,
   .analysed_vintage_dates = NULL,
-  .analysed_output_type = NULL
+  .analysed_output_type = NULL,
+  ...
 )
 }
 \arguments{
-\item{.analysed_series_id}{Requerido. Cadena de caracteres. Indica el código de la serie de la que se desea obtener la tabla. Se pueden consultar todas las series disponibles en la página web: https://fred.stlouisfed.org/.}
+\item{.analysed_series_id}{Requerido. Cadena de caracteres. Código de la serie FRED. Se pueden consultar todas las series disponibles en \url{https://fred.stlouisfed.org/}.}
 
-\item{.analysed_observation_start}{Cadena de caracteres. Primera observación de la serie temporal. Por defecto, NULL, devuelve desde la primera observación disponible.}
+\item{.analysed_observation_start}{Fecha o cadena de caracteres (formato YYYY-MM-DD). Primera observación de la serie temporal. Por defecto, \code{NULL} (desde la primera observación disponible).}
 
-\item{.analysed_observation_end}{Cadena de caracteres. Última observación de la serie temporal. Por defecto, NULL, devuelve desde la última observación disponible.}
+\item{.analysed_observation_end}{Fecha o cadena de caracteres (formato YYYY-MM-DD). Última observación de la serie temporal. Por defecto, \code{NULL} (hasta la última observación disponible).}
 
-\item{.analysed_frequency}{Cadena de caracteres. Frecuencia de la agregación de los datos. Puede ser: 'd' (diario), 'w' (semanal), 'bw' (bisemanal), 'm' (mensual), 'q' (trimestral), 'sa' (semestral), 'a' (anual), 'wef' (semanal, terminando el viernes), 'weth' (semanal, terminando el jueves), 'wew' (semanal, terminando el miércoles), 'wetu' (semanal, terminando el martes), 'wem' (semanal, terminando el lunes), 'wesu' (semanal, terminando el domingo), 'wesa' (semanal, terminando el sábado), 'bwew' (bisemanal, terminando el miércoles), 'bwem' (bisemanal, terminando el lunes). Por defecto, \code{NULL} (frecuencia nativa).}
+\item{.analysed_frequency}{Cadena de caracteres. Frecuencia de agregación de los datos: \code{"d"} (diaria), \code{"w"} (semanal), \code{"bw"} (bisemanal), \code{"m"} (mensual), \code{"q"} (trimestral), \code{"sa"} (semestral), \code{"a"} (anual). Por defecto, \code{NULL} (frecuencia original de la serie).}
 
-\item{.analysed_aggregation_method}{Cadena de caracteres. Método de agregación de los datos. Puede ser: 'avg' (promedio), 'sum' (suma), 'eop' (fin de periodo). Por defecto, \code{NULL}.}
+\item{.analysed_aggregation_method}{Cadena de caracteres. Método de agregación cuando se cambia la frecuencia: \code{"avg"} (media), \code{"sum"} (suma), \code{"eop"} (fin de periodo). Por defecto, \code{NULL}.}
 
-\item{.analysed_limit}{Número entero. El número máximo de resultados a devolver. Por defecto, \code{NULL} (devuelve todos).}
+\item{.analysed_limit}{Entero. Número máximo de observaciones a devolver. Por defecto, \code{NULL} (sin límite).}
 
-\item{.analysed_offset}{Número entero. El número de resultados a saltar. Por defecto, \code{NULL}.}
+\item{.analysed_offset}{Entero. Número de observaciones a saltar desde el inicio. Por defecto, \code{NULL}.}
 
-\item{.analysed_sort_order}{Cadena de caracteres. El orden de clasificación de los resultados. Puede ser 'asc' (ascendente) o 'desc' (descendente). Por defecto, \code{NULL}.}
+\item{.analysed_sort_order}{Cadena de caracteres. Orden de las observaciones: \code{"asc"} o \code{"desc"}. Por defecto, \code{NULL}.}
 
-\item{.analysed_units}{Cadena de caracteres. Unidades de transformación de los datos. Puede ser: 'lin' (niveles), 'chg' (cambio), 'ch1' (cambio respecto a hace 1 año), 'pch' (porcentaje de cambio), 'pc1' (porcentaje de cambio respecto a hace 1 año), 'pca' (porcentaje de cambio anual compuesto), 'cch' (cambio continuo compuesto), 'cca' (cambio continuo compuesto anual), 'log' (logaritmo natural). Por defecto, \code{NULL} (niveles).}
+\item{.analysed_units}{Cadena de caracteres. Transformación de unidades: \code{"lin"} (niveles), \code{"chg"} (cambio), \code{"ch1"} (cambio interanual), \code{"pch"} (cambio porcentual), \code{"pc1"} (cambio porcentual interanual), \code{"pca"} (cambio porcentual anualizado), \code{"cch"} (cambio porcentual compuesto), \code{"cca"} (cambio porcentual compuesto anualizado), \code{"log"} (logaritmo natural). Por defecto, \code{NULL}.}
 
-\item{.analysed_realtime_start}{Cadena de caracteres o Fecha. Fecha de inicio del periodo en tiempo real. Por defecto, \code{NULL}.}
+\item{.analysed_realtime_start}{Fecha o cadena de caracteres. Inicio del periodo de tiempo real para datos revisados. Por defecto, \code{NULL}.}
 
-\item{.analysed_realtime_end}{Cadena de caracteres o Fecha. Fecha de fin del periodo en tiempo real. Por defecto, \code{NULL}.}
+\item{.analysed_realtime_end}{Fecha o cadena de caracteres. Fin del periodo de tiempo real para datos revisados. Por defecto, \code{NULL}.}
 
-\item{.analysed_vintage_dates}{Cadena de caracteres o vector de Fechas. Fechas vintage a descargar. Por defecto, \code{NULL}.}
+\item{.analysed_vintage_dates}{Cadena de caracteres o vector. Fechas de vintage para obtener datos históricos. Por defecto, \code{NULL}.}
 
-\item{.analysed_output_type}{Número entero. Tipo de salida. 1 = Observaciones por periodo en tiempo real, 2 = Observaciones por fecha vintage, 3 = Observaciones por fecha vintage y todas las observaciones, 4 = Observaciones iniciales por fecha vintage. Por defecto, \code{NULL}.}
+\item{.analysed_output_type}{Entero. Tipo de salida: 1 (observaciones), 2 (todas las revisiones), 3 (nuevas y revisadas), 4 (fechas de publicación inicial). Por defecto, \code{NULL}.}
+
+\item{...}{Otros argumentos que se pasan a \code{\link[=tablas_estilo_victorgm]{tablas_estilo_victorgm()}}.}
 }
 \value{
-Un objeto \code{gt_tbl} con los datos de la serie temporal formateados.
+Un objeto \code{gt_tbl}.
 }
 \description{
-Obtiene una tabla con los datos de series temporales de FRED (St. Louis FED) adaptado en formato.
+Descarga una serie temporal de FRED y la devuelve como tabla \code{gt} con el título de la serie y las
+unidades de medida como encabezado, con el estilo de \code{\link[=tablas_estilo_victorgm]{tablas_estilo_victorgm()}}.
+}
+\examples{
+\dontrun{
+get_fred_tbl("GDP")
+}
+}
+\seealso{
+\code{\link[=get_fred_df]{get_fred_df()}} para obtener el dataframe.
 }
