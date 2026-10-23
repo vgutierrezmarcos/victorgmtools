@@ -52,6 +52,7 @@ graficos_estilo_victorgm(
   .linea_separadora = TRUE,
   .colores_linea = c("#5F2987", "#B8860B", "#E2EFD9"),
   .estatico = FALSE,
+  .oscuro = FALSE,
   .width = 6,
   .height = 5,
   .guardar_en = NULL
@@ -104,6 +105,7 @@ grafico_estilo_victorgm(
   .linea_separadora = TRUE,
   .colores_linea = c("#5F2987", "#B8860B", "#E2EFD9"),
   .estatico = FALSE,
+  .oscuro = FALSE,
   .width = 6,
   .height = 5,
   .guardar_en = NULL
@@ -193,6 +195,18 @@ grafico_estilo_victorgm(
 \item{.logo_ancho_pct}{Número. Ancho del logo como porcentaje del ancho del gráfico (de 0 a 100). Por defecto, \code{10}.}
 
 \item{.logo_hover_path}{Cadena de caracteres. Ruta a una imagen PNG alternativa que se muestra al pasar el ratón sobre el logo (solo en modo interactivo). Genera un efecto de cross-fade entre ambas imágenes. Por defecto, \code{NULL} (sin efecto hover).}
+
+\item{.url_enlace}{Cadena de caracteres. URL que se muestra bajo el pie (y a la que enlaza el logo en modo interactivo). \code{NULL} o \code{""} para no mostrarla. Por defecto, \code{"www.victorgutierrezmarcos.es"}.}
+
+\item{.linea_separadora}{Valor lógico. Si \code{TRUE} (por defecto), dibuja una línea degradada entre el gráfico y el pie.}
+
+\item{.colores_linea}{Vector de colores del degradado de la línea separadora. Por defecto, morado, oro y verde salvia de la web.}
+
+\item{.estatico}{Valor lógico. \code{TRUE} devuelve un \code{ggplot} estático; \code{FALSE} (por defecto) un gráfico interactivo \code{ggiraph}.}
+
+\item{.oscuro}{Valor lógico. Si \code{TRUE}, usa los tokens del tema oscuro de la web (texto claro, rejilla y tooltip en berenjena) para incrustar el gráfico en una página con \code{data-theme="dark"}. Por defecto, \code{FALSE}.}
+
+\item{.width, .height}{Anchura y altura en pulgadas del gráfico interactivo o del PNG guardado. Por defecto, \code{6} y \code{5}.}
 
 \item{.guardar_en}{Cadena de caracteres. Ruta del archivo PNG donde guardar el gráfico. Si es interactivo, se guarda una captura de pantalla (requiere \code{webshot2}). Si el directorio no existe, se muestra un aviso sin detener la ejecución. Por defecto, \code{NULL} (no se guarda).}
 }

@@ -178,105 +178,6 @@ colores_web <- function() {
   )
 }
 
-# Paletas de colores categóricas para VGM ----
-#' @return Vector nombrado de caracteres con códigos de color hexadecimales.
-#' @examples
-#' paleta_paises()
-#' # Obtener color para España
-#' paleta_paises()["España"]
-#' @export
-paleta_paises <- function() {
-  c(
-    "España" = "#E31A1C",
-    "ESP" = "#E31A1C",
-    "ES" = "#E31A1C",
-    "UE" = "#004FEE",
-    "UE27" = "#004FEE",
-    "UE-27" = "#004FEE",
-    "Zona euro" = "#004FEE",
-    "Área del euro" = "#004FEE",
-    "Francia" = "#A6CEE3",
-    "FRA" = "#A6CEE3",
-    "FR" = "#A6CEE3",
-    "Alemania" = "#FF7F00",
-    "DEU" = "#FF7F00",
-    "DE" = "#FF7F00",
-    "Portugal" = "#18BC9C",
-    "PRT" = "#18BC9C",
-    "PT" = "#18BC9C",
-    "Italia" = "#B2DF8A",
-    "ITA" = "#B2DF8A",
-    "IT" = "#B2DF8A",
-    "Países Bajos" = "#FFF5BB",
-    "NLD" = "#FFF5BB",
-    "NL" = "#FFF5BB",
-    "Bélgica" = "#FDBF6F",
-    "BEL" = "#FDBF6F",
-    "BE" = "#FDBF6F",
-    "Irlanda" = "#51E9CB",
-    "IRL" = "#51E9CB",
-    "IE" = "#51E9CB",
-    "Reino Unido" = "#CCBE93",
-    "GBR" = "#CCBE93",
-    "Estados Unidos" = "#6A3D9A",
-    "EE.UU." = "#6A3D9A",
-    "EEUU" = "#6A3D9A",
-    "USA" = "#6A3D9A",
-    "US" = "#6A3D9A",
-    "China" = "#F48383",
-    "CHN" = "#F48383",
-    "México" = "#46AF4B",
-    "MEX" = "#46AF4B",
-    "Argentina" = "#7BA1D8",
-    "ARG" = "#7BA1D8",
-    "Brasil" = "#2C3E50",
-    "BRA" = "#2C3E50",
-    "Canada" = "#CAB2D6",
-    "Canadá" = "#CAB2D6",
-    "CAN" = "#CAB2D6",
-    "Japón" = "#843C0C",
-    "JPN" = "#843C0C",
-    # Nórdicos (Azules oscuros y Rosas fríos)
-    "Suecia" = "#08519C", "SWE" = "#08519C", "SE" = "#08519C",      # Azul fuerte distinto a UE
-    "Dinamarca" = "#FB9A99", "DNK" = "#FB9A99", "DK" = "#FB9A99",   # Rosa pastel
-    "Finlandia" = "#00BFFF", "FIN" = "#00BFFF", "FI" = "#00BFFF",   # Deep Sky Blue
-    
-    # Europa Central y del Este (Magentas, Púrpuras y Amarillos oscuros)
-    "Polonia" = "#E7298A", "POL" = "#E7298A", "PL" = "#E7298A",     # Magenta oscuro
-    "Austria" = "#D95F02", "AUT" = "#D95F02", "AT" = "#D95F02",     # Rojo anaranjado oscuro (Dark Orange)
-    "Hungría" = "#006400", "HUN" = "#006400", "HU" = "#006400",     # Verde oscuro (Dark Green)
-    "República Checa" = "#7570B3", "CZE" = "#7570B3", "CZ" = "#7570B3", # Púrpura azulado
-    "Eslovaquia" = "#8DD3C7", "SVK" = "#8DD3C7", "SK" = "#8DD3C7",  # Verde agua pálido
-    
-    # Balcanes y Sureste (Azules marinos, Limas y Dorados)
-    "Grecia" = "#08306B", "GRC" = "#08306B", "GR" = "#08306B",      # Azul marino muy oscuro
-    "Rumanía" = "#E6AB02", "ROU" = "#E6AB02", "RO" = "#E6AB02",     # Mostaza/Dorado
-    "Bulgaria" = "#66A61E", "BGR" = "#66A61E", "BG" = "#66A61E",    # Verde oliva
-    "Croacia" = "#C51B7D", "HRV" = "#C51B7D", "HR" = "#C51B7D",     # Rosa fucsia oscuro
-    "Eslovenia" = "#B3DE69", "SVN" = "#B3DE69", "SI" = "#B3DE69",   # Verde lima claro
-    
-    # Bálticos (Grises azulados y Violetas)
-    "Lituania" = "#FDB462", "LTU" = "#FDB462", "LT" = "#FDB462",    # Amarillo anaranjado suave
-    "Letonia" = "#800080", "LVA" = "#800080", "LV" = "#800080",     # Púrpura puro
-    "Estonia" = "#708090", "EST" = "#708090", "EE" = "#708090",     # Slate Gray
-    
-    # Pequeños / Islas
-    "Chipre" = "#D9D9D9", "CYP" = "#D9D9D9", "CY" = "#D9D9D9",      # Gris claro
-    "Luxemburgo" = "#BC80BD", "LUX" = "#BC80BD", "LU" = "#BC80BD",  # Lavanda
-    "Malta" = "#FCCDE5", "MLT" = "#FCCDE5", "MT" = "#FCCDE5",       # Rosa muy pálido
-    
-    # Extra UE solicitados
-    "Suiza" = "#525252", "CHE" = "#525252", "CH" = "#525252",       # Gris oscuro neutro (para no competir con rojos)
-    "Turquía" = "#17BECF", "TUR" = "#17BECF", "TR" = "#17BECF",     # Cian oscuro/Turquesa
-    "Marruecos" = "#8C564B", "MAR" = "#8C564B", "MA" = "#8C564B",    # Marrón castaña
-    
-    "Resto del mundo" = "#9DA9AA",
-    "RdM" = "#9DA9AA",
-    "RoW" = "#9DA9AA",
-    "Otros" = "#9DA9AA",
-    "Resto" = "#9DA9AA"
-  )
-}
 
 # Función para aplicar paleta ----
 
@@ -292,9 +193,9 @@ paleta_paises <- function() {
 aplicar_paleta_victorgm <- function(.x, .n_colors = NULL) {
   colores_victorgm <- victorgmtools::colores_victorgm()
 
-  palette(colores_victorgm)
+  grDevices::palette(colores_victorgm)
 
-  pal <- palette(colores_victorgm)
+  pal <- grDevices::palette(colores_victorgm)
 
 
   .plot_to_return_plt <-
@@ -316,10 +217,13 @@ aplicar_paleta_victorgm <- function(.x, .n_colors = NULL) {
 #' Aplica el tema visual estándar de victorgm a un gráfico ggplot.
 #' Este tema se caracteriza por un fondo transparente, líneas de cuadrícula horizontales punteadas, y la ausencia de líneas verticales y bordes de ejes innecesarios.
 #'
+#' @param .oscuro Valor lógico. Si `TRUE`, colores del tema oscuro de la web ([tokens_victorgm()]). Por defecto, `FALSE`.
 #' @return Un objeto theme de ggplot2.
 #' @export
-tema_victorgm <- function() {
-    ggplot2::theme(
+tema_victorgm <- function(.oscuro = FALSE) {
+  tk <- tokens_victorgm(.oscuro = .oscuro)
+  color_rejilla <- if (isTRUE(.oscuro)) tk[["borde"]] else "#D9D9D9"
+  ggplot2::theme(
     axis.title.x = ggplot2::element_blank(),
     axis.title.y = ggplot2::element_blank(),
     axis.text.x = ggplot2::element_text(hjust = 1, angle = 45),
@@ -328,11 +232,14 @@ tema_victorgm <- function() {
     legend.title = ggplot2::element_blank(),
     legend.position = "bottom",
     panel.background = ggplot2::element_rect(fill = "transparent"),
-    panel.grid.major = ggplot2::element_line(colour = "#D9D9D9", lineend = "round", linewidth = 0.75, linetype = "dotted", arrow = FALSE),
+    panel.grid.major = ggplot2::element_line(colour = color_rejilla, lineend = "round", linewidth = 0.75, linetype = "dotted", arrow = FALSE),
     panel.grid.major.x = ggplot2::element_blank(),
     panel.grid.minor.x = ggplot2::element_blank(),
     plot.background = ggplot2::element_rect(fill = "transparent", colour = NA),
-    strip.background = ggplot2::element_rect(fill = "white")
+    strip.background = ggplot2::element_rect(fill = if (isTRUE(.oscuro)) tk[["fondo_claro"]] else "white"),
+    strip.text = ggplot2::element_text(colour = if (isTRUE(.oscuro)) tk[["texto"]] else "black"),
+    axis.text = ggplot2::element_text(colour = if (isTRUE(.oscuro)) tk[["texto"]] else "black"),
+    legend.text = ggplot2::element_text(colour = if (isTRUE(.oscuro)) tk[["texto"]] else "black")
   )
 }
 
@@ -388,6 +295,12 @@ tema_victorgm <- function() {
 #' @param .logo_ancho_pct Número. Ancho del logo como porcentaje del ancho del gráfico (de 0 a 100). Por defecto, `10`.
 #' @param .logo_hover_path Cadena de caracteres. Ruta a una imagen PNG alternativa que se muestra al pasar el ratón sobre el logo (solo en modo interactivo). Genera un efecto de cross-fade entre ambas imágenes. Por defecto, `NULL` (sin efecto hover).
 #' @param .guardar_en Cadena de caracteres. Ruta del archivo PNG donde guardar el gráfico. Si es interactivo, se guarda una captura de pantalla (requiere `webshot2`). Si el directorio no existe, se muestra un aviso sin detener la ejecución. Por defecto, `NULL` (no se guarda).
+#' @param .url_enlace Cadena de caracteres. URL que se muestra bajo el pie (y a la que enlaza el logo en modo interactivo). `NULL` o `""` para no mostrarla. Por defecto, `"www.victorgutierrezmarcos.es"`.
+#' @param .linea_separadora Valor lógico. Si `TRUE` (por defecto), dibuja una línea degradada entre el gráfico y el pie.
+#' @param .colores_linea Vector de colores del degradado de la línea separadora. Por defecto, morado, oro y verde salvia de la web.
+#' @param .estatico Valor lógico. `TRUE` devuelve un `ggplot` estático; `FALSE` (por defecto) un gráfico interactivo `ggiraph`.
+#' @param .width,.height Anchura y altura en pulgadas del gráfico interactivo o del PNG guardado. Por defecto, `6` y `5`.
+#' @param .oscuro Valor lógico. Si `TRUE`, usa los tokens del tema oscuro de la web (texto claro, rejilla y tooltip en berenjena) para incrustar el gráfico en una página con `data-theme="dark"`. Por defecto, `FALSE`.
 #' @return Objeto ggplot2 con el estilo corporativo VictorGM aplicado.
 #' @examples
 #' \dontrun{
@@ -446,13 +359,20 @@ graficos_estilo_victorgm <- function(
     .linea_separadora = TRUE,
     .colores_linea = c("#5F2987", "#B8860B", "#E2EFD9"),
     .estatico = FALSE,
+    .oscuro = FALSE,
     .width = 6,
     .height = 5,
     .guardar_en = NULL
 ) {
 
+  # Tokens de color de la web (tema claro u oscuro)
+  tk <- tokens_victorgm(.oscuro = .oscuro)
+  color_texto <- if (isTRUE(.oscuro)) tk[["texto"]] else "black"
+  color_caption <- if (isTRUE(.oscuro)) tk[["texto_suave"]] else "gray50"
+  if (isTRUE(.oscuro) && identical(.color_titulo, "#5F2987")) .color_titulo <- tk[["primario"]]
+
   # Registrar fuente de Google Fonts si es necesario
-  fuente_ok <- victorgmtools:::registrar_fuente(.fuente_letra)
+  fuente_ok <- registrar_fuente(.fuente_letra)
 
   # Si falla la descarga de la fuente por defecto (Source Sans 3), usar sans como fallback
   # Solo intentamos el fallback si el usuario NO especificó una fuente personalizada distinta
@@ -554,15 +474,15 @@ graficos_estilo_victorgm <- function(
   
   .plot_to_return_plt <-
     .x +
-    tema_victorgm() +
+    tema_victorgm(.oscuro = .oscuro) +
     ggplot2::theme(
-      text = ggplot2::element_text(size = .text_size, family = .fuente_letra),
+      text = ggplot2::element_text(size = .text_size, family = .fuente_letra, colour = color_texto),
       legend.position = legend_pos,
-      legend.text = ggplot2::element_text(size = .legend_text_size, family = .fuente_letra),
-      title = ggplot2::element_text(family = .fuente_letra),
+      legend.text = ggplot2::element_text(size = .legend_text_size, family = .fuente_letra, colour = color_texto),
+      title = ggplot2::element_text(family = .fuente_letra, colour = color_texto),
       plot.margin = ggplot2::margin(t = 5, r = 10, b = 5, l = 10),
       legend.margin = ggplot2::margin(t = 1, r = 1, b = 1, l = 1),
-      axis.text = ggplot2::element_text(size = .text_axis_size, family = .fuente_letra),
+      axis.text = ggplot2::element_text(size = .text_axis_size, family = .fuente_letra, colour = color_texto),
       plot.title.position = "plot",
       plot.caption.position = "plot"
     ) +
@@ -575,8 +495,8 @@ graficos_estilo_victorgm <- function(
       ggplot2::theme(
         legend.justification = legend_just,
         legend.background = ggplot2::element_rect(
-          fill = ggplot2::alpha("white", 0.9),
-          colour = "white",
+          fill = ggplot2::alpha(tk[["superficie"]], 0.9),
+          colour = tk[["superficie"]],
           linewidth = 0.3
         ),
         legend.key.size = ggplot2::unit(0.4, "cm"),
@@ -679,8 +599,8 @@ graficos_estilo_victorgm <- function(
       # Usar NA_real_ en lugar de NA para asegurar tipo correcto si ambos son NA (aunque este caso está cubierto por el if)
       # Convertir a Date si es necesario para evitar warnings de escala
       
-      lim_min_val <- if(is.null(lim_min)) NA else lim_min
-      lim_max_val <- if(is.null(lim_max)) NA else lim_max
+      lim_min_val <- if (is.null(lim_min)) as.Date(NA) else lim_min
+      lim_max_val <- if (is.null(lim_max)) as.Date(NA) else lim_max
       
       # Convertir explícitamente a Date si es numérico para evitar warnings de escala
       if (is.numeric(lim_min_val)) {
@@ -874,8 +794,9 @@ graficos_estilo_victorgm <- function(
     # Añadir enlace si existe
     if (!is.null(.url_enlace) && .url_enlace != "") {
       # Crear el enlace HTML con estilo
-      link_html <- sprintf("<br><span style='font-size:%dpx; color:gray50;'>%s</span>",
+      link_html <- sprintf("<br><span style='font-size:%dpx; color:%s;'>%s</span>",
                            round(.caption_size * 0.9),
+                           color_caption,
                            .url_enlace)
       .caption <- paste0(.caption, link_html)
     }
@@ -884,7 +805,7 @@ graficos_estilo_victorgm <- function(
       .plot_to_return_plt +
       ggplot2::labs(caption = .caption) +
       ggplot2::theme(plot.caption = ggtext::element_textbox_simple(
-        hjust = 0, halign = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+        hjust = 0, halign = 0, family = .fuente_letra, size = .caption_size, color = color_caption,
         width = grid::unit(.caption_width_pct / 100, "npc"),
         padding = ggplot2::margin(0, 0, 0, 0),
         margin = ggplot2::margin(t = caption_top_margin)
@@ -894,9 +815,9 @@ graficos_estilo_victorgm <- function(
     # Si no hay caption pero sí enlace
     .plot_to_return_plt <-
       .plot_to_return_plt +
-      ggplot2::labs(caption = .url_enlace) +
+      ggplot2::labs(caption = sprintf("<span style='font-size:%dpx; color:%s;'>%s</span>", round(.caption_size * 0.9), color_caption, .url_enlace)) +
       ggplot2::theme(plot.caption = ggtext::element_textbox_simple(
-        hjust = 0, halign = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+        hjust = 0, halign = 0, family = .fuente_letra, size = .caption_size, color = color_caption,
         width = grid::unit(.caption_width_pct / 100, "npc"),
         padding = ggplot2::margin(0, 0, 0, 0),
         margin = ggplot2::margin(t = caption_top_margin)
@@ -944,6 +865,8 @@ graficos_estilo_victorgm <- function(
   ggplot2::update_geom_defaults("label", list(family = .fuente_letra))
 
   # Insertar línea separadora
+  # Límites infinitos del eje x con la clase de la escala (evita el aviso de ggplot2 con escalas de fecha)
+  x_inf <- if (.tipo_grafico_x == "fecha") structure(c(-Inf, Inf), class = "Date") else c(-Inf, Inf)
   if (.linea_separadora) {
     grad <- grDevices::colorRampPalette(.colores_linea)(100)
 
@@ -983,7 +906,7 @@ graficos_estilo_victorgm <- function(
     .plot_to_return_plt <- .plot_to_return_plt +
       ggplot2::annotation_custom(
         linea_grob,
-        xmin = -Inf, xmax = Inf,
+        xmin = x_inf[1], xmax = x_inf[2],
         ymin = -Inf, ymax = Inf
       ) +
       ggplot2::coord_cartesian(clip = "off")
@@ -1066,7 +989,7 @@ graficos_estilo_victorgm <- function(
     .plot_to_return_plt <- .plot_to_return_plt +
       ggplot2::annotation_custom(
         logo_grob,
-        xmin = -Inf, xmax = Inf,
+        xmin = x_inf[1], xmax = x_inf[2],
         ymin = -Inf, ymax = Inf
       ) +
       ggplot2::coord_cartesian(clip = "off")
@@ -1083,7 +1006,7 @@ graficos_estilo_victorgm <- function(
   if (!.estatico) {
     # Definir CSS para el tooltip usando la fuente seleccionada y colores corporativos
     tooltip_css <- sprintf(
-      "background-color:rgba(255, 255, 255, 0.95);
+      "background-color:%s;
        color:%s;
        font-family: '%s', sans-serif;
        font-size: 14px;
@@ -1092,9 +1015,10 @@ graficos_estilo_victorgm <- function(
        padding: 10px;
        box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
        z-index: 999;",
-      "#2C3E50",        # Color de texto (gris oscuro/negro)
+      tk[["superficie"]],
+      tk[["texto"]],    # Color de texto
       .fuente_letra,    # Fuente seleccionada
-      "#5F2987"         # Color del borde (morado VictorGM)
+      tk[["primario"]]  # Color del borde (morado de la web)
     )
 
     .plot_to_return_plt <- ggiraph::girafe(
@@ -1253,6 +1177,12 @@ grafico_estilo_victorgm <- graficos_estilo_victorgm
 #' @param .logo_ancho_pct Número. Ancho del logo como porcentaje del ancho del gráfico (de 0 a 100). Por defecto, `10`.
 #' @param .logo_hover_path Cadena de caracteres. Ruta a una imagen PNG alternativa que se muestra al pasar el ratón sobre el logo (solo en modo interactivo). Genera un efecto de cross-fade entre ambas imágenes. Por defecto, `NULL` (sin efecto hover).
 #' @param .guardar_en Cadena de caracteres. Ruta del archivo PNG donde guardar el mapa. Si es interactivo, se guarda una captura de pantalla (requiere `webshot2`). Si el directorio no existe, se muestra un aviso sin detener la ejecución. Por defecto, `NULL` (no se guarda).
+#' @param .title_size,.subtitle_size Tamaño del título y del subtítulo. Por defecto, `18` y `14`.
+#' @param .url_enlace Cadena de caracteres. URL que se muestra bajo el pie. `NULL` o `""` para no mostrarla. Por defecto, `"www.victorgutierrezmarcos.es"`.
+#' @param .linea_separadora Valor lógico. Si `TRUE` (por defecto), dibuja una línea degradada entre el mapa y el pie.
+#' @param .colores_linea Vector de colores del degradado de la línea separadora.
+#' @param .estatico Valor lógico. `TRUE` devuelve un `ggplot` estático; `FALSE` (por defecto) un mapa interactivo `ggiraph`.
+#' @param .width,.height Anchura y altura en pulgadas. Por defecto, `6` y `5`.
 #' @export
 mapa_estilo_victorgm <- function(
     .x,
@@ -1300,8 +1230,9 @@ mapa_estilo_victorgm <- function(
     .guardar_en = NULL
 ) {
 
+  color_caption <- "gray50"
   # Registrar fuente de Google Fonts si es necesario
-  fuente_ok <- victorgmtools:::registrar_fuente(.fuente_letra)
+  fuente_ok <- registrar_fuente(.fuente_letra)
 
   # Si falla la descarga de la fuente por defecto (Source Sans 3), usar sans como fallback
   if (!fuente_ok && .fuente_letra == "Source Sans 3") {
@@ -1324,7 +1255,7 @@ mapa_estilo_victorgm <- function(
     .x <-
       .x |>
       dplyr::rename(provincia = !!rlang::sym(.col_nombres)) |>
-      dplyr::left_join(comerciotools:::get_provincias_metadata(), by = "provincia") |>
+      dplyr::left_join(get_provincias_metadata(), by = "provincia") |>
       dplyr::rename(nombres = nombre_provincia) |>
       dplyr::mutate(
         nombres = dplyr::case_when(
@@ -1387,7 +1318,7 @@ mapa_estilo_victorgm <- function(
     .x <-
       .x |>
       dplyr::rename(comunidad = !!rlang::sym(.col_nombres)) |>
-      dplyr::left_join(comerciotools:::get_provincias_metadata(), by = "comunidad") |>
+      dplyr::left_join(get_provincias_metadata(), by = "comunidad") |>
       dplyr::rename(nombres = nombre_comunidad) |>
       dplyr::mutate(
         nombres = dplyr::case_when(
@@ -1462,7 +1393,7 @@ mapa_estilo_victorgm <- function(
       .x <-
         .x |>
         dplyr::rename(iso_code = !!rlang::sym(.col_nombres)) |>
-        dplyr::left_join(comerciotools::get_iso_datacomex(), by = "iso_code") |>
+        dplyr::left_join(get_iso_datacomex(), by = "iso_code") |>
         dplyr::select(-nombre, -iso_code, -datacomex) |>
         dplyr::left_join(wtor::get_partner_economies(), by = "iso3A") |>
         dplyr::rename(nombres = iso3A)
@@ -1470,7 +1401,7 @@ mapa_estilo_victorgm <- function(
       .x <-
         .x |>
         dplyr::rename(datacomex = !!rlang::sym(.col_nombres)) |>
-        dplyr::left_join(comerciotools::get_iso_datacomex(), by = "datacomex") |>
+        dplyr::left_join(get_iso_datacomex(), by = "datacomex") |>
         dplyr::select(-nombre, -iso_code, -datacomex) |>
         dplyr::left_join(wtor::get_partner_economies(), by = "iso3A") |>
         dplyr::rename(nombres = iso3A)
@@ -1570,7 +1501,7 @@ mapa_estilo_victorgm <- function(
     if(.region_geografica %in% c("Mundo", "Europa")){
       if(.codigo_pais == "iso_3A"){
         .paises <-
-          comerciotools::get_iso_datacomex() |>
+          get_iso_datacomex() |>
           dplyr::select(
             codigo = iso3A,
             nombre = nombre
@@ -1582,7 +1513,7 @@ mapa_estilo_victorgm <- function(
           dplyr::pull(nombre)
       } else if(.codigo_pais == "iso_code"){
         .paises <-
-          comerciotools::get_iso_datacomex() |>
+          get_iso_datacomex() |>
           dplyr::select(
             codigo = iso_code,
             nombre = nombre
@@ -1594,7 +1525,7 @@ mapa_estilo_victorgm <- function(
           dplyr::pull(nombre)
       } else if(.codigo_pais == "datacomex"){
         .paises <-
-          comerciotools::get_iso_datacomex() |>
+          get_iso_datacomex() |>
           dplyr::select(
             codigo = datacomex,
             nombre = nombre
@@ -1609,7 +1540,7 @@ mapa_estilo_victorgm <- function(
       }
     }else if(.region_geografica == "España" && .unidades_territoriales == "ccaa"){
       .ccaa <-
-        comerciotools:::get_provincias_metadata() |>
+        get_provincias_metadata() |>
         dplyr::select(
           codigo = comunidad,
           nombre = nombre_comunidad
@@ -1621,7 +1552,7 @@ mapa_estilo_victorgm <- function(
         dplyr::pull(nombre)
     }else if(.region_geografica == "España" && .unidades_territoriales == "provincia"){
       .provincias <-
-        comerciotools:::get_provincias_metadata() |>
+        get_provincias_metadata() |>
         dplyr::select(
           codigo = provincia,
           nombre = nombre_provincia
@@ -1746,7 +1677,7 @@ mapa_estilo_victorgm <- function(
       .map_to_return +
       ggplot2::labs(caption = .caption) +
       ggplot2::theme(plot.caption = ggtext::element_textbox_simple(
-        hjust = 0, halign = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+        hjust = 0, halign = 0, family = .fuente_letra, size = .caption_size, color = color_caption,
         width = grid::unit(.caption_width_pct / 100, "npc"),
         padding = ggplot2::margin(0, 0, 0, 0),
         margin = ggplot2::margin(t = caption_top_margin)
@@ -1755,9 +1686,9 @@ mapa_estilo_victorgm <- function(
   } else if (!is.null(.url_enlace) && .url_enlace != "") {
     .map_to_return <-
       .map_to_return +
-      ggplot2::labs(caption = .url_enlace) +
+      ggplot2::labs(caption = sprintf("<span style='font-size:%dpx; color:%s;'>%s</span>", round(.caption_size * 0.9), color_caption, .url_enlace)) +
       ggplot2::theme(plot.caption = ggtext::element_textbox_simple(
-        hjust = 0, halign = 0, family = .fuente_letra, size = .caption_size, color = "gray50",
+        hjust = 0, halign = 0, family = .fuente_letra, size = .caption_size, color = color_caption,
         width = grid::unit(.caption_width_pct / 100, "npc"),
         padding = ggplot2::margin(0, 0, 0, 0),
         margin = ggplot2::margin(t = caption_top_margin)
@@ -2070,7 +2001,11 @@ mapas_estilo_victorgm <- mapa_estilo_victorgm
 #' @param .subtitle Cadena de caracteres. Subtítulo de la tabla. Por defecto, `NULL`.
 #' @param .caption Cadena de caracteres. Nota al pie de la tabla. Por defecto, `NULL`.
 #' @param .columnas_numericas Vector de caracteres. Nombres de las columnas que contienen valores numéricos. Por defecto, detecta automáticamente.
-#' @param .columnas_porcentaje Vector de caracteres. Nombres de las columnas que representan porcentajes. Por defecto, `NULL`.
+#' @param .title_size,.subtitle_size,.caption_size Tamaño del título, del subtítulo y del pie. Por defecto, `18`, `14` y `12`.
+#' @param .columnas_variacion Vector de caracteres. Columnas con tasas de variación: se formatean con un decimal y el sufijo `%`. Por defecto, `NULL`.
+#' @param .forzar_signo_variacion Valor lógico. Si `TRUE` (por defecto), las variaciones positivas llevan signo `+`.
+#' @param .columnas_cuota Vector de caracteres. Columnas con cuotas o pesos en tanto por cien. Por defecto, `NULL`.
+#' @param .usar_google_fonts Valor lógico. Si `TRUE`, incrusta la fuente desde Google Fonts en la tabla. Por defecto, `FALSE`.
 #' @param .columnas_colores_positivo_negativo Vector de caracteres. Columnas donde aplicar colores según valores positivos/negativos. Por defecto, `NULL`.
 #' @param .color_positivo Cadena de caracteres. Color para valores positivos. Por defecto, `"#38A169"` (verde).
 #' @param .color_negativo Cadena de caracteres. Color para valores negativos. Por defecto, `"#E53E3E"` (rojo).

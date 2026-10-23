@@ -38,3 +38,25 @@ get_provincias_metadata <- function() {
                          "Ceuta", "Melilla")
   )
 }
+
+#' Tabla de equivalencias de códigos de país
+#'
+#' Equivalencias entre el código ISO numérico (`iso_code`), el nombre en español, el código ISO3
+#' (`iso3A`) y el código de país de DATACOMEX (`datacomex`) de 232 países y territorios.
+#'
+#' @format Un tibble con 232 filas y 4 columnas: `iso_code`, `nombre`, `iso3A`, `datacomex`.
+#' @source Elaboración propia a partir de las tablas de países de DATACOMEX e ISO 3166.
+"iso_datacomex_clean"
+
+#' Obtener las equivalencias de códigos de país
+#'
+#' Devuelve [iso_datacomex_clean], la tabla con el código ISO numérico, el nombre en español, el
+#' ISO3 y el código DATACOMEX de cada país. La usa [mapa_estilo_victorgm()] para traducir códigos.
+#'
+#' @return Un tibble con las columnas `iso_code`, `nombre`, `iso3A` y `datacomex`.
+#' @examples
+#' head(get_iso_datacomex())
+#' @export
+get_iso_datacomex <- function() {
+  victorgmtools::iso_datacomex_clean
+}

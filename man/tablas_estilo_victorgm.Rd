@@ -51,7 +51,15 @@ tablas_estilo_victorgm(
 
 \item{.caption}{Cadena de caracteres. Nota al pie de la tabla. Por defecto, \code{NULL}.}
 
+\item{.title_size, .subtitle_size, .caption_size}{Tamaño del título, del subtítulo y del pie. Por defecto, \code{18}, \code{14} y \code{12}.}
+
 \item{.columnas_numericas}{Vector de caracteres. Nombres de las columnas que contienen valores numéricos. Por defecto, detecta automáticamente.}
+
+\item{.columnas_variacion}{Vector de caracteres. Columnas con tasas de variación: se formatean con un decimal y el sufijo \verb{\%}. Por defecto, \code{NULL}.}
+
+\item{.forzar_signo_variacion}{Valor lógico. Si \code{TRUE} (por defecto), las variaciones positivas llevan signo \code{+}.}
+
+\item{.columnas_cuota}{Vector de caracteres. Columnas con cuotas o pesos en tanto por cien. Por defecto, \code{NULL}.}
 
 \item{.columnas_colores_positivo_negativo}{Vector de caracteres. Columnas donde aplicar colores según valores positivos/negativos. Por defecto, \code{NULL}.}
 
@@ -97,9 +105,9 @@ tablas_estilo_victorgm(
 
 \item{.color_resaltado}{Cadena de caracteres. Color de fondo para filas resaltadas. Por defecto, \code{"#FFFACD"}.}
 
-\item{.logo_path}{Cadena de caracteres. Ruta a una imagen (PNG o JPEG) para incluir como logo en la tabla. Se muestra alineado a la derecha bajo la tabla. Por defecto, \code{NULL} (sin logo).}
+\item{.usar_google_fonts}{Valor lógico. Si \code{TRUE}, incrusta la fuente desde Google Fonts en la tabla. Por defecto, \code{FALSE}.}
 
-\item{.columnas_porcentaje}{Vector de caracteres. Nombres de las columnas que representan porcentajes. Por defecto, \code{NULL}.}
+\item{.logo_path}{Cadena de caracteres. Ruta a una imagen (PNG o JPEG) para incluir como logo en la tabla. Se muestra alineado a la derecha bajo la tabla. Por defecto, \code{NULL} (sin logo).}
 }
 \description{
 Función para aplicar estilo de tabla estándar para VictorGM

@@ -142,6 +142,8 @@ mapas_estilo_victorgm(
 
 \item{.title}{Título del mapa Por defecto, \code{NULL}.}
 
+\item{.title_size, .subtitle_size}{Tamaño del título y del subtítulo. Por defecto, \code{18} y \code{14}.}
+
 \item{.subtitle}{Subtitulo del mapa. Habitualmente usado para definir las unidades de medida. Por defecto, \code{NULL}.}
 
 \item{.color_titulo}{Cadena de caracteres. Color del título y subtítulo. Por defecto, \code{"#5F2987"} (morado).}
@@ -165,6 +167,16 @@ mapas_estilo_victorgm(
 \item{.logo_ancho_pct}{Número. Ancho del logo como porcentaje del ancho del gráfico (de 0 a 100). Por defecto, \code{10}.}
 
 \item{.logo_hover_path}{Cadena de caracteres. Ruta a una imagen PNG alternativa que se muestra al pasar el ratón sobre el logo (solo en modo interactivo). Genera un efecto de cross-fade entre ambas imágenes. Por defecto, \code{NULL} (sin efecto hover).}
+
+\item{.url_enlace}{Cadena de caracteres. URL que se muestra bajo el pie. \code{NULL} o \code{""} para no mostrarla. Por defecto, \code{"www.victorgutierrezmarcos.es"}.}
+
+\item{.linea_separadora}{Valor lógico. Si \code{TRUE} (por defecto), dibuja una línea degradada entre el mapa y el pie.}
+
+\item{.colores_linea}{Vector de colores del degradado de la línea separadora.}
+
+\item{.estatico}{Valor lógico. \code{TRUE} devuelve un \code{ggplot} estático; \code{FALSE} (por defecto) un mapa interactivo \code{ggiraph}.}
+
+\item{.width, .height}{Anchura y altura en pulgadas. Por defecto, \code{6} y \code{5}.}
 
 \item{.guardar_en}{Cadena de caracteres. Ruta del archivo PNG donde guardar el mapa. Si es interactivo, se guarda una captura de pantalla (requiere \code{webshot2}). Si el directorio no existe, se muestra un aviso sin detener la ejecución. Por defecto, \code{NULL} (no se guarda).}
 }

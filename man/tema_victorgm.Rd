@@ -4,7 +4,10 @@
 \alias{tema_victorgm}
 \title{Tema ggplot2 de victorgm}
 \usage{
-tema_victorgm()
+tema_victorgm(.oscuro = FALSE)
+}
+\arguments{
+\item{.oscuro}{Valor lógico. Si \code{TRUE}, colores del tema oscuro de la web (\code{\link[=tokens_victorgm]{tokens_victorgm()}}). Por defecto, \code{FALSE}.}
 }
 \value{
 Un objeto theme de ggplot2.
