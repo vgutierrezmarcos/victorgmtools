@@ -1,0 +1,201 @@
+/* ============================================================
+   victorgmtools: piezas de informe (kpis, resumen, figura, tabla)
+   con la estética de victorgutierrezmarcos.es: morado como tinta,
+   verde salvia como papel y oro como filete. Tema claro y oscuro
+   (berenjena) con los mismos tokens que styles.css de la web.
+   ============================================================ */
+:root {
+  --vgm-primario: #5F2987;
+  --vgm-primario-oscuro: #4a1f6b;
+  --vgm-primario-palido: #f1ebf6;
+  --vgm-fondo: #E2EFD9;
+  --vgm-fondo-claro: #edf5e7;
+  --vgm-fondo-crema: #fbfaf6;
+  --vgm-superficie: #ffffff;
+  --vgm-texto: #2a2530;
+  --vgm-texto-suave: #5e5866;
+  --vgm-borde: #c8d8c0;
+  --vgm-oro: #b8860b;
+  --vgm-exito: #3f6b3a;
+  --vgm-error: #8e2a3b;
+  --vgm-font-ui: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --vgm-font-display: 'Pagella', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  --vgm-sombra: 0 1px 2px rgba(42, 37, 48, 0.06), 0 2px 8px rgba(42, 37, 48, 0.05);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --vgm-primario: #c3a2e0;
+    --vgm-primario-oscuro: #a57fcb;
+    --vgm-primario-palido: #2e2538;
+    --vgm-fondo: #16131a;
+    --vgm-fondo-claro: #1b1820;
+    --vgm-fondo-crema: #211d26;
+    --vgm-superficie: #211d26;
+    --vgm-texto: #ece6ef;
+    --vgm-texto-suave: #b3aabb;
+    --vgm-borde: #3a3342;
+    --vgm-oro: #d9ae45;
+    --vgm-exito: #8dba84;
+    --vgm-error: #e0899a;
+    --vgm-sombra: 0 1px 3px rgba(0, 0, 0, 0.45);
+  }
+}
+:root[data-theme="dark"] {
+  --vgm-primario: #c3a2e0;
+  --vgm-primario-oscuro: #a57fcb;
+  --vgm-primario-palido: #2e2538;
+  --vgm-fondo: #16131a;
+  --vgm-fondo-claro: #1b1820;
+  --vgm-fondo-crema: #211d26;
+  --vgm-superficie: #211d26;
+  --vgm-texto: #ece6ef;
+  --vgm-texto-suave: #b3aabb;
+  --vgm-borde: #3a3342;
+  --vgm-oro: #d9ae45;
+  --vgm-exito: #8dba84;
+  --vgm-error: #e0899a;
+  --vgm-sombra: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- Mensaje clave ---------- */
+.clave, .clave p {
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--vgm-primario);
+  margin: 0.1rem 0 0.9rem 0;
+}
+
+/* ---------- Tira de cifras ---------- */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(var(--n, 6), minmax(0, 1fr));
+  column-gap: 0.8rem;
+  row-gap: 0;
+  background: var(--vgm-fondo-crema);
+  border-top: 2px solid var(--vgm-oro);
+  border-radius: 0 0 8px 8px;
+  padding: 0.8rem 1rem;
+  margin: 0.6rem 0 1.4rem 0;
+  font-family: var(--vgm-font-ui);
+}
+.kpi { text-align: center; min-width: 0; }
+@supports (grid-template-rows: subgrid) {
+  .kpi { display: grid; grid-row: span 3; grid-template-rows: subgrid; row-gap: 0; }
+  .kpi .etiqueta { align-self: end; }
+  .kpi .valor { align-self: center; }
+  .kpi .variacion { align-self: start; }
+}
+.kpis[style*="--n:5"] .kpi .etiqueta, .kpis[style*="--n:6"] .kpi .etiqueta { white-space: normal; }
+.kpi .etiqueta {
+  white-space: nowrap;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--vgm-texto-suave);
+  letter-spacing: 0.04em;
+  font-variant-caps: all-small-caps;
+}
+.kpi .etiqueta .medida { color: var(--vgm-texto-suave); font-weight: 600; margin-left: 0.35em; }
+.kpi .valor { font-size: 1.35rem; font-weight: 700; color: var(--vgm-primario); line-height: 1.2; font-family: var(--vgm-font-display); }
+.kpi .variacion { font-size: 0.78rem; color: var(--vgm-texto-suave); }
+.kpi .variacion.sube { color: var(--vgm-exito); }
+.kpi .variacion.baja { color: var(--vgm-error); }
+
+/* ---------- Resumen ejecutivo en tarjetas ---------- */
+.resumen {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  margin: 0.4rem 0 1.6rem 0;
+}
+.resumen.una-columna { grid-template-columns: 1fr; }
+.resumen .bloque {
+  background: var(--vgm-superficie);
+  border: 1px solid var(--vgm-borde);
+  border-radius: 8px;
+  box-shadow: var(--vgm-sombra);
+  padding: 0.8rem 1rem 0.9rem 1rem;
+  break-inside: avoid;
+}
+.resumen .bloque h2 {
+  color: var(--vgm-primario);
+  font-family: var(--vgm-font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.03em;
+  padding-bottom: 0.3rem;
+  border-bottom: 2px solid var(--vgm-oro);
+  margin: 0 0 0.5rem 0;
+}
+.resumen .bloque h2 .num { color: var(--vgm-oro); font-weight: 800; margin-right: 0.35em; }
+.resumen .bloque h2 a { color: inherit; text-decoration: none; }
+.resumen .bloque h2 a:hover { text-decoration: underline; text-decoration-color: var(--vgm-oro); text-underline-offset: 4px; }
+.resumen .bloque .clave { font-size: 0.92rem; margin: 0 0 0.3rem 0; }
+.resumen .bloque p { font-size: 0.85rem; line-height: 1.45; margin: 0; text-align: left; color: var(--vgm-texto); }
+
+.afirmacion, p.afirmacion {
+  border-left: 3px solid var(--vgm-oro);
+  padding-left: 0.7rem;
+  font-size: 0.85em;
+  color: var(--vgm-texto-suave);
+  margin: 0.4rem 0;
+  text-align: left;
+  font-style: italic;
+}
+.afirmacion b, .afirmacion strong { color: var(--vgm-primario); }
+.afirmacion p { margin: 0; }
+
+/* ---------- Figuras: caja sin borde, numerada, con la fuente debajo ---------- */
+.figura {
+  background: var(--vgm-fondo-crema);
+  border-radius: 8px;
+  padding: 0.8rem 1rem 0.9rem 1rem;
+  margin: 1.2rem 0 1.6rem 0;
+  break-inside: avoid;
+  font-family: var(--vgm-font-ui);
+}
+.figura .rotulo-fila {
+  display: flex;
+  justify-content: flex-start;
+  align-items: baseline;
+  gap: 0.4em;
+  margin-bottom: 0.3rem;
+  color: var(--vgm-primario);
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.3;
+  padding-bottom: 0.3rem;
+  border-bottom: 2px solid var(--vgm-oro);
+}
+.figura .num-fig { font-weight: 800; white-space: nowrap; font-variant-caps: all-small-caps; letter-spacing: 0.03em; }
+.figura .rotulo { font-weight: 600; }
+.figura .subtitulo { font-size: 0.8rem; color: var(--vgm-texto-suave); margin: 0.15rem 0 0.4rem 0; line-height: 1.3; }
+.figura .fuente-pie { font-size: 0.8em; color: var(--vgm-texto-suave); text-align: left; margin-top: 0.3rem; }
+.figura .fuente-pie a { color: var(--vgm-texto-suave); text-decoration: underline; text-decoration-color: var(--vgm-oro); text-underline-offset: 3px; }
+.figura .girafe_container_std { margin: 0 auto; }
+.figura .nota, .nota { font-size: 0.75rem; color: var(--vgm-texto-suave); margin-top: 0.2rem; }
+
+.figuras-par {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1.2rem 0 1.6rem 0;
+  break-inside: avoid;
+}
+.figuras-par .figura { margin: 0; padding: 0.6rem 0.7rem 0.7rem 0.7rem; }
+@media (max-width: 700px) {
+  .figuras-par { grid-template-columns: 1fr; }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 0.6rem; }
+  .resumen { grid-template-columns: 1fr; }
+}
+
+/* ---------- Tablas ---------- */
+.figura.tabla { background: transparent; padding: 0; }
+.figura.tabla table, .figura.tabla table * { box-shadow: none !important; }
+.figura.tabla .gt_table, .figura.tabla table { background: transparent !important; }
+
+/* ---------- Impresión ---------- */
+@media print {
+  .figura, .kpis, .resumen .bloque { box-shadow: none; }
+  .girafe_container_std .ggiraph-toolbar { display: none; }
+}
