@@ -1,112 +1,127 @@
 # victorgmtools
 
-`victorgmtools` es un paquete de R diseñado para facilitar y estandarizar tareas comunes de análisis de datos económicos, incluyendo cálculos de tasas de variación, gestión de datos de comercio exterior, obtención de datos de fuentes oficiales (FRED) y la aplicación de estilos visuales corporativos o estandarizados para gráficos y tablas.
+`victorgmtools` es un paquete de R para el análisis de datos económicos y su presentación con la
+estética de [victorgutierrezmarcos.es](https://victorgutierrezmarcos.es): cálculos sobre series
+(tasas de variación, acumulados, saldos, contribuciones), índices de precios y descomposición
+precio-volumen, acceso a FRED, WITS y tipos de cambio, y una capa de estilo para gráficos
+`ggplot2`, tablas `gt`, mapas e informes Quarto.
+
+Es un paquete personal, pensado para el blog y los análisis de la web y para trabajos sueltos.
+Comparte raíz con `comerciotools`, el paquete de la S.G. de Estudios y Prospección Comercial,
+del que toma lo genérico; nada de lo que depende de los servidores del Ministerio está aquí.
 
 ## Instalación
 
-Puedes instalar la versión de desarrollo de `victorgmtools` desde GitHub:
-
 ```r
 # install.packages("remotes")
+remotes::install_github("fabiansalazares/wtor")   # dependencia fuera de CRAN
 remotes::install_github("vgutierrezmarcos/victorgmtools")
 ```
 
-### Dependencias externas
+## Módulos
 
-Este paquete depende del paquete `wtor` para la gestión de datos de la Organización Mundial del Comercio. Dado que no se encuentra en CRAN, debe instalarse previamente desde GitHub:
+| Fichero | Qué hay |
+|---|---|
+| `funciones_calculos.R` | `get_tasa_variacion()`, `get_variacion()`, `get_acumulado()`, `get_acumulado_desde_1_enero()`, `get_agregado()`, `get_media_movil()`, `get_saldo()`, `get_cobertura()`, `get_peso()`, `get_contribucion()`, `get_contribucion_acumulada()`. |
+| `funciones_precios.R` | `get_precios_ponderados()` (índices tipo Paasche, cesta fija o móvil, opción duckdb), `get_flujos_reales()`, `get_descomposicion_tv()` y sus gráficos (`get_rri_plt()`, `get_flujos_reales_plt()`, `get_descomposicion_tv_plt()`, `get_precio_producto_plt()`). |
+| `funciones_graficos.R` | `graficos_estilo_victorgm()`, `tema_victorgm()`, `mapa_estilo_victorgm()`, `tablas_estilo_victorgm()`, `colores_victorgm()`. |
+| `funciones_paletas.R` | `tokens_victorgm()`, paletas secuencial, divergente y de signo, y paletas temáticas (`paleta_paises()`, `paleta_exportaciones_importaciones()`, `paleta_sectores_sec()`, `paleta_ccaa()`...). |
+| `funciones_informes.R` | Piezas de informe Quarto: `kpis()`, `resumen()`, `figura()`, `figura_doble()`, `tabla()`, `mostrar_plt()`, `css_informe_victorgm()`, `eje_y_derecha()`, `igualar_escalas()`. |
+| `funciones_formatos.R` | `es_number()`, `fmt_mill()`, `fmt_pct()`, `fmt_ton()`, `fraccion_txt()`, `veces_txt()`, `filas_leyenda()`. |
+| `funciones_revision.R` | `revisar_orden_geoms()`: comprueba el orden de las capas de los gráficos en `.R` y `.qmd`. |
+| `funciones_fred.R` | `get_fred_df()`, `get_fred_tbl()`, `get_fred_plt()` (requiere clave de API de FRED). |
+| `funciones_tipocambio.R` | `get_tipo_cambio()`, `get_tipo_cambio_df()`, `get_tipo_cambio_plt()`, `get_conversion()` (Yahoo Finance). |
+| `funciones_comercio.R` | Aranceles del Banco Mundial (WITS): `get_tariffs()`, `get_tariffs_plt()`, `get_tariffs_tbl()`. |
+| `funciones_strings.R`, `funciones_metadata.R` | `limpiar_nombres()`, `quitar_tildes()`, `get_provincias_metadata()`. |
 
-```r
-# install.packages("remotes")
-remotes::install_github("fabiansalazares/wtor")
-```
+## Estilo
 
-## Funcionalidades principales
+El sistema de diseño es el de la web: morado `#5F2987` como tinta, verde salvia `#E2EFD9` como
+papel y oro `#B8860B` como filete, con Source Sans 3 como tipografía de interfaz. `tokens_victorgm()`
+expone esos tokens (y la variante oscura, berenjena) para que gráficos, tablas e informes los
+compartan; `graficos_estilo_victorgm(.oscuro = TRUE)` y `css_informe_victorgm()` cubren el tema oscuro.
 
-El paquete se estructura en varios módulos, siendo los de cálculo y visualización los pilares centrales.
+Reglas que el paquete ayuda a cumplir:
 
-### 1. Cálculo y análisis económico (`funciones_calculos.R`)
-Este módulo contiene funciones esenciales para el tratamiento de series temporales y datos económicos. Simplifica operaciones que suelen requerir múltiples pasos en `dplyr`.
+- un gráfico, una idea: el rótulo de `figura()` dice el mensaje y el subtítulo qué se mide;
+- en series temporales el eje de valores va a la derecha (`eje_y_derecha()`, automático en `figura()`);
+- dos gráficos comparables comparten escala (`figura_doble()`);
+- las capas se añaden en el orden `geom_bar`, `geom_col`, `geom_hline`, `geom_vline`, `geom_abline`,
+  `geom_line`, `geom_point`, `geom_label` (`revisar_orden_geoms()`);
+- leyendas equilibradas (`filas_leyenda()`), paletas con nombre para que cada país o sector tenga
+  siempre el mismo color, y gris para el contexto.
 
-*   **`get_tasa_variacion()`**: Calcula tasas de crecimiento (interanual, intermensual, trimestral, etc.) sobre una serie temporal.
-*   **`get_variacion()`**: Calcula variaciones absolutas (diferencia numérica) entre periodos.
-*   **`get_saldo()`**: Obtiene el saldo comercial (Exportaciones - Importaciones) a partir de datos de flujo.
-*   **`get_cobertura()`**: Calcula la tasa de cobertura (Exportaciones / Importaciones * 100).
-*   **`get_acumulado()`**: Genera valores acumulados sobre una ventana móvil (por ejemplo, acumulado de los últimos 12 meses o "Year-to-Date").
-
-### 2. Visualización y estilos (`funciones_graficos.R`)
-Proporciona una capa de abstracción sobre `ggplot2` y `gt` para generar visualizaciones listas para publicación con una identidad visual coherente.
-
-*   **`graficos_estilo_victorgm()`**: Aplica el tema visual estandarizado a objetos `ggplot`. Gestiona automáticamente:
-    *   Fuentes tipográficas (por defecto "Nunito Sans").
-    *   Posición inteligente de la leyenda (incluyendo detección automática de huecos libres en el gráfico).
-    *   Formato de ejes (miles, porcentajes, fechas, sufijos).
-    *   Títulos, subtítulos y pies de página con ajuste de texto automático.
-    *   **Interactividad**: Por defecto devuelve un gráfico interactivo (`ggiraph`). Se puede obtener estático con `.estatico = TRUE`.
-*   **`mapa_estilo_victorgm()`**: Genera mapas coropléticos estilizados.
-    *   Soporte para **España** (Provincias y Comunidades Autónomas) y **Mundo**.
-    *   Integra geometrías de `rnaturalearth`.
-    *   *Nota*: Requiere nombres estandarizados (o códigos ISO3 para países) para una correcta vinculación.
-    *   **Interactividad**: Por defecto devuelve un mapa interactivo.
-*   **`tablas_estilo_victorgm()`**: Aplica estilos profesionales a tablas creadas con el paquete `gt`, manejando colores de fuente, bordes y formatos numéricos.
-*   **`colores_victorgm()`**: Acceso directo a la paleta de colores corporativa/estándar del paquete.
-
----
-
-## Otras funcionalidades
-
-### Integración con FRED (`funciones_fred.R`)
-Conexión directa con la base de datos de la Reserva Federal de San Luis (FRED).
-*   **`get_fred_tbl()`**: Descarga series temporales limpias y formateadas listas para análisis.
-*   **`get_fred_plt()`**: Genera automáticamente gráficos estandarizados de las series descargadas.
-
-### Tipos de cambio (`funciones_tipocambio.R`)
-Utilidades para la conversión monetaria.
-*   **`get_tipo_cambio()`**: Obtiene el tipo de cambio puntual entre dos divisas.
-*   **`get_conversion()`**: Añade una columna con el valor convertido a una divisa destino en un dataframe.
-*   **`get_tipo_cambio_df()`**: Descarga históricos de tipos de cambio.
-
-### Manipulación de textos (`funciones_strings.R`)
-Funciones auxiliares para la limpieza de datos.
-*   **`limpiar_nombres()`**: Estandariza nombres de columnas (snake_case, sin caracteres especiales).
-*   **`quitar_tildes()`**: Elimina acentos y diacríticos de cadenas de texto.
-
----
-
-## Ejemplos de uso
+## Ejemplos
 
 ### Estilizar un gráfico
+
 ```r
 library(ggplot2)
 library(victorgmtools)
 
-# Datos de ejemplo
 df <- data.frame(
-  fecha = seq(as.Date("2020-01-01"), by = "month", length.out = 12),
-  valores = cumsum(rnorm(12))
+  fecha = seq(as.Date("2020-01-01"), by = "month", length.out = 36),
+  valores = cumsum(rnorm(36))
 )
 
-# Crear gráfico base + aplicar estilo
-p <- ggplot(df, aes(x = fecha, y = valores)) +
-  geom_line() +
+ggplot(df, aes(x = fecha, y = valores)) +
+  geom_line() |>
   graficos_estilo_victorgm(
-    .title = "Gráfico de Ejemplo",
-    .subtitle = "Serie acumulada simulada",
-    .caption = "Fuente: Datos aleatorios. Elaboración propia.",
-    .tipo_grafico_y = "millones" # Formatea eje Y automáticamente
+    .title = "Serie acumulada simulada",
+    .subtitle = "Índice",
+    .caption = "Fuente: datos aleatorios. Elaboración propia.",
+    .tipo_grafico_y = "suffixing",
+    .estatico = TRUE
   )
-
-print(p)
 ```
 
-### Calcular tasas de variación
+### Tasas, acumulados y agregados
+
 ```r
-library(dplyr)
-
-df_crecimiento <- df |>
-  get_tasa_variacion(
-    .periodos_atras = 1, 
-    .col_fecha = "fecha", 
-    .col_valores = "valores"
-  )
+df |>
+  get_tasa_variacion(.periodos_atras = 12) |>
+  get_acumulado(.periodos_atras = 12) |>
+  get_agregado(.periodos = 3, .transformacion = "media", .alineacion = "natural")
 ```
 
+### Precio y volumen
+
+```r
+datos |>                                      # fecha, flujo, taric, valor_estadistico, peso
+  get_precios_ponderados(.año_referencia = 2023) |>
+  get_rri_plt(.title = "Relación real de intercambio")
+
+datos |>
+  get_flujos_reales(.año_referencia = 2023, .año_base = 2023) |>
+  get_descomposicion_tv(.meses_atras = 12) |>
+  get_descomposicion_tv_plt(.flujo_seleccionado = "E")
+```
+
+### Un artículo del blog en Quarto
+
+```r
+# chunk de configuración
+victorgmtools::iniciar_informe()
+victorgmtools::css_informe_victorgm()        # results: asis
+
+# cifras y resumen
+kpis(
+  kpi("Exportaciones", fmt_mill(324500e6), fmt_pct(5.3, signo = TRUE), signo = 5.3, medida = "12 m"),
+  kpi("Cobertura", fmt_pct(85.4), fmt_pct(-1.2, signo = TRUE), signo = -1.2)
+)
+
+# un gráfico numerado con rótulo y fuente
+p <- ggplot(df, aes(fecha, valores)) + geom_line(colour = tokens_victorgm()[["primario"]])
+figura(p, rotulo = "La serie crece desde 2022", subtitulo = "Índice, base 100", fuente = "INE")
+```
+
+## Desarrollo
+
+```r
+devtools::load_all()
+devtools::document()
+devtools::test()
+devtools::check()
+```
+
+El paquete se publica con licencia MIT.

@@ -1,2 +1,9 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.Rhistory$
+^\.claude$
+^\.gitattributes$
+^\.github$
+^AGENTS\.md$
+^CLAUDE\.md$
+^pruebas$

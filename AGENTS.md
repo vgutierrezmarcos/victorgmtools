@@ -4,7 +4,7 @@ This file guides agentic coding tools (Claude, Cursor, etc.) working on the `vic
 
 ## 1. Build, Lint, and Test Commands
 
-This project uses `devtools` for package management. There is no formal `testthat` suite currently; checks rely on `devtools::check()` and ad-hoc scripts.
+This project uses `devtools` for package management. The `testthat` suite lives in `tests/testthat` (synthetic data, no network); ad-hoc scripts are in `pruebas/`.
 
 ### Core Commands (Run via Bash)
 *   **Load Package (Interactive/Dev):**
@@ -26,7 +26,7 @@ This project uses `devtools` for package management. There is no formal `testtha
     ```
 
 ### Testing Strategy
-Since there is no `tests/testthat` directory:
+0.  **Unit tests:** `R -e 'devtools::test()'` runs `tests/testthat` (calculations, prices, formats, palettes, report helpers). Add a test when you add or fix a function.
 1.  **Ad-hoc Testing:** Create/modify scripts in `pruebas/` (e.g., `pruebas/pruebas_graficos.R`) to verify changes.
 2.  **Manual Verification:** Use `devtools::load_all()` and test functions in an interactive R session if possible, or write a temporary R script.
 3.  **Single Test Equivalent:** To test a specific function, create a script in `pruebas/temp_test.R` that loads the package and runs the function, then execute:
@@ -65,7 +65,7 @@ Adhere strictly to the existing style found in `R/`.
 
 ### File Structure
 *   Code resides in `R/`.
-*   Group functions by category (e.g., `R/funciones_calculos.R` for math, `R/funciones_graficos.R` for plots).
+*   Group functions by category (e.g., `R/funciones_calculos.R` for math, `R/funciones_graficos.R` for plots, `R/funciones_paletas.R` for colours, `R/funciones_informes.R` for Quarto pieces).
 *   Use comment headers to separate sections within files:
     ```r
     # Section Name ----
@@ -83,4 +83,7 @@ Adhere strictly to the existing style found in `R/`.
 
 ## 4. Specific Patterns
 *   **DuckDB:** Functions with suffix `_duckplyr` use `duckdb`/`duckplyr` for performance.
-*   **Plotting:** Functions often accept an `.estatico` boolean to toggle between `ggplot2` (static) and `ggiraph` (interactive).
+*   **Plotting:** Functions accept an `.estatico` boolean to toggle between `ggplot2` (static) and `ggiraph` (interactive). `graficos_estilo_victorgm()` returns a `girafe` when interactive, so add layers and scales before calling it.
+*   **Colours:** use `tokens_victorgm()`, `colores_victorgm()` or a named `paleta_*()`; no ad-hoc hex. Dark theme via `.oscuro = TRUE`.
+*   **Layer order:** `geom_bar`, `geom_col`, `geom_hline`, `geom_vline`, `geom_abline`, `geom_line`, `geom_point`, `geom_label` (`revisar_orden_geoms()` checks it).
+*   **Scope:** only generic code from `comerciotools`; nothing tied to the Ministry servers. Licence stays MIT.
